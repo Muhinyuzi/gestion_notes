@@ -1,0 +1,78 @@
+/* Conteneur principal */
+.utilisateurs-container {
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 15px;
+  background: #f9f9f9;
+  border-radius: 12px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Titres */
+.utilisateurs-container h3 {
+  font-size: 1.4rem;
+  margin-bottom: 10px;
+  color: #2c3e50;
+}
+
+/* Loader */
+.utilisateurs-container .loading {
+  color: #555;
+  font-style: italic;
+}
+
+/* Message d’erreur */
+.error {
+  color: #d9534f;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+/* Liste des utilisateurs */
+.utilisateurs-container ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px;
+}
+
+.utilisateurs-container li {
+  background: #fff;
+  padding: 10px 15px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.utilisateurs-container li:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+}
+
+/* Formulaire */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+form input {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+
+form button {
+  padding: 10px;
+  background: #2c3e50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+form button:hover {
+  background: #1a252f;
+}

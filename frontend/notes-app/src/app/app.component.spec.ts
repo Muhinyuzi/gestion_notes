@@ -4,7 +4,9 @@ import { AppComponent } from './app.component';
 describe('AppComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppComponent],
+      declarations: [
+        AppComponent
+      ],
     }).compileComponents();
   });
 
@@ -14,7 +16,7 @@ describe('AppComponent', () => {
     expect(app).toBeTruthy();
   });
 
-  it(`should have the 'notes-app' title`, () => {
+  it(`should have as title 'notes-app'`, () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
     expect(app.title).toEqual('notes-app');

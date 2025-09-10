@@ -11,10 +11,10 @@ class Utilisateur(Base):
     email = Column(String(255), unique=True, nullable=False)
     mot_de_passe = Column(String(255), nullable=False)  # ⚠️ stocker hashé
     equipe = Column(String(100))
-
+    date = Column(DateTime, default=datetime.utcnow) 
     # Relations
-    notes = relationship("Note", back_populates="auteur_obj")
-    commentaires = relationship("Commentaire", back_populates="auteur_obj")
+    notes = relationship("Note", back_populates="auteur")
+    commentaires = relationship("Commentaire", back_populates="auteur")
 
 
 class Note(Base):
@@ -26,8 +26,10 @@ class Note(Base):
     equipe = Column(String(100))
     date = Column(DateTime, default=datetime.utcnow)
 
+    #auteur_id = Column(Integer, ForeignKey("utilisateurs.id"))
+    #auteur_obj = relationship("Utilisateur", back_populates="notes")
     auteur_id = Column(Integer, ForeignKey("utilisateurs.id"))
-    auteur_obj = relationship("Utilisateur", back_populates="notes")
+    auteur = relationship("Utilisateur", back_populates="notes")
 
     commentaires = relationship("Commentaire", back_populates="note")
 
@@ -40,7 +42,7 @@ class Commentaire(Base):
     date = Column(DateTime, default=datetime.utcnow)
 
     auteur_id = Column(Integer, ForeignKey("utilisateurs.id"))
-    auteur_obj = relationship("Utilisateur", back_populates="commentaires")
+    auteur = relationship("Utilisateur", back_populates="commentaires")
 
     note_id = Column(Integer, ForeignKey("notes.id"))
     note = relationship("Note", back_populates="commentaires")

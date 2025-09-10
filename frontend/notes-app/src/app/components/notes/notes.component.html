@@ -1,0 +1,21 @@
+<div class="notes-container">
+  <h3>📝 Liste des notes</h3>
+  <ul class="notes-list">
+    <li *ngFor="let n of notes">
+          <a [routerLink]="['/notes', n.id]"><strong>{{ n.titre }}</strong></a> - {{ n.contenu }}
+      <div class="notes-meta">
+        <!--(Équipe : {{ n.equipe }}) — Auteur: {{ n.auteur_id  }}-->
+        (Équipe : {{ n.equipe || '—' }}) — Auteur : {{ n.auteur?.nom || 'Inconnu' }}
+      </div>
+    </li>
+  </ul>
+
+  <h3>➕ Ajouter une note</h3>
+  <form class="add-note-form" (ngSubmit)="addNote()">
+    <input type="text" [(ngModel)]="newNote.titre" name="titre" placeholder="Titre" required>
+    <textarea [(ngModel)]="newNote.contenu" name="contenu" placeholder="Contenu" required></textarea>
+    <input type="text" [(ngModel)]="newNote.equipe" name="equipe" placeholder="Équipe">
+    <button type="submit">Ajouter</button>
+  </form>
+</div>
+

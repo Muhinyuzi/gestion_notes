@@ -1,0 +1,20 @@
+<div *ngIf="isLoading">Chargement...</div>
+<div *ngIf="errorMessage">{{ errorMessage }}</div>
+
+<div *ngIf="note" class="note-detail">
+  <h2>{{ note.titre }}</h2>
+  <p>{{ note.contenu }}</p>
+
+  <div class="meta">
+    👥 Équipe : <strong>{{ note.equipe }}</strong><br>
+    ✍️ Auteur : <strong>{{ note.auteur?.nom }}</strong><br>
+    📅 Créée le : <strong>{{ note.date | date:'short' }}</strong>
+  </div>
+  <hr>
+
+    <hr>
+
+  <!-- Composant commentaires -->
+  <app-commentaires [noteId]="note.id"></app-commentaires>
+
+</div>

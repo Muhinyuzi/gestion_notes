@@ -14,7 +14,7 @@ class UtilisateurCreate(UtilisateurBase):
 
 class UtilisateurOut(UtilisateurBase):
     id: int
-    created_at: datetime
+    date: datetime
 
     class Config:
         orm_mode = True
@@ -28,26 +28,52 @@ class NoteBase(BaseModel):
 class NoteCreate(NoteBase):
     auteur_id: int
 
-class NoteOut(NoteBase):
+class NoteOut(BaseModel):
     id: int
-    auteur_id: int
-    created_at: datetime
+    titre: str
+    contenu: str
+    equipe: Optional[str] = None
+    date: datetime
+    auteur: Optional[UtilisateurOut] = None   # 👈 propre, pas "auteur_obj"
 
     class Config:
         orm_mode = True
+
+       
 
 # ---------- Commentaire ----------
 class CommentaireBase(BaseModel):
     contenu: str
 
+
 class CommentaireCreate(CommentaireBase):
     auteur_id: int
+    note_id: int   # 👈 il faut savoir à quelle note rattacher le commentaire
+
 
 class CommentaireOut(CommentaireBase):
     id: int
     auteur_id: int
     note_id: int
-    created_at: datetime
+    date: datetime
+
+    # Relations
+    auteur: Optional[UtilisateurOut] = None  # 👈 pour avoir nom/email de l’auteur
+    note: Optional[NoteOut] = None           # 👈 pour avoir titre de la note
 
     class Config:
         orm_mode = True
+
+class NoteDetailOut(BaseModel):
+    id: int
+    titre: str
+    contenu: str
+    equipe: Optional[str] = None
+    date: datetime
+    auteur: Optional[UtilisateurOut] = None
+    commentaires: List[CommentaireOut] = []
+
+    class Config:
+        orm_mode = True          
+
+       

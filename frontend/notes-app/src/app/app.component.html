@@ -6,6 +6,10 @@
     <a routerLink="/utilisateurs" routerLinkActive="active">👤 Utilisateurs</a> |
     <a routerLink="/notes" routerLinkActive="active">📝 Notes</a>
   </nav>
+  <div class="auth-buttons" style="float:right;">
+  <button *ngIf="auth.isLoggedIn()" (click)="logout()">🚪 Logout</button>
+  <a *ngIf="!auth.isLoggedIn()" routerLink="/login">🔑 Login</a>
+</div>
 
   <hr>
 

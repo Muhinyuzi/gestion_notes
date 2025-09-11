@@ -10,6 +10,9 @@ import { CommentairesComponent } from './components/commentaires/commentaires.co
 import { AppRoutingModule } from './app-routing.module';
 import { HomeComponent } from './components/home/home.component';
 import { NoteDetailComponent } from './components/note-detail/note-detail.component';
+import { LoginComponent } from './components/login/login.component';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { AuthInterceptor } from './auth.interceptor';
 
 @NgModule({
   declarations: [
@@ -18,14 +21,15 @@ import { NoteDetailComponent } from './components/note-detail/note-detail.compon
     NotesComponent,
     CommentairesComponent,
     HomeComponent,
-    NoteDetailComponent
+    NoteDetailComponent,
+    LoginComponent
   ],
   imports: [
     BrowserModule,
     FormsModule,       // <-- Obligatoire pour ngModel
     HttpClientModule, AppRoutingModule   // <-- Obligatoire pour appeler ton API
   ],
-  providers: [],
+  providers: [{ provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }],
   bootstrap: [AppComponent]
 })
 export class AppModule {}

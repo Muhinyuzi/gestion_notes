@@ -7,7 +7,9 @@ from models import Utilisateur, Note, Commentaire
 from schemas import UtilisateurOut, NoteOut, CommentaireOut, NoteDetailOut
 from fastapi import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-
+from fastapi.security import OAuth2PasswordRequestForm
+import auth
+from passlib.context import CryptContext
 
 Base.metadata.create_all(bind=engine)
 
@@ -27,18 +29,37 @@ app.add_middleware(
     allow_headers=["*"],           # Autoriser tous les headers
 )
 
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def hash_password(password: str) -> str:
+    return pwd_context.hash(password)
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return pwd_context.verify(plain_password, hashed_password)
+
 @app.get("/")
 def read_root():
     return {"message": "Bienvenue sur l’API Notes 🚀"}
+
+@app.post("/login")
+def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    user = db.query(Utilisateur).filter(Utilisateur.email == form_data.username).first()
+    if not user or not auth.verify_password(form_data.password, user.mot_de_passe):
+        raise HTTPException(status_code=400, detail="Invalid credentials")
+    
+    token = auth.create_access_token({"sub": str(user.id)})
+    return {"access_token": token, "token_type": "bearer"}
 
 
 # ---------------- UTILISATEURS ----------------
 @app.post("/utilisateurs")
 def create_user(user: dict, db: Session = Depends(get_db)):
+    hashed_pw = hash_password(user.mot_de_passe)
     new_user = Utilisateur(
         nom=user["nom"],
         email=user["email"],
-        mot_de_passe=user["mot_de_passe"],  #  à sécuriser (hash)
+        mot_de_passe=hashed_pw,
+  #  à sécuriser (hash)
         equipe=user["equipe"]
     )
     db.add(new_user)

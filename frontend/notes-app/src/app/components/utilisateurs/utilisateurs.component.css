@@ -1,78 +1,90 @@
 /* Conteneur principal */
 .utilisateurs-container {
-  max-width: 600px;
-  margin: 20px auto;
-  padding: 15px;
-  background: #f9f9f9;
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 20px;
+  background: #ffffff;
   border-radius: 12px;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  font-family: Arial, sans-serif;
 }
 
 /* Titres */
 .utilisateurs-container h3 {
-  font-size: 1.4rem;
-  margin-bottom: 10px;
+  margin: 1.5rem 0 1rem;
+  font-size: 1.5rem;
   color: #2c3e50;
+  border-left: 5px solid #27ae60;
+  padding-left: 10px;
 }
 
-/* Loader */
-.utilisateurs-container .loading {
-  color: #555;
+/* Loader et erreurs */
+.loading {
   font-style: italic;
+  color: #7f8c8d;
+  margin-bottom: 1rem;
 }
 
-/* Message d’erreur */
 .error {
-  color: #d9534f;
+  color: #e74c3c;
   font-weight: bold;
-  margin-bottom: 10px;
+  margin-bottom: 1rem;
 }
 
-/* Liste des utilisateurs */
+/* Liste d’utilisateurs */
 .utilisateurs-container ul {
   list-style: none;
   padding: 0;
-  margin: 0 0 20px;
+  margin-bottom: 2rem;
 }
 
 .utilisateurs-container li {
-  background: #fff;
-  padding: 10px 15px;
-  margin-bottom: 8px;
-  border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  background: #f9f9f9;
+  margin-bottom: 10px;
+  padding: 12px 15px;
+  border-radius: 10px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .utilisateurs-container li:hover {
   transform: translateY(-2px);
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.1);
 }
 
-/* Formulaire */
-form {
+/* Formulaire d’ajout */
+.utilisateurs-container form {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
-form input {
-  padding: 10px;
+.utilisateurs-container input {
+  padding: 12px;
   border-radius: 8px;
   border: 1px solid #ccc;
   font-size: 1rem;
+  width: 100%;
+  transition: border-color 0.2s ease;
 }
 
-form button {
-  padding: 10px;
-  background: #2c3e50;
+.utilisateurs-container input:focus {
+  outline: none;
+  border-color: #27ae60;
+  box-shadow: 0 0 6px rgba(39,174,96,0.3);
+}
+
+.utilisateurs-container button {
+  padding: 12px;
+  background: #27ae60;
   color: white;
   border: none;
   border-radius: 8px;
+  font-size: 1rem;
   cursor: pointer;
-  transition: background 0.3s ease;
+  transition: background 0.2s ease, transform 0.1s ease;
 }
 
-form button:hover {
-  background: #1a252f;
+.utilisateurs-container button:hover {
+  background: #219150;
+  transform: scale(1.03);
 }

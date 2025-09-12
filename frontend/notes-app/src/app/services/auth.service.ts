@@ -1,43 +1,3 @@
-/*import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
-import { Router } from '@angular/router';
-
-@Injectable({ providedIn: 'root' })
-export class AuthService {
-  private baseUrl = 'http://127.0.0.1:8000'; // ton API FastAPI
-  private tokenKey = 'auth_token';
-
-  constructor(private http: HttpClient,private router: Router) {}
-
-  login(email: string, password: string): Observable<any> {
-    const body = new URLSearchParams();
-    body.set('username', email);
-    body.set('password', password);
-
-    return this.http.post<any>(`${this.baseUrl}/login`, body.toString(), {
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-    }).pipe(
-      tap(response => {
-        localStorage.setItem(this.tokenKey, response.access_token);
-      })
-    );
-  }
-
-  logout() {
-    localStorage.removeItem('token');  // ❌ On supprime le token
-    this.router.navigate(['/login']);  // 🔄 Redirection vers login
-  }
-
-  getToken(): string | null {
-    return localStorage.getItem(this.tokenKey);
-  }
-
-  isLoggedIn(): boolean {
-    return !!this.getToken();
-  }
-}
-*/
 // src/app/services/auth.service.ts
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
@@ -65,31 +25,26 @@ export class AuthService {
     return localStorage.getItem(this.TOKEN_KEY);
   }
 
-  isLoggedIn(): boolean {
-    return this._isLoggedIn$.value;
-  }
+  setUser(user: any): void {
+  localStorage.setItem('auth_user', JSON.stringify(user));
+}
 
-  logout(): void {
-    console.log('[AuthService] logout() called');
-    localStorage.removeItem(this.TOKEN_KEY);
-    this._isLoggedIn$.next(false);
-    this.router.navigate(['/login']);
-  }
-/*
-  // 👇 Ajout de la méthode login()
-  login(email: string, password: string): Observable<any> {
-    return this.http.post<any>(`${this.API_URL}/login`, { email, password }).pipe(
-      tap(res => {
-        if (res && res.access_token) {
-          this.setToken(res.access_token);
-        }
-      })
-    );
-  }
-    */
-   login(email: string, password: string): Observable<any> {
+getUser(): any | null {
+  const user = localStorage.getItem('auth_user');
+  return user ? JSON.parse(user) : null;
+}
+
+getUserId(): number | null {
+  return this.getUser()?.id ?? null;
+}
+
+getUserName(): number | null {
+  return this.getUser()?.name ?? null;
+}
+
+login(email: string, password: string): Observable<any> {
   const body = new URLSearchParams();
-  body.set('username', email);   // ⚡ obligatoire
+  body.set('username', email);
   body.set('password', password);
 
   return this.http.post<any>(`${this.API_URL}/login`, body.toString(), {
@@ -98,8 +53,24 @@ export class AuthService {
     tap(res => {
       if (res && res.access_token) {
         this.setToken(res.access_token);
+        if (res.user) {
+          this.setUser(res.user); // ⚡ stocker l'utilisateur
+        }
       }
     })
   );
 }
+
+  isLoggedIn(): boolean {
+    return this._isLoggedIn$.value;
+  }
+
+  logout(): void {
+    console.log('[AuthService] logout() called');
+    localStorage.removeItem(this.TOKEN_KEY);
+    localStorage.removeItem('auth_user');
+    this._isLoggedIn$.next(false);
+    this.router.navigate(['/login']);
+  }
+
 }

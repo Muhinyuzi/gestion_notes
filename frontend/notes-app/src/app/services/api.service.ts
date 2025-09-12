@@ -52,6 +52,8 @@ export interface Commentaire {
   auteur_id: number;
   note_id: number;
   date?: string;
+    // relation facultative
+  auteur?: Utilisateur;
 }
 
 @Injectable({
@@ -79,23 +81,13 @@ export class ApiService {
   return this.http.get<Note>(`${this.baseUrl}/notes/${id}`);
   }
 
-  /*createNote(note: Note): Observable<Note> {
-    return this.http.post<Note>(`${this.baseUrl}/notes`, note);
-  } */
    // Créer une nouvelle note
   createNote(note: NoteCreate): Observable<Note> {
     return this.http.post<Note>(`${this.baseUrl}/notes`, note);
   }
 
   // ---------------- COMMENTAIRES ----------------
-/*  getCommentaires(noteId: number): Observable<Commentaire[]> {
-    return this.http.get<Commentaire[]>(`${this.baseUrl}/notes/${noteId}/commentaires`);
-  }
 
-  createCommentaire(noteId: number, commentaire: Commentaire): Observable<Commentaire> {
-    return this.http.post<Commentaire>(`${this.baseUrl}/notes/${noteId}/commentaires`, commentaire);
-  }
-    */
    // Récupérer les commentaires d'une note
 getCommentaires(noteId: number): Observable<Commentaire[]> {
   return this.http.get<Commentaire[]>(`${this.baseUrl}/notes/${noteId}/commentaires`);

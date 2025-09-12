@@ -9,7 +9,8 @@ class Utilisateur(Base):
     id = Column(Integer, primary_key=True, index=True)
     nom = Column(String(100), unique=True, nullable=False)
     email = Column(String(255), unique=True, nullable=False)
-    mot_de_passe = Column(String(255), nullable=False)  # ⚠️ stocker hashé
+    mot_de_passe = Column(String(255), nullable=False)
+    type = Column(String(255), nullable=False)  # 
     equipe = Column(String(100))
     date = Column(DateTime, default=datetime.utcnow) 
     # Relations
@@ -25,9 +26,6 @@ class Note(Base):
     contenu = Column(Text)
     equipe = Column(String(100))
     date = Column(DateTime, default=datetime.utcnow)
-
-    #auteur_id = Column(Integer, ForeignKey("utilisateurs.id"))
-    #auteur_obj = relationship("Utilisateur", back_populates="notes")
     auteur_id = Column(Integer, ForeignKey("utilisateurs.id"))
     auteur = relationship("Utilisateur", back_populates="notes")
 

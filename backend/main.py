@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session, joinedload
 import uvicorn
 from db import Base, engine, get_db
 from models import Utilisateur, Note, Commentaire
-from schemas import UtilisateurOut, NoteOut, CommentaireOut, NoteDetailOut
+from schemas import UtilisateurOut, NoteOut, CommentaireOut, NoteDetailOut, CommentaireCreate, CommentaireOut
 from fastapi import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
@@ -48,7 +48,13 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
         raise HTTPException(status_code=400, detail="Invalid credentials")
     
     token = auth.create_access_token({"sub": str(user.id)})
-    return {"access_token": token, "token_type": "bearer"}
+    return {"access_token": token, "token_type": "bearer",
+        "user": {
+            "id": user.id,
+            "nom": user.nom,
+            "email": user.email,
+            "equipe": user.equipe
+        }}
 
 
 # ---------------- UTILISATEURS ----------------
@@ -108,11 +114,22 @@ def get_note(note_id: int, db: Session = Depends(get_db)):
     return note
 
 # ---------------- COMMENTAIRES ----------------
-@app.post("/notes/{note_id}/commentaires")
-def add_commentaire(note_id: int, commentaire: dict, db: Session = Depends(get_db)):
+@app.post("/notes/{note_id}/commentaires", response_model=CommentaireOut)
+def add_commentaire(note_id: int, commentaire: CommentaireCreate, db: Session = Depends(get_db)):
+    # Vérifier que la note existe
+    note = db.query(Note).filter(Note.id == note_id).first()
+    if not note:
+        raise HTTPException(status_code=404, detail="Note not found")
+
+    # Vérifier que l'auteur existe
+    auteur = db.query(Utilisateur).filter(Utilisateur.id == commentaire.auteur_id).first()
+    if not auteur:
+        raise HTTPException(status_code=404, detail="Auteur not found")
+
+    # Créer le commentaire
     new_comment = Commentaire(
-        contenu=commentaire["contenu"],
-        auteur_id=commentaire["auteur_id"],
+        contenu=commentaire.contenu,
+        auteur_id=commentaire.auteur_id,
         note_id=note_id
     )
     db.add(new_comment)

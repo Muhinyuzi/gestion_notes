@@ -1,5 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ApiService, Commentaire } from '../../services/api.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-commentaires',
@@ -7,33 +8,60 @@ import { ApiService, Commentaire } from '../../services/api.service';
   styleUrls: ['./commentaires.component.css']
 })
 export class CommentairesComponent implements OnInit {
-  @Input() noteId!: number; // vient de NotesComponent
+  @Input() noteId!: number;
   commentaires: Commentaire[] = [];
-  newComment: Commentaire = { contenu: '', auteur_id: 1, note_id: 0 };
+  newComment: { contenu: string } = { contenu: '' };
+  errorMessage = '';
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private auth: AuthService) {}
 
   ngOnInit(): void {
     this.loadCommentaires();
   }
 
-  // Charger les commentaires de la note
+  // Charger les commentaires depuis le backend
   loadCommentaires(): void {
     if (!this.noteId) return;
-    this.api.getCommentaires(this.noteId).subscribe(data => this.commentaires = data);
+    this.api.getCommentaires(this.noteId).subscribe({
+      next: data => this.commentaires = data,
+      error: err => console.error('Erreur chargement commentaires:', err)
+    });
   }
 
   // Ajouter un commentaire
   addComment(): void {
-    if (!this.newComment.contenu) {
-      alert('Veuillez écrire un commentaire.');
+    this.errorMessage = '';
+
+    // Vérifier le contenu
+    if (!this.newComment.contenu.trim()) {
+      this.errorMessage = 'Veuillez écrire un commentaire.';
       return;
     }
 
-    this.newComment.note_id = this.noteId;
-    this.api.createCommentaire(this.noteId, this.newComment).subscribe(c => {
-      this.commentaires.push(c);
-      this.newComment = { contenu: '', auteur_id: 1, note_id: this.noteId }; // reset
+    // Vérifier que l'utilisateur est connecté
+    const userId = this.auth.getUserId();
+    if (!userId) {
+      this.errorMessage = 'Vous devez être connecté pour commenter.';
+      return;
+    }
+
+    // Préparer le payload TS-safe
+    const payload: Commentaire = {
+      contenu: this.newComment.contenu,
+      auteur_id: userId,
+      note_id: this.noteId
+    };
+
+    // Envoyer au backend
+    this.api.createCommentaire(this.noteId, payload).subscribe({
+      next: c => {
+        this.commentaires.push(c);  // ajouter à la liste
+        this.newComment.contenu = ''; // reset champ
+      },
+      error: err => {
+        console.error(err);
+        this.errorMessage = 'Impossible de poster le commentaire.';
+      }
     });
   }
 }

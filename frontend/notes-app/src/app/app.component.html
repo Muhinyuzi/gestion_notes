@@ -1,19 +1,19 @@
 <div class="container mt-4 app-container">
-  <h1>📒 Gestion de Notes</h1>
+  <h1>📒 Gestion de notes</h1>
 
+  <!-- Navigation -->
   <nav>
     <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">🏠 Accueil</a> |
     <a routerLink="/utilisateurs" routerLinkActive="active">👤 Utilisateurs</a> |
     <a routerLink="/notes" routerLinkActive="active">📝 Notes</a>
+
+      <button *ngIf="auth.isLoggedIn()" (click)="logout()" class="logout-btn">🚪 Logout</button>
+  <!--<a *ngIf="!auth.isLoggedIn()" routerLink="/login" class="logout-btn">🔑 Login</a>-->
   </nav>
-  <div class="auth-buttons" style="float:right;">
-  <button *ngIf="auth.isLoggedIn()" (click)="logout()">🚪 Logout</button>
-  <a *ngIf="!auth.isLoggedIn()" routerLink="/login">🔑 Login</a>
-</div>
 
   <hr>
 
-  <!-- Ici changera dynamiquement : Home / Utilisateurs / Notes -->
+  <!-- Contenu dynamique -->
   <div class="page-content">
     <router-outlet></router-outlet>
   </div>

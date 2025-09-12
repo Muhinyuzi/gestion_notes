@@ -1,16 +1,21 @@
-# schemas.py
 from pydantic import BaseModel, EmailStr
 from typing import Optional, List
 from datetime import datetime
 
-# ---------- Utilisateur ----------
+# ======================================================
+# Utilisateur
+# ======================================================
+
 class UtilisateurBase(BaseModel):
     nom: str
     email: EmailStr
     equipe: Optional[str] = None
+    type: Optional[str] = None
+
 
 class UtilisateurCreate(UtilisateurBase):
     mot_de_passe: str
+
 
 class UtilisateurOut(UtilisateurBase):
     id: int
@@ -19,61 +24,63 @@ class UtilisateurOut(UtilisateurBase):
     class Config:
         orm_mode = True
 
-# ---------- Note ----------
+
+# ======================================================
+# Note
+# ======================================================
+
 class NoteBase(BaseModel):
     titre: str
     contenu: str
     equipe: Optional[str] = None
 
+
 class NoteCreate(NoteBase):
     auteur_id: int
 
-class NoteOut(BaseModel):
+
+class NoteOut(NoteBase):
     id: int
-    titre: str
-    contenu: str
-    equipe: Optional[str] = None
     date: datetime
-    auteur: Optional[UtilisateurOut] = None   # 👈 propre, pas "auteur_obj"
+    auteur: Optional[UtilisateurOut] = None
 
     class Config:
         orm_mode = True
 
-       
 
-# ---------- Commentaire ----------
+# ======================================================
+# Commentaire
+# ======================================================
+
 class CommentaireBase(BaseModel):
     contenu: str
 
 
 class CommentaireCreate(CommentaireBase):
     auteur_id: int
-    note_id: int   # 👈 il faut savoir à quelle note rattacher le commentaire
+    note_id: int
 
 
 class CommentaireOut(CommentaireBase):
     id: int
+    date: datetime
     auteur_id: int
     note_id: int
-    date: datetime
-
-    # Relations
-    auteur: Optional[UtilisateurOut] = None  # 👈 pour avoir nom/email de l’auteur
-    note: Optional[NoteOut] = None           # 👈 pour avoir titre de la note
+    auteur: Optional[UtilisateurOut] = None
+    note: Optional[NoteOut] = None
 
     class Config:
         orm_mode = True
 
-class NoteDetailOut(BaseModel):
-    id: int
-    titre: str
-    contenu: str
-    equipe: Optional[str] = None
-    date: datetime
-    auteur: Optional[UtilisateurOut] = None
+
+# ======================================================
+# Relations imbriquées
+# ======================================================
+
+class NoteDetailOut(NoteOut):
     commentaires: List[CommentaireOut] = []
 
-    class Config:
-        orm_mode = True          
 
-       
+class UtilisateurDetailOut(UtilisateurOut):
+    notes: List[NoteOut] = []
+    commentaires: List[CommentaireOut] = []

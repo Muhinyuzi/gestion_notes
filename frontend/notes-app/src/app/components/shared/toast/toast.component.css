@@ -1,0 +1,27 @@
+.toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  padding: 12px 18px;
+  border-radius: 8px;
+  color: white;
+  font-weight: bold;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  animation: fadeInOut 3s ease forwards;
+  z-index: 9999;
+}
+
+.toast.success {
+  background-color: #2ecc71; /* Vert */
+}
+
+.toast.error {
+  background-color: #e74c3c; /* Rouge */
+}
+
+@keyframes fadeInOut {
+  0%   { opacity: 0; transform: translateY(20px); }
+  10%  { opacity: 1; transform: translateY(0); }
+  90%  { opacity: 1; }
+  100% { opacity: 0; transform: translateY(20px); }
+}

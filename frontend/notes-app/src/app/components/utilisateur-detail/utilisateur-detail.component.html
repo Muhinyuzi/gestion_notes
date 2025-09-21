@@ -1,0 +1,26 @@
+<div *ngIf="isLoading" class="loading">⏳ Chargement...</div>
+<div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
+
+<div *ngIf="utilisateur" class="user-detail">
+
+  <!-- Mode lecture -->
+  <div *ngIf="!isEditing">
+    <h2>{{ utilisateur.nom }}</h2>
+    <p>Email: {{ utilisateur.email }}</p>
+    <p>Équipe: {{ utilisateur.equipe }}</p>
+    
+    <button (click)="isEditing = true">✏️ Éditer</button>
+    <button (click)="deleteUtilisateur()">🗑️ Supprimer</button>
+  </div>
+
+  <!-- Mode édition -->
+  <div *ngIf="isEditing">
+    <input [(ngModel)]="utilisateur.nom" placeholder="Nom" />
+    <input [(ngModel)]="utilisateur.email" placeholder="Email" />
+    <input [(ngModel)]="utilisateur.equipe" placeholder="Équipe" />
+
+    <button (click)="updateUtilisateur()">💾 Sauvegarder</button>
+    <button (click)="isEditing = false">❌ Annuler</button>
+  </div>
+
+</div>

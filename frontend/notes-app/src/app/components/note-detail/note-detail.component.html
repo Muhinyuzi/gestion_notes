@@ -1,18 +1,38 @@
+<app-toast #toast></app-toast>
+
 <div *ngIf="isLoading" class="loading">⏳ Chargement...</div>
 <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
 
 <div *ngIf="note" class="note-detail">
-  <h2 class="note-title">📝 {{ note.titre }}</h2>
-  <p class="note-content">{{ note.contenu }}</p>
 
-  <div class="meta">
-    <p>👥 <strong>Équipe :</strong> {{ note.equipe }}</p>
-    <p>✍️ <strong>Auteur :</strong> {{ note.auteur?.nom }}</p>
-    <p>📅 <strong>Créée le :</strong> {{ note.date | date:'short' }}</p>
+  <!-- Mode lecture -->
+  <div *ngIf="!isEditing" class="view-mode">
+    <h2 class="note-title">📝 {{ note.titre }}</h2>
+    <p class="note-content">{{ note.contenu }}</p>
+
+    <div class="meta">
+      <p>👥 <strong>Équipe :</strong> {{ note.equipe }}</p>
+      <p>✍️ <strong>Auteur :</strong> {{ note.auteur?.nom }}</p>
+      <p>📅 <strong>Créée le :</strong> {{ note.date | date:'short' }}</p>
+    </div>
+
+    <div class="actions">
+      <button (click)="isEditing = true" class="edit-btn">✏️ Éditer</button>
+      <button (click)="deleteNote()" class="delete-btn">🗑️ Supprimer</button>
+    </div>
+  </div>
+
+  <!-- Mode édition -->
+  <div *ngIf="isEditing" class="edit-mode">
+    <input [(ngModel)]="note.titre" placeholder="Titre" class="edit-input" />
+    <textarea [(ngModel)]="note.contenu" placeholder="Contenu" class="edit-textarea"></textarea>
+
+    <div class="actions">
+      <button (click)="updateNote()" class="save-btn">💾 Sauvegarder</button>
+      <button (click)="isEditing = false" class="cancel-btn">❌ Annuler</button>
+    </div>
   </div>
 
   <hr>
-
-  <!-- Composant commentaires -->
   <app-commentaires [noteId]="note.id"></app-commentaires>
 </div>

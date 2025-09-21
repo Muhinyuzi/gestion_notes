@@ -11,6 +11,13 @@ export interface Utilisateur {
   equipe: string;
 }
 
+export interface UtilisateurDetailOut extends Utilisateur {
+   id: number;  // obligatoire
+  date: string;
+  notes: Note[];
+  commentaires: Commentaire[];
+}
+
 /*export interface Note {
   id?: number;
   titre: string;
@@ -73,6 +80,22 @@ export class ApiService {
     return this.http.post<Utilisateur>(`${this.baseUrl}/utilisateurs`, user);
   }
 
+  getUtilisateurDetail(id: number): Observable<UtilisateurDetailOut> {
+    return this.http.get<UtilisateurDetailOut>(`${this.baseUrl}/utilisateurs/${id}`);
+  }
+
+     // api.service.ts
+   // ---------------- UTILISATEURS ----------------
+
+  updateUtilisateur(userId: number, userData: any): Observable<Utilisateur> {
+    return this.http.put<Utilisateur>(`${this.baseUrl}/utilisateurs/${userId}`, userData);
+  }
+
+  deleteUtilisateur(userId: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/utilisateurs/${userId}`);
+  }
+
+
   // ---------------- NOTES ----------------
   getNotes(): Observable<Note[]> {
     return this.http.get<Note[]>(`${this.baseUrl}/notes`);
@@ -85,6 +108,15 @@ export class ApiService {
   createNote(note: NoteCreate): Observable<Note> {
     return this.http.post<Note>(`${this.baseUrl}/notes`, note);
   }
+
+  // ✏️ Mettre à jour une note
+updateNote(id: number, note: Partial<Note>): Observable<Note> {
+  return this.http.put<Note>(`${this.baseUrl}/notes/${id}`, note);
+}
+
+deleteNote(id: number): Observable<void> {
+  return this.http.delete<void>(`${this.baseUrl}/notes/${id}`);
+}
 
   // ---------------- COMMENTAIRES ----------------
 

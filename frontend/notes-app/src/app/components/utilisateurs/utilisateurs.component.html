@@ -1,26 +1,22 @@
-<!-- Loader -->
-<div *ngIf="isLoading">Chargement en cours...</div>
-
-<!-- Message d'erreur -->
-<div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
 <div class="utilisateurs-container">
   <h3>Liste des utilisateurs</h3>
 
-  <!-- Loader -->
   <div *ngIf="isLoading" class="loading">Chargement en cours...</div>
-
-  <!-- Message d'erreur -->
   <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
 
-  <!-- Liste -->
-  <ul *ngIf="!isLoading && !errorMessage">
+  <ul class="utilisateurs-list" *ngIf="!isLoading && !errorMessage">
     <li *ngFor="let u of utilisateurs">
-      {{ u.nom }} ({{ u.email }}) - équipe : {{ u.equipe }}
+      <a [routerLink]="['/utilisateurs', u.id]">
+        {{ u.nom }}
+      </a>
+      <div class="utilisateurs-meta">
+        {{ u.email }} — équipe : {{ u.equipe || 'Aucune' }}
+      </div>
     </li>
   </ul>
 
   <h3>Ajouter un utilisateur</h3>
-  <form (ngSubmit)="addUtilisateur()">
+  <form class="add-utilisateur-form" (ngSubmit)="addUtilisateur()">
     <input type="text" [(ngModel)]="newUser.nom" name="nom" placeholder="Nom" required>
     <input type="email" [(ngModel)]="newUser.email" name="email" placeholder="Email" required>
     <input type="password" [(ngModel)]="newUser.mot_de_passe" name="mot_de_passe" placeholder="Mot de passe" required>

@@ -2,16 +2,29 @@
   <h1>📒 Gestion de notes</h1>
 
   <!-- Navigation -->
-  <nav>
-    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">🏠 Accueil</a> |
-    <a routerLink="/utilisateurs" routerLinkActive="active">👤 Utilisateurs</a> |
-    <a routerLink="/notes" routerLinkActive="active">📝 Notes</a>
+  <nav *ngIf="auth.isLoggedIn()">
+    <!-- Logo -->
+    <div class="logo">Notes</div>
+
+    <!-- Hamburger -->
+    <div class="hamburger" (click)="toggleMenu()">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+
+    <!-- Liens -->
+    <div class="nav-links" [class.show]="menuOpen">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeMenu()">🏠 Accueil</a>
+      <a routerLink="/utilisateurs" routerLinkActive="active" (click)="closeMenu()">👤 Utilisateurs</a>
+      <a routerLink="/notes" routerLinkActive="active" (click)="closeMenu()">📝 Notes</a>
 
       <button *ngIf="auth.isLoggedIn()" (click)="logout()" class="logout-btn">🚪 Logout</button>
-  <!--<a *ngIf="!auth.isLoggedIn()" routerLink="/login" class="logout-btn">🔑 Login</a>-->
+      <!-- <a *ngIf="!auth.isLoggedIn()" routerLink="/login" class="logout-btn">🔑 Login</a> -->
+    </div>
   </nav>
 
-  <hr>
+  <hr />
 
   <!-- Contenu dynamique -->
   <div class="page-content">

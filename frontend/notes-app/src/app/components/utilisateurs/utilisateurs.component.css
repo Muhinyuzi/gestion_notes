@@ -1,4 +1,4 @@
-/* Conteneur principal */
+/* Utilisateurs Container */
 .utilisateurs-container {
   max-width: 800px;
   margin: 2rem auto;
@@ -9,56 +9,59 @@
   font-family: Arial, sans-serif;
 }
 
-/* Titres */
+/* Section Titles */
 .utilisateurs-container h3 {
-  margin: 1.5rem 0 1rem;
+  margin-bottom: 1rem;
   font-size: 1.5rem;
   color: #2c3e50;
-  border-left: 5px solid #27ae60;
+  border-left: 5px solid #27ae60; /* Vert au lieu de bleu */
   padding-left: 10px;
 }
 
-/* Loader et erreurs */
-.loading {
-  font-style: italic;
-  color: #7f8c8d;
-  margin-bottom: 1rem;
-}
-
-.error {
-  color: #e74c3c;
-  font-weight: bold;
-  margin-bottom: 1rem;
-}
-
-/* Liste d’utilisateurs */
-.utilisateurs-container ul {
+/* Utilisateurs List */
+.utilisateurs-list {
   list-style: none;
   padding: 0;
-  margin-bottom: 2rem;
+  margin: 0 0 2rem 0;
 }
 
-.utilisateurs-container li {
+.utilisateurs-list li {
   background: #f9f9f9;
-  margin-bottom: 10px;
-  padding: 12px 15px;
+  margin-bottom: 12px;
+  padding: 15px;
   border-radius: 10px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.utilisateurs-container li:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+.utilisateurs-list li:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.15);
 }
 
-/* Formulaire d’ajout */
-.utilisateurs-container form {
+.utilisateurs-list a {
+  font-size: 1.2rem;
+  color: #27ae60; /* Vert pour se différencier des notes */
+  text-decoration: none;
+}
+
+.utilisateurs-list a:hover {
+  text-decoration: underline;
+}
+
+.utilisateurs-meta {
+  font-size: 0.9rem;
+  color: #7f8c8d;
+  margin-top: 5px;
+}
+
+/* Add Utilisateur Form */
+.add-utilisateur-form {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.utilisateurs-container input {
+.add-utilisateur-form input {
   padding: 12px;
   border-radius: 8px;
   border: 1px solid #ccc;
@@ -67,13 +70,13 @@
   transition: border-color 0.2s ease;
 }
 
-.utilisateurs-container input:focus {
+.add-utilisateur-form input:focus {
   outline: none;
   border-color: #27ae60;
   box-shadow: 0 0 6px rgba(39,174,96,0.3);
 }
 
-.utilisateurs-container button {
+.add-utilisateur-form button {
   padding: 12px;
   background: #27ae60;
   color: white;
@@ -84,7 +87,7 @@
   transition: background 0.2s ease, transform 0.1s ease;
 }
 
-.utilisateurs-container button:hover {
+.add-utilisateur-form button:hover {
   background: #219150;
   transform: scale(1.03);
 }

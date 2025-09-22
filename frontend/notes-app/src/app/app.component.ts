@@ -8,14 +8,17 @@ import { AuthService } from './services/auth.service';
 })
 export class AppComponent {
   title = 'notes-app';
-  /*constructor(public auth: AuthService) {}
-
-  logout() {
-    this.auth.logout();  // redirige via le service
-  }*/
+  menuOpen = false;
   constructor(public auth: AuthService) {
     // pour debug rapide dans la console :
     (window as any).authService = auth;
+  }
+    toggleMenu() {
+    this.menuOpen = !this.menuOpen;
+  }
+
+  closeMenu() {
+    this.menuOpen = false;
   }
 
   logout(): void {

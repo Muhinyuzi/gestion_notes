@@ -1,8 +1,8 @@
 .note-detail {
   background: #fff;
-  padding: 20px;
+  padding: 25px;
   border-radius: 12px;
-  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.1);
   margin: 20px auto;
   max-width: 700px;
   transition: transform 0.2s ease;
@@ -13,22 +13,22 @@
 }
 
 .note-title {
-  font-size: 1.8rem;
+  font-size: 2rem;
   color: #2c3e50;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
   border-bottom: 2px solid #3498db;
   padding-bottom: 8px;
 }
 
 .note-content {
-  font-size: 1.1rem;
-  line-height: 1.6;
+  font-size: 1.15rem;
+  line-height: 1.7;
   margin: 15px 0;
   color: #333;
 }
 
 .meta {
-  background: #f8f9fa;
+  background: #f0f4f8;
   padding: 12px;
   border-left: 4px solid #3498db;
   border-radius: 8px;
@@ -36,7 +36,7 @@
 }
 
 .meta p {
-  margin: 5px 0;
+  margin: 6px 0;
   font-size: 0.95rem;
   color: #555;
 }
@@ -53,3 +53,72 @@
   font-weight: bold;
   margin: 15px 0;
 }
+
+/* ------------ Mode édition ------------ */
+.edit-mode .edit-input,
+.edit-mode .edit-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.edit-mode .edit-textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.actions {
+  margin-top: 15px;
+}
+
+.actions button {
+  margin-right: 10px;
+  padding: 8px 15px;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.save-btn {
+  background: #27ae60;
+  color: #fff;
+}
+
+.save-btn:hover {
+  background: #219150;
+}
+
+.cancel-btn {
+  background: #e74c3c;
+  color: #fff;
+}
+
+.cancel-btn:hover {
+  background: #c0392b;
+}
+
+.edit-btn {
+  background: #2980b9;
+  color: #fff;
+}
+
+.edit-btn:hover {
+  background: #1f618d;
+}
+
+.delete-btn {
+  background: #e67e22;
+  color: #fff;
+}
+
+.delete-btn:hover {
+  background: #d35400;
+}
+
+

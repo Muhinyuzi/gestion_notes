@@ -1,6 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService, UtilisateurDetailOut } from '../../services/api.service';
+import { ToastComponent } from '../../components/shared/toast/toast.component';
+import { MatDialog } from '@angular/material/dialog';
+import { ConfirmDialogComponent } from '../shared/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-utilisateur-detail',
@@ -8,19 +11,27 @@ import { ApiService, UtilisateurDetailOut } from '../../services/api.service';
   styleUrls: ['./utilisateur-detail.component.css']
 })
 export class UtilisateurDetailComponent implements OnInit {
+  @ViewChild('toast') toast!: ToastComponent;
+
   utilisateur?: UtilisateurDetailOut;
   isLoading = true;
-  errorMessage = '';
   isEditing = false;
 
   constructor(
     private route: ActivatedRoute,
     private api: ApiService,
-    private router: Router
+    private router: Router,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
-    const id = Number(this.route.snapshot.paramMap.get('id'));
+    const idParam = this.route.snapshot.paramMap.get('id');
+    const id = idParam ? Number(idParam) : null;
+    if (!id) {
+      this.isLoading = false;
+      this.toast.show("ID utilisateur invalide.", "error");
+      return;
+    }
     this.loadUtilisateur(id);
   }
 
@@ -31,8 +42,8 @@ export class UtilisateurDetailComponent implements OnInit {
         this.isLoading = false;
       },
       error: () => {
-        this.errorMessage = "Impossible de charger l'utilisateur.";
         this.isLoading = false;
+        this.toast.show("Impossible de charger l'utilisateur.", "error");
       }
     });
   }
@@ -41,20 +52,29 @@ export class UtilisateurDetailComponent implements OnInit {
     if (!this.utilisateur) return;
     this.api.updateUtilisateur(this.utilisateur.id, this.utilisateur).subscribe({
       next: (updated) => {
-        this.utilisateur = updated as UtilisateurDetailOut;
+        this.utilisateur as UtilisateurDetailOut == updated;
         this.isEditing = false;
+        this.toast.show("✅ Utilisateur mis à jour avec succès !", "success");
       },
-      error: () => this.errorMessage = "Erreur lors de la mise à jour."
+      error: () => this.toast.show("❌ Erreur lors de la mise à jour", "error")
     });
   }
 
-  deleteUtilisateur() {
+  deleteUtilisateur(): void {
     if (!this.utilisateur) return;
-    if (confirm("Voulez-vous vraiment supprimer cet utilisateur ?")) {
-      this.api.deleteUtilisateur(this.utilisateur.id).subscribe({
-        next: () => this.router.navigate(['/utilisateurs']),
-        error: () => this.errorMessage = "Erreur lors de la suppression."
-      });
-    }
+
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '350px',
+      data: { message: "Voulez-vous vraiment supprimer cet utilisateur ?" }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.api.deleteUtilisateur(this.utilisateur!.id).subscribe({
+          next: () => this.router.navigate(['/utilisateurs']),
+          error: () => this.toast.show("❌ Erreur lors de la suppression", "error")
+        });
+      }
+    });
   }
 }

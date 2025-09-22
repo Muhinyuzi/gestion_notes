@@ -1,10 +1,10 @@
 from typing import List
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException, status
 from sqlalchemy.orm import Session, joinedload
 import uvicorn
 from db import Base, engine, get_db
 from models import Utilisateur, Note, Commentaire
-from schemas import UtilisateurOut, NoteOut, CommentaireOut, NoteDetailOut, CommentaireCreate, CommentaireOut
+from schemas import UtilisateurOut, UtilisateurCreate, UtilisateurDetailOut, NoteOut, CommentaireOut, NoteDetailOut, CommentaireCreate, CommentaireOut
 from fastapi import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
@@ -78,6 +78,57 @@ def get_utilisateurs(db: Session = Depends(get_db)):
     utilisateurs = db.query(Utilisateur).all()
     return utilisateurs
 
+@app.get("/utilisateurs/{user_id}", response_model=UtilisateurDetailOut)
+def get_utilisateur_detail(user_id: int, db: Session = Depends(get_db)):
+    user = (
+        db.query(Utilisateur)
+        .options(
+            joinedload(Utilisateur.notes),          # charger les notes
+            joinedload(Utilisateur.commentaires)   # charger les commentaires
+        )
+        .filter(Utilisateur.id == user_id)
+        .first()
+    )
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    
+    return user
+
+# ---------------- Modifier un utilisateur ----------------
+@app.put("/utilisateurs/{user_id}", response_model=UtilisateurOut)
+def update_utilisateur(user_id: int, updated_user: UtilisateurCreate, db: Session = Depends(get_db)):
+    user = db.query(Utilisateur).filter(Utilisateur.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    
+    # Mettre à jour les champs
+    user.nom = updated_user.nom
+    user.email = updated_user.email
+    user.equipe = updated_user.equipe
+    # si tu veux gérer le mot de passe
+    if updated_user.mot_de_passe:
+        from passlib.context import CryptContext
+        pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+        user.mot_de_passe = pwd_context.hash(updated_user.mot_de_passe)
+    
+    db.commit()
+    db.refresh(user)
+    return user
+
+# ---------------- Supprimer un utilisateur ----------------
+@app.delete("/utilisateurs/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_utilisateur(user_id: int, db: Session = Depends(get_db)):
+    user = db.query(Utilisateur).filter(Utilisateur.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    
+    db.delete(user)
+    db.commit()
+    return None  # 204 No Content
+
+
+
+
 # ---------------- NOTES ----------------
 @app.post("/notes")
 def add_note(note: dict, db: Session = Depends(get_db)):
@@ -146,6 +197,31 @@ def get_commentaires(note_id: int, db: Session = Depends(get_db)):
         .all()
     )
     return commentaires
+
+# ---------------- MODIFIER UNE NOTE ----------------
+@app.put("/notes/{note_id}", response_model=NoteDetailOut)
+def update_note(note_id: int, note_data: dict, db: Session = Depends(get_db)):
+    note = db.query(Note).filter(Note.id == note_id).first()
+    if not note:
+        raise HTTPException(status_code=404, detail="Note not found")
+    
+    note.titre = note_data.get("titre", note.titre)
+    note.contenu = note_data.get("contenu", note.contenu)
+    note.equipe = note_data.get("equipe", note.equipe)
+    db.commit()
+    db.refresh(note)
+    return note
+
+# ---------------- SUPPRIMER UNE NOTE ----------------
+@app.delete("/notes/{note_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_note(note_id: int, db: Session = Depends(get_db)):
+    note = db.query(Note).filter(Note.id == note_id).first()
+    if not note:
+        raise HTTPException(status_code=404, detail="Note not found")
+    
+    db.delete(note)
+    db.commit()
+    return {"detail": "Note supprimée"}
 
 if __name__ == "__main__":
    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)

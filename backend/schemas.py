@@ -24,6 +24,8 @@ class UtilisateurOut(UtilisateurBase):
     class Config:
         orm_mode = True
 
+      
+
 
 # ======================================================
 # Note

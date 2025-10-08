@@ -2,7 +2,8 @@ from sqlalchemy.orm import Session
 from db import engine, Base
 from models import Utilisateur, Note, Commentaire
 from passlib.context import CryptContext
-from datetime import datetime
+from datetime import datetime, timedelta
+import random
 
 # 🔐 Contexte pour hasher les mots de passe
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -11,14 +12,13 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 session = Session(bind=engine)
 
 def seed():
-
     print("💣 Suppression des tables existantes...")
     Base.metadata.drop_all(bind=engine)
 
-    # ⚡ Crée toutes les tables à partir des modèles
     print("📦 Création des tables...")
     Base.metadata.create_all(bind=engine)
     print("✅ Tables recréées avec succès !")
+
     # -------------------------
     # 1) Création des utilisateurs
     # -------------------------
@@ -44,20 +44,18 @@ def seed():
     print(f"✅ {len(users)} utilisateurs créés avec succès !")
 
     # -------------------------
-    # 2) Création des notes
+    # 2) Création des 25 notes avec created_at différents
     # -------------------------
-    notes_data = [
-        {"titre": "Première Note", "contenu": "Contenu de la première note.", "equipe": "Dev", "auteur": users[0]},
-        {"titre": "Deuxième Note", "contenu": "Contenu de la deuxième note.", "equipe": "QA", "auteur": users[1]},
-    ]
-
     notes = []
-    for n in notes_data:
+    now = datetime.utcnow()
+    for i in range(25):
         note = Note(
-            titre=n["titre"],
-            contenu=n["contenu"],
-            equipe=n["equipe"],
-            auteur=n["auteur"]
+            titre=f"Note {i+1}",
+            contenu=f"Contenu de la note {i+1}.",
+            equipe=random.choice(["Dev", "QA", "DevOps"]),
+            auteur=random.choice(users),
+            created_at=now - timedelta(days=25-i, hours=random.randint(0, 23), minutes=random.randint(0, 59)),
+            updated_at=None  # Pas encore modifiée
         )
         session.add(note)
         notes.append(note)
@@ -66,24 +64,20 @@ def seed():
     print(f"✅ {len(notes)} notes créées avec succès !")
 
     # -------------------------
-    # 3) Création des commentaires
+    # 3) Création des commentaires aléatoires
     # -------------------------
-    commentaires_data = [
-        {"contenu": "Super note !", "auteur": users[1], "note": notes[0]},
-        {"contenu": "Je vais vérifier ça.", "auteur": users[2], "note": notes[0]},
-        {"contenu": "Bonne explication.", "auteur": users[0], "note": notes[1]},
-    ]
-
     commentaires = []
-    for c in commentaires_data:
-        com = Commentaire(
-            contenu=c["contenu"],
-            auteur=c["auteur"],
-            note=c["note"],
-            date=datetime.utcnow()
-        )
-        session.add(com)
-        commentaires.append(com)
+    for note in notes:
+        nb_comments = random.randint(0, 3)
+        for _ in range(nb_comments):
+            com = Commentaire(
+                contenu=f"Commentaire pour {note.titre}",
+                auteur=random.choice(users),
+                note=note,
+                date=note.created_at + timedelta(hours=random.randint(0, 5))
+            )
+            session.add(com)
+            commentaires.append(com)
 
     session.commit()
     print(f"✅ {len(commentaires)} commentaires créés avec succès !")

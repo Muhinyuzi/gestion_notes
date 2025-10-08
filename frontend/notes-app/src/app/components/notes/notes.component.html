@@ -1,15 +1,40 @@
 <div class="notes-container">
+
   <h3>📝 Liste des notes</h3>
+
+  <!-- FILTRES / RECHERCHE -->
+  <div class="notes-filters">
+    <input type="text" [(ngModel)]="searchTerm" placeholder="Rechercher un mot-clé...">
+    <input type="text" [(ngModel)]="selectedAuteur" placeholder="Filtrer par auteur...">
+    <select [(ngModel)]="sort">
+      <option value="date_desc">Date décroissante</option>
+      <option value="date_asc">Date croissante</option>
+    </select>
+    <button (click)="applyFilters()">Appliquer</button>
+  </div>
+
+  <!-- LISTE DES NOTES -->
   <ul class="notes-list">
     <li *ngFor="let n of notes">
-          <a [routerLink]="['/notes', n.id]"><strong>{{ n.titre }}</strong></a> - {{ n.contenu }}
+      <a [routerLink]="['/notes', n.id]"><strong>{{ n.titre }}</strong></a> - {{ n.contenu }}
       <div class="notes-meta">
-        <!--(Équipe : {{ n.equipe }}) — Auteur: {{ n.auteur_id  }}-->
-        (Équipe : {{ n.equipe || '—' }}) — Auteur : {{ n.auteur?.nom || 'Inconnu' }}
+        (Équipe : {{ n.equipe || '—' }}) — Auteur : {{ n.auteur?.nom || 'Inconnu' }}<br>
+        📅 Créée le : <span class="created">{{ n.created_at | date:'short' }}</span>
+        <span *ngIf="n.updated_at" class="updated">
+          — Modifiée le : {{ n.updated_at | date:'short' }}
+        </span>
       </div>
     </li>
   </ul>
 
+  <!-- PAGINATION -->
+  <div class="pagination">
+    <button [disabled]="page === 1" (click)="goToPage(page - 1)">Précédent</button>
+    <span>Page {{ page }} / {{ totalPages }}</span>
+    <button [disabled]="page >= totalPages" (click)="goToPage(page + 1)">Suivant</button>
+  </div>
+
+  <!-- AJOUTER UNE NOTE -->
   <h3>➕ Ajouter une note</h3>
   <form class="add-note-form" (ngSubmit)="addNote()">
     <input type="text" [(ngModel)]="newNote.titre" name="titre" placeholder="Titre" required>
@@ -18,4 +43,3 @@
     <button type="submit">Ajouter</button>
   </form>
 </div>
-

@@ -24,8 +24,6 @@ class UtilisateurOut(UtilisateurBase):
     class Config:
         orm_mode = True
 
-      
-
 
 # ======================================================
 # Note
@@ -43,11 +41,16 @@ class NoteCreate(NoteBase):
 
 class NoteOut(NoteBase):
     id: int
-    date: datetime
+    created_at: datetime
+    updated_at: Optional[datetime] = None
     auteur: Optional[UtilisateurOut] = None
 
     class Config:
         orm_mode = True
+
+
+class NoteDetailOut(NoteOut):
+    commentaires: List["CommentaireOut"] = []
 
 
 # ======================================================
@@ -79,10 +82,12 @@ class CommentaireOut(CommentaireBase):
 # Relations imbriquées
 # ======================================================
 
-class NoteDetailOut(NoteOut):
-    commentaires: List[CommentaireOut] = []
-
-
 class UtilisateurDetailOut(UtilisateurOut):
     notes: List[NoteOut] = []
     commentaires: List[CommentaireOut] = []
+
+
+# 🔹 Résolution des références circulaires
+NoteDetailOut.update_forward_refs()
+UtilisateurDetailOut.update_forward_refs()
+CommentaireOut.update_forward_refs()

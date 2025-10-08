@@ -121,4 +121,13 @@
   background: #d35400;
 }
 
+.meta .created {
+  color: #2980b9;
+  font-weight: 600;
+}
+
+.meta .updated {
+  color: #e67e22;
+  font-weight: 600;
+}
 

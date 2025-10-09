@@ -29,30 +29,29 @@ export class NotesComponent implements OnInit {
   // ---------------- CHARGER LES NOTES ----------------
   loadNotes(): void {
     this.api.getNotes().subscribe({
-      next: (data: NotesResponse) => {
-        let filtered: Note[] = data.notes;
+      next: (res: NotesResponse) => {
+        let filtered: Note[] = res.notes ?? [];
 
         // ---------------- FILTRAGE ----------------
         if (this.searchTerm) {
           filtered = filtered.filter(n =>
-            n.titre.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-            n.contenu.toLowerCase().includes(this.searchTerm.toLowerCase())
+            (n.titre?.toLowerCase().includes(this.searchTerm.toLowerCase()) ?? false) ||
+            (n.contenu?.toLowerCase().includes(this.searchTerm.toLowerCase()) ?? false)
           );
         }
 
         if (this.selectedAuteur) {
           filtered = filtered.filter(n =>
-            n.auteur?.nom.toLowerCase().includes(this.selectedAuteur.toLowerCase())
+            (n.auteur?.nom?.toLowerCase().includes(this.selectedAuteur.toLowerCase())) ?? false
           );
         }
 
         // ---------------- TRI ----------------
-        // ---------------- TRI ----------------
-  filtered.sort((a, b) => {
-    const dateA = new Date(a.updated_at ?? a.created_at).getTime();
-    const dateB = new Date(b.updated_at ?? b.created_at).getTime();
-    return this.sort === 'date_asc' ? dateA - dateB : dateB - dateA;
-  });
+        filtered.sort((a, b) => {
+          const dateA = new Date(a.updated_at ?? a.created_at ?? '').getTime() || 0;
+          const dateB = new Date(b.updated_at ?? b.created_at ?? '').getTime() || 0;
+          return this.sort === 'date_asc' ? dateA - dateB : dateB - dateA;
+        });
 
         // ---------------- PAGINATION ----------------
         this.total = filtered.length;
@@ -62,6 +61,8 @@ export class NotesComponent implements OnInit {
       },
       error: (err: any) => {
         console.error('Erreur lors du chargement des notes', err);
+        this.notes = [];
+        this.total = 0;
       }
     });
   }
@@ -75,7 +76,7 @@ export class NotesComponent implements OnInit {
 
     this.api.createNote(this.newNote).subscribe({
       next: (note: Note) => {
-        this.notes.unshift(note); // Ajouter en haut
+        this.notes.unshift(note);
         this.newNote = { titre: '', contenu: '', equipe: '', auteur_id: 1 };
         this.total += 1;
       },
@@ -98,7 +99,7 @@ export class NotesComponent implements OnInit {
 
   // ---------------- FILTRES / TRI ----------------
   applyFilters(): void {
-    this.page = 1; // Reset page
+    this.page = 1;
     this.loadNotes();
   }
 

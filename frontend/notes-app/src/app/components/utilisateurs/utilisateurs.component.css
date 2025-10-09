@@ -1,4 +1,4 @@
-/* Utilisateurs Container */
+/* Container principal */
 .utilisateurs-container {
   max-width: 800px;
   margin: 2rem auto;
@@ -9,16 +9,16 @@
   font-family: Arial, sans-serif;
 }
 
-/* Section Titles */
+/* Titres */
 .utilisateurs-container h3 {
   margin-bottom: 1rem;
   font-size: 1.5rem;
   color: #2c3e50;
-  border-left: 5px solid #27ae60; /* Vert au lieu de bleu */
+  border-left: 5px solid #27ae60;
   padding-left: 10px;
 }
 
-/* Utilisateurs List */
+/* Liste des utilisateurs */
 .utilisateurs-list {
   list-style: none;
   padding: 0;
@@ -31,6 +31,9 @@
   padding: 15px;
   border-radius: 10px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .utilisateurs-list li:hover {
@@ -40,7 +43,7 @@
 
 .utilisateurs-list a {
   font-size: 1.2rem;
-  color: #27ae60; /* Vert pour se différencier des notes */
+  color: #27ae60;
   text-decoration: none;
 }
 
@@ -54,7 +57,36 @@
   margin-top: 5px;
 }
 
-/* Add Utilisateur Form */
+/* Boutons Modifier / Supprimer */
+.utilisateurs-list button {
+  margin-left: 8px;
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.utilisateurs-list button:first-of-type {
+  background: #3498db;
+  color: white;
+}
+
+.utilisateurs-list button:first-of-type:hover {
+  background: #2980b9;
+}
+
+.utilisateurs-list button:last-of-type {
+  background: #e74c3c;
+  color: white;
+}
+
+.utilisateurs-list button:last-of-type:hover {
+  background: #c0392b;
+}
+
+/* Formulaire Ajout / Edition */
 .add-utilisateur-form {
   display: flex;
   flex-direction: column;
@@ -90,4 +122,69 @@
 .add-utilisateur-form button:hover {
   background: #219150;
   transform: scale(1.03);
+}
+
+/* Bouton Annuler */
+.add-utilisateur-form button[type="button"] {
+  background: #bdc3c7;
+  color: #2c3e50;
+}
+
+.add-utilisateur-form button[type="button"]:hover {
+  background: #95a5a6;
+}
+
+/* Filtres */
+.filters {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 1rem;
+}
+
+.filters input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 0.95rem;
+  transition: border-color 0.2s ease;
+}
+
+.filters input:focus {
+  outline: none;
+  border-color: #27ae60;
+  box-shadow: 0 0 6px rgba(39,174,96,0.3);
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 1rem;
+}
+
+.pagination button {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  background: #27ae60;
+  color: white;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background 0.2s ease;
+}
+
+.pagination button:hover:not(:disabled) {
+  background: #219150;
+}
+
+.pagination button:disabled {
+  background: #bdc3c7;
+  cursor: not-allowed;
+}
+
+.pagination span {
+  font-size: 0.95rem;
+  color: #2c3e50;
 }

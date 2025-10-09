@@ -3,7 +3,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from db import Base
 
-# ---------------- UTILISATEURS ----------------
+# ---------------- UTILISATEURS (Employés) ----------------
 class Utilisateur(Base):
     __tablename__ = "utilisateurs"
 
@@ -11,8 +11,9 @@ class Utilisateur(Base):
     nom = Column(String(100), unique=True, nullable=False, index=True)
     email = Column(String(255), unique=True, nullable=False, index=True)
     mot_de_passe = Column(String(255), nullable=False)  # hashé
-    type = Column(String(50), nullable=False, index=True)  # ex: admin, user
+    type = Column(String(50), nullable=False, index=True)  # ex: employe
     equipe = Column(String(100), index=True)
+    poste = Column(String(100), nullable=True)  # rôle ou poste de l'employé
     date = Column(DateTime(timezone=True), server_default=func.now(), index=True)
 
     # Relations
@@ -35,7 +36,21 @@ class Note(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
     updated_at = Column(DateTime(timezone=True), nullable=True, server_default=None, onupdate=func.now(), index=True)
 
+    # Relations
     commentaires = relationship("Commentaire", back_populates="note", cascade="all, delete-orphan")
+    fichiers = relationship("FichierNote", back_populates="note", cascade="all, delete-orphan")  # 🔹 fichiers multiples
+
+
+# ---------------- FICHIERS DES NOTES ----------------
+class FichierNote(Base):
+    __tablename__ = "fichiers_notes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    nom_fichier = Column(String(255), nullable=False)
+    chemin = Column(String(255), nullable=False)
+
+    note_id = Column(Integer, ForeignKey("notes.id", ondelete="CASCADE"))
+    note = relationship("Note", back_populates="fichiers")
 
 
 # ---------------- COMMENTAIRES ----------------
@@ -59,3 +74,4 @@ Index("idx_utilisateur_nom", Utilisateur.nom)
 Index("idx_note_auteur", Note.auteur_id)
 Index("idx_commentaire_auteur", Commentaire.auteur_id)
 Index("idx_commentaire_note", Commentaire.note_id)
+Index("idx_fichier_note", FichierNote.note_id)

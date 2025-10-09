@@ -8,18 +8,38 @@ import { ApiService, Utilisateur } from '../../services/api.service';
 })
 export class UtilisateursComponent implements OnInit {
   utilisateurs: Utilisateur[] = [];
+
+  // Pour ajout et édition
   newUser: Utilisateur = { nom: '', email: '', mot_de_passe: '', equipe: '' };
-  
   selectedUser: Utilisateur = { nom: '', email: '', mot_de_passe: '', equipe: '' };
   isEditing = false;
 
   isLoading = false;
   errorMessage = '';
 
+  // Filtres
+  filterNom = '';
+  filterEmail = '';
+  filterEquipe = '';
+
   constructor(private api: ApiService) {}
 
   ngOnInit(): void {
     this.loadUsers();
+  }
+
+  // Getter pour le formulaire
+  get formUser(): Utilisateur {
+    return this.isEditing ? this.selectedUser : this.newUser;
+  }
+
+  // Retourne la liste filtrée pour affichage
+  get filteredUsers(): Utilisateur[] {
+    return this.utilisateurs.filter(u =>
+      u.nom.toLowerCase().includes(this.filterNom.toLowerCase()) &&
+      u.email.toLowerCase().includes(this.filterEmail.toLowerCase()) &&
+      (!this.filterEquipe || (u.equipe && u.equipe.toLowerCase().includes(this.filterEquipe.toLowerCase())))
+    );
   }
 
   // Charger les utilisateurs
@@ -28,8 +48,9 @@ export class UtilisateursComponent implements OnInit {
     this.errorMessage = '';
 
     this.api.getUtilisateurs().subscribe({
-      next: (data) => {
-        this.utilisateurs = data;
+      next: (data: any) => {
+        // Assurer que c’est toujours un tableau
+        this.utilisateurs = Array.isArray(data) ? data : data.utilisateurs || [];
         this.isLoading = false;
       },
       error: (err) => {
@@ -50,7 +71,7 @@ export class UtilisateursComponent implements OnInit {
     this.api.createUtilisateur(this.newUser).subscribe({
       next: (user) => {
         this.utilisateurs.push(user);
-        this.newUser = { nom: '', email: '', mot_de_passe: '', equipe: '' };
+        this.resetForm();
       },
       error: (err) => {
         console.error(err);
@@ -61,7 +82,7 @@ export class UtilisateursComponent implements OnInit {
 
   // Préparer la modification
   editUtilisateur(user: Utilisateur): void {
-    this.selectedUser = { ...user }; // copier les données pour l'édition
+    this.selectedUser = { ...user };
     this.isEditing = true;
   }
 
@@ -72,11 +93,8 @@ export class UtilisateursComponent implements OnInit {
     this.api.updateUtilisateur(this.selectedUser.id, this.selectedUser).subscribe({
       next: (updated) => {
         const index = this.utilisateurs.findIndex(u => u.id === updated.id);
-        if (index !== -1) {
-          this.utilisateurs[index] = updated;
-        }
-        this.isEditing = false;
-        this.selectedUser = { nom: '', email: '', mot_de_passe: '', equipe: '' };
+        if (index !== -1) this.utilisateurs[index] = updated;
+        this.resetForm();
       },
       error: (err) => {
         console.error(err);
@@ -99,5 +117,12 @@ export class UtilisateursComponent implements OnInit {
         this.errorMessage = "Erreur lors de la suppression.";
       }
     });
+  }
+
+  // Réinitialiser le formulaire
+  resetForm(): void {
+    this.isEditing = false;
+    this.selectedUser = { nom: '', email: '', mot_de_passe: '', equipe: '' };
+    this.newUser = { nom: '', email: '', mot_de_passe: '', equipe: '' };
   }
 }

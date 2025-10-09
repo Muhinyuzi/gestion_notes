@@ -1,6 +1,7 @@
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 from db import engine, Base
-from models import Utilisateur, Note, Commentaire
+from models import Utilisateur, Note, Commentaire, FichierNote
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
 import random
@@ -11,9 +12,18 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # Crée la session
 session = Session(bind=engine)
 
+def hash_password(password: str) -> str:
+    return pwd_context.hash(password)
+
 def seed():
-    print("💣 Suppression des tables existantes...")
-    Base.metadata.drop_all(bind=engine)
+    print("💣 Suppression des tables existantes avec CASCADE...")
+    
+    with engine.connect() as conn:
+        conn.execute(text("DROP TABLE IF EXISTS fichiers_note CASCADE;"))
+        conn.execute(text("DROP TABLE IF EXISTS commentaires CASCADE;"))
+        conn.execute(text("DROP TABLE IF EXISTS notes CASCADE;"))
+        conn.execute(text("DROP TABLE IF EXISTS utilisateurs CASCADE;"))
+        conn.commit()
 
     print("📦 Création des tables...")
     Base.metadata.create_all(bind=engine)
@@ -25,7 +35,9 @@ def seed():
     users_data = [
         {"nom": "Alice", "email": "alice@example.com", "mot_de_passe": "alice123", "type": "admin", "equipe": "Dev"},
         {"nom": "Bob", "email": "bob@example.com", "mot_de_passe": "bob123", "type": "user", "equipe": "QA"},
-        {"nom": "Charlie", "email": "charlie@example.com", "mot_de_passe": "charlie123", "type": "user", "equipe": "DevOps"}
+        {"nom": "Charlie", "email": "charlie@example.com", "mot_de_passe": "charlie123", "type": "user", "equipe": "DevOps"},
+        {"nom": "David", "email": "david@example.com", "mot_de_passe": "david123", "type": "user", "equipe": "Dev"},
+        {"nom": "Eva", "email": "eva@example.com", "mot_de_passe": "eva123", "type": "user", "equipe": "QA"},
     ]
 
     users = []
@@ -33,38 +45,53 @@ def seed():
         user = Utilisateur(
             nom=u["nom"],
             email=u["email"],
-            mot_de_passe=pwd_context.hash(u["mot_de_passe"]),
+            mot_de_passe=hash_password(u["mot_de_passe"]),
             type=u["type"],
             equipe=u["equipe"]
         )
         session.add(user)
         users.append(user)
-
     session.commit()
     print(f"✅ {len(users)} utilisateurs créés avec succès !")
 
     # -------------------------
-    # 2) Création des 25 notes avec created_at différents
+    # 2) Création des notes
     # -------------------------
     notes = []
     now = datetime.utcnow()
-    for i in range(25):
+    for i in range(20):
         note = Note(
             titre=f"Note {i+1}",
             contenu=f"Contenu de la note {i+1}.",
             equipe=random.choice(["Dev", "QA", "DevOps"]),
             auteur=random.choice(users),
-            created_at=now - timedelta(days=25-i, hours=random.randint(0, 23), minutes=random.randint(0, 59)),
-            updated_at=None  # Pas encore modifiée
+            created_at=now - timedelta(days=random.randint(0, 30), hours=random.randint(0, 23)),
+            updated_at=None
         )
         session.add(note)
         notes.append(note)
-
     session.commit()
     print(f"✅ {len(notes)} notes créées avec succès !")
 
     # -------------------------
-    # 3) Création des commentaires aléatoires
+    # 3) Création des fichiers attachés
+    # -------------------------
+    fichiers = []
+    for note in notes:
+        nb_files = random.randint(0, 2)
+        for j in range(nb_files):
+            fichier = FichierNote(
+                nom_fichier=f"{note.titre.replace(' ', '_')}_file{j+1}.txt",
+                chemin=f"/uploads/{note.titre.replace(' ', '_')}_file{j+1}.txt",
+                note_id=note.id
+            )
+            session.add(fichier)
+            fichiers.append(fichier)
+    session.commit()
+    print(f"✅ {len(fichiers)} fichiers attachés créés avec succès !")
+
+    # -------------------------
+    # 4) Création des commentaires
     # -------------------------
     commentaires = []
     for note in notes:
@@ -78,7 +105,6 @@ def seed():
             )
             session.add(com)
             commentaires.append(com)
-
     session.commit()
     print(f"✅ {len(commentaires)} commentaires créés avec succès !")
 

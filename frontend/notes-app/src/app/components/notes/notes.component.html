@@ -23,6 +23,8 @@
         <span *ngIf="n.updated_at" class="updated">
           — Modifiée le : {{ n.updated_at | date:'short' }}
         </span>
+        <!-- 🔹 Symbole fichiers -->
+        <span *ngIf="n.fichiers && n.fichiers.length > 0">📎 {{ n.fichiers.length }}</span>
       </div>
     </li>
   </ul>

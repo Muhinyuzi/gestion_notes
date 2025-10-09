@@ -5,7 +5,11 @@
   <!-- FILTRES / RECHERCHE -->
   <div class="notes-filters">
     <input type="text" [(ngModel)]="searchTerm" placeholder="Rechercher un mot-clé...">
-    <input type="text" [(ngModel)]="selectedAuteur" placeholder="Filtrer par auteur...">
+    
+    <!-- Filtre auteur visible seulement pour les admins -->
+    <input *ngIf="currentUser?.type === 'admin'" 
+           type="text" [(ngModel)]="selectedAuteur" placeholder="Filtrer par auteur...">
+    
     <select [(ngModel)]="sort">
       <option value="date_desc">Date décroissante</option>
       <option value="date_asc">Date croissante</option>
@@ -23,7 +27,6 @@
         <span *ngIf="n.updated_at" class="updated">
           — Modifiée le : {{ n.updated_at | date:'short' }}
         </span>
-        <!-- 🔹 Symbole fichiers -->
         <span *ngIf="n.fichiers && n.fichiers.length > 0">📎 {{ n.fichiers.length }}</span>
       </div>
     </li>
@@ -41,7 +44,11 @@
   <form class="add-note-form" (ngSubmit)="addNote()">
     <input type="text" [(ngModel)]="newNote.titre" name="titre" placeholder="Titre" required>
     <textarea [(ngModel)]="newNote.contenu" name="contenu" placeholder="Contenu" required></textarea>
-    <input type="text" [(ngModel)]="newNote.equipe" name="equipe" placeholder="Équipe">
+
+    <!-- Pour l'utilisateur normal, l'équipe est fixe et cachée -->
+    <input *ngIf="currentUser?.type === 'admin'" 
+           type="text" [(ngModel)]="newNote.equipe" name="equipe" placeholder="Équipe">
+    
     <button type="submit">Ajouter</button>
   </form>
 </div>

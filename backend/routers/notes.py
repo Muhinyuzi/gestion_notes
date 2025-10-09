@@ -6,6 +6,7 @@ import shutil
 from db import get_db
 from models import Note, Utilisateur, Commentaire, FichierNote
 from schemas import NoteOut, NoteDetailOut, FichierNoteOut, CommentaireOut, NotesResponse
+from auth import get_current_user
 
 router = APIRouter()
 
@@ -15,30 +16,20 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 # ---------------- CREATE NOTE ----------------
 @router.post("/", response_model=NoteOut)
 def create_note(
-    note: dict,
-    fichiers: List[UploadFile] = File([]),
-    db: Session = Depends(get_db)
+    note_data: dict,
+    db: Session = Depends(get_db),
+    current_user: Utilisateur = Depends(get_current_user)
 ):
-    new_note = Note(
-        titre=note["titre"],
-        contenu=note["contenu"],
-        equipe=note.get("equipe"),
-        auteur_id=note["auteur_id"]
+    note = Note(
+        titre=note_data.get("titre"),
+        contenu=note_data.get("contenu"),
+        equipe=current_user.equipe,  # ⚡ équipe de l'utilisateur
+        auteur_id=current_user.id
     )
-    db.add(new_note)
+    db.add(note)
     db.commit()
-    db.refresh(new_note)
-
-    # Gestion des fichiers
-    for file in fichiers:
-        path = os.path.join(UPLOAD_DIR, file.filename)
-        with open(path, "wb") as f:
-            shutil.copyfileobj(file.file, f)
-        fichier_db = FichierNote(nom_fichier=file.filename, chemin=path, note_id=new_note.id)
-        db.add(fichier_db)
-    db.commit()
-    db.refresh(new_note)
-    return new_note
+    db.refresh(note)
+    return note
 
 # ---------------- LIST NOTES ----------------
 @router.get("/", response_model=NotesResponse)
@@ -48,19 +39,34 @@ def list_notes(
     sort: str = Query("date_desc", description="date_asc ou date_desc"),
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: Utilisateur = Depends(get_current_user)
 ):
+    """
+    Si admin → toutes les notes
+    Sinon → seulement les notes de son équipe
+    """
     query = db.query(Note).options(joinedload(Note.auteur), joinedload(Note.fichiers))
 
+    # 🔒 Filtre selon rôle
+    if current_user.type != "admin":
+        if not current_user.equipe:
+            raise HTTPException(status_code=400, detail="L'utilisateur n'est pas associé à une équipe.")
+        query = query.filter(Note.equipe == current_user.equipe)
+
+    # 🔍 Filtres facultatifs
     if search:
         query = query.filter(Note.titre.ilike(f"%{search}%") | Note.contenu.ilike(f"%{search}%"))
     if author:
         query = query.join(Note.auteur).filter(Utilisateur.nom.ilike(f"%{author}%"))
-    
-    total = query.count()
+
+    # 🧮 Tri
     query = query.order_by(Note.created_at.asc() if sort == "date_asc" else Note.created_at.desc())
+
+    # 📄 Pagination
+    total = query.count()
     notes = query.offset((page - 1) * limit).limit(limit).all()
-    
+
     return {"total": total, "page": page, "limit": limit, "notes": notes}
 
 

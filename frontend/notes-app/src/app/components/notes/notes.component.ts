@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ApiService, Note, NoteCreate, NotesResponse } from '../../services/api.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-notes',
@@ -8,7 +9,7 @@ import { ApiService, Note, NoteCreate, NotesResponse } from '../../services/api.
 })
 export class NotesComponent implements OnInit {
   notes: Note[] = [];
-  newNote: NoteCreate = { titre: '', contenu: '', equipe: '', auteur_id: 1 };
+  newNote: NoteCreate = { titre: '', contenu: '', equipe: '', auteur_id: 0 };
 
   // Pagination
   page: number = 1;
@@ -18,46 +19,34 @@ export class NotesComponent implements OnInit {
   // Filtres / tri
   searchTerm: string = '';
   selectedAuteur: string = '';
-  sort: string = 'date_desc';
+  sort: 'date_asc' | 'date_desc' = 'date_desc';
 
-  constructor(private api: ApiService) {}
+  // Utilisateur connecté
+  currentUser: any;
+
+  constructor(private api: ApiService, private auth: AuthService) {}
 
   ngOnInit(): void {
+    this.currentUser = this.auth.getUser();
+    if (this.currentUser) {
+      this.newNote.auteur_id = this.currentUser.id;
+      this.newNote.equipe = this.currentUser.equipe;
+    }
     this.loadNotes();
   }
 
   // ---------------- CHARGER LES NOTES ----------------
   loadNotes(): void {
-    this.api.getNotes().subscribe({
+    let authorFilter = this.selectedAuteur;
+    // Si l'utilisateur n'est pas admin, on filtre automatiquement par son équipe
+    if (this.currentUser?.type !== 'admin') {
+      authorFilter = ''; // pas de filtre auteur, backend filtre par équipe
+    }
+
+    this.api.getNotes(this.searchTerm, authorFilter, this.sort, this.page, this.limit).subscribe({
       next: (res: NotesResponse) => {
-        let filtered: Note[] = res.notes ?? [];
-
-        // ---------------- FILTRAGE ----------------
-        if (this.searchTerm) {
-          filtered = filtered.filter(n =>
-            (n.titre?.toLowerCase().includes(this.searchTerm.toLowerCase()) ?? false) ||
-            (n.contenu?.toLowerCase().includes(this.searchTerm.toLowerCase()) ?? false)
-          );
-        }
-
-        if (this.selectedAuteur) {
-          filtered = filtered.filter(n =>
-            (n.auteur?.nom?.toLowerCase().includes(this.selectedAuteur.toLowerCase())) ?? false
-          );
-        }
-
-        // ---------------- TRI ----------------
-        filtered.sort((a, b) => {
-          const dateA = new Date(a.updated_at ?? a.created_at ?? '').getTime() || 0;
-          const dateB = new Date(b.updated_at ?? b.created_at ?? '').getTime() || 0;
-          return this.sort === 'date_asc' ? dateA - dateB : dateB - dateA;
-        });
-
-        // ---------------- PAGINATION ----------------
-        this.total = filtered.length;
-        const start = (this.page - 1) * this.limit;
-        const end = start + this.limit;
-        this.notes = filtered.slice(start, end);
+        this.notes = res.notes ?? [];
+        this.total = res.total ?? this.notes.length;
       },
       error: (err: any) => {
         console.error('Erreur lors du chargement des notes', err);
@@ -77,8 +66,9 @@ export class NotesComponent implements OnInit {
     this.api.createNote(this.newNote).subscribe({
       next: (note: Note) => {
         this.notes.unshift(note);
-        this.newNote = { titre: '', contenu: '', equipe: '', auteur_id: 1 };
         this.total += 1;
+        this.newNote.titre = '';
+        this.newNote.contenu = '';
       },
       error: (err: any) => {
         console.error('Erreur lors de l’ajout de la note', err);
@@ -103,7 +93,7 @@ export class NotesComponent implements OnInit {
     this.loadNotes();
   }
 
-  changeSort(sort: string): void {
+  changeSort(sort: 'date_asc' | 'date_desc'): void {
     this.sort = sort;
     this.loadNotes();
   }

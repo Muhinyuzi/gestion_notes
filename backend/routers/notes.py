@@ -1,11 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
+#from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Query
 from sqlalchemy.orm import Session, joinedload
-from typing import List
+from typing import List, Optional
 import os
 import shutil
 from db import get_db
 from models import Note, Utilisateur, Commentaire, FichierNote
-from schemas import NoteOut, NoteDetailOut, FichierNoteOut, CommentaireOut, NotesResponse
+from schemas import NoteOut, NoteDetailOut, CommentaireOut, NotesResponse
 from auth import get_current_user
 
 router = APIRouter()
@@ -16,18 +17,43 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 # ---------------- CREATE NOTE ----------------
 @router.post("/", response_model=NoteOut)
 def create_note(
-    note_data: dict,
+    titre: str = Form(...),
+    contenu: str = Form(...),
+    auteur_id: int = Form(...),
+    equipe: Optional[str] = Form(None),
+    fichiers: Optional[List[UploadFile]] = File(None),
     db: Session = Depends(get_db),
     current_user: Utilisateur = Depends(get_current_user)
 ):
+    """
+    Crée une note + upload des fichiers
+    Compatible avec Angular FormData
+    """
     note = Note(
-        titre=note_data.get("titre"),
-        contenu=note_data.get("contenu"),
-        equipe=current_user.equipe,  # ⚡ équipe de l'utilisateur
-        auteur_id=current_user.id
+        titre=titre,
+        contenu=contenu,
+        equipe=equipe or current_user.equipe,
+        auteur_id=current_user.id,  # Sécurité : on prend l'utilisateur connecté
     )
     db.add(note)
     db.commit()
+    db.refresh(note)
+
+    # Enregistrer les fichiers si présents
+    if fichiers:
+        for fichier in fichiers:
+            file_path = os.path.join(UPLOAD_DIR, fichier.filename)
+            with open(file_path, "wb") as buffer:
+                shutil.copyfileobj(fichier.file, buffer)
+
+            new_file = FichierNote(
+                nom_fichier=fichier.filename,
+                chemin=file_path,
+                note_id=note.id
+            )
+            db.add(new_file)
+        db.commit()
+
     db.refresh(note)
     return note
 
@@ -46,7 +72,10 @@ def list_notes(
     Si admin → toutes les notes
     Sinon → seulement les notes de son équipe
     """
-    query = db.query(Note).options(joinedload(Note.auteur), joinedload(Note.fichiers))
+    query = db.query(Note).options(
+        joinedload(Note.auteur),
+        joinedload(Note.fichiers)
+    )
 
     # 🔒 Filtre selon rôle
     if current_user.type != "admin":
@@ -56,7 +85,9 @@ def list_notes(
 
     # 🔍 Filtres facultatifs
     if search:
-        query = query.filter(Note.titre.ilike(f"%{search}%") | Note.contenu.ilike(f"%{search}%"))
+        query = query.filter(
+            Note.titre.ilike(f"%{search}%") | Note.contenu.ilike(f"%{search}%")
+        )
     if author:
         query = query.join(Note.auteur).filter(Utilisateur.nom.ilike(f"%{author}%"))
 
@@ -67,8 +98,13 @@ def list_notes(
     total = query.count()
     notes = query.offset((page - 1) * limit).limit(limit).all()
 
-    return {"total": total, "page": page, "limit": limit, "notes": notes}
+    # 🧹 Nettoyage UTF-8 pour chemins de fichiers
+    for note in notes:
+        for fichier in note.fichiers:
+            if isinstance(fichier.chemin, bytes):
+                fichier.chemin = fichier.chemin.decode("utf-8", errors="ignore")
 
+    return {"total": total, "page": page, "limit": limit, "notes": notes}
 
 # ---------------- DETAIL NOTE ----------------
 @router.get("/{note_id}", response_model=NoteDetailOut)
@@ -85,6 +121,12 @@ def get_note_detail(note_id: int, db: Session = Depends(get_db)):
     )
     if not note:
         raise HTTPException(status_code=404, detail="Note non trouvée")
+
+    # Nettoyage UTF-8
+    for fichier in note.fichiers:
+        if isinstance(fichier.chemin, bytes):
+            fichier.chemin = fichier.chemin.decode("utf-8", errors="ignore")
+
     return note
 
 # ---------------- UPDATE NOTE ----------------

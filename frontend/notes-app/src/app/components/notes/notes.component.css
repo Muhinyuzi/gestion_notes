@@ -1,69 +1,71 @@
-/* Notes Container */
+/* ===================== Notes Container ===================== */
 .notes-container {
-  max-width: 800px;
+  max-width: 850px;
   margin: 2rem auto;
-  padding: 20px;
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  font-family: Arial, sans-serif;
-  transition: all 0.3s ease;
+  padding: 25px;
+  background: #fdfdfd;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* Section Titles */
+/* ===================== Section Titles ===================== */
 .notes-container h3 {
-  margin-bottom: 1rem;
-  font-size: 1.5rem;
-  color: #2c3e50;
-  border-left: 5px solid #3498db;
-  padding-left: 10px;
+  margin-bottom: 1.2rem;
+  font-size: 1.6rem;
+  color: #34495e;
+  border-left: 6px solid #5dade2;
+  padding-left: 12px;
   transition: color 0.3s ease;
 }
 
 .notes-container h3:hover {
-  color: #2980b9;
+  color: #2e86c1;
 }
 
-/* Filters */
+/* ===================== Filters ===================== */
 .notes-filters {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 15px;
+  gap: 12px;
+  margin-bottom: 20px;
 }
 
 .notes-filters input,
 .notes-filters select {
   flex: 1 1 150px;
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #dcdcdc;
+  transition: all 0.25s ease;
+  font-size: 0.95rem;
 }
 
 .notes-filters input:focus,
 .notes-filters select:focus {
   outline: none;
-  border-color: #3498db;
-  box-shadow: 0 0 6px rgba(52,152,219,0.3);
+  border-color: #5dade2;
+  box-shadow: 0 0 8px rgba(93, 173, 226, 0.3);
 }
 
 .notes-filters button {
-  padding: 8px 12px;
-  background: #3498db;
-  color: #fff;
+  padding: 10px 16px;
+  background: #5dade2;
+  color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.1s ease;
+  font-weight: 500;
+  transition: background 0.25s ease, transform 0.15s ease;
 }
 
 .notes-filters button:hover {
-  background: #2980b9;
+  background: #3498db;
   transform: scale(1.05);
 }
 
-/* Notes List */
+/* ===================== Notes List ===================== */
 .notes-list {
   list-style: none;
   padding: 0;
@@ -71,104 +73,163 @@
 }
 
 .notes-list li {
-  background: #f9f9f9;
-  margin-bottom: 12px;
-  padding: 15px;
-  border-radius: 10px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+  background: #ffffff;
+  margin-bottom: 14px;
+  padding: 18px 20px;
+  border-radius: 14px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
 }
 
 .notes-list li:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 14px rgba(0,0,0,0.15);
-  background: #f0f8ff;
+  transform: translateY(-4px);
+  box-shadow: 0 10px 22px rgba(0,0,0,0.12);
 }
 
 .notes-list a {
-  font-size: 1.2rem;
-  color: #2980b9;
+  font-size: 1.25rem;
+  color: #2e86c1;
   text-decoration: none;
+  font-weight: 500;
   transition: color 0.2s ease;
 }
 
 .notes-list a:hover {
   text-decoration: underline;
-  color: #1f618d;
+  color: #1b4f72;
 }
 
 .notes-meta {
   font-size: 0.9rem;
   color: #7f8c8d;
-  margin-top: 5px;
+  margin-top: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .notes-meta .created {
   color: #2c3e50;
-  font-weight: bold;
+  font-weight: 600;
 }
 
 .notes-meta .updated {
   font-style: italic;
-  color: #e67e22;
+  color: #d35400;
 }
 
-/* Add Note Form */
+/* ===================== Add Note Form ===================== */
 .add-note-form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
+  margin-top: 1.5rem;
 }
 
 .add-note-form input,
 .add-note-form textarea {
-  padding: 12px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid #dcdcdc;
   font-size: 1rem;
-  width: 100%;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: all 0.25s ease;
+}
+
+.add-note-form textarea {
+  min-height: 90px;
+  resize: vertical;
 }
 
 .add-note-form input:focus,
 .add-note-form textarea:focus {
   outline: none;
-  border-color: #3498db;
-  box-shadow: 0 0 6px rgba(52,152,219,0.3);
+  border-color: #5dade2;
+  box-shadow: 0 0 10px rgba(93,173,226,0.3);
 }
 
 .add-note-form button {
-  padding: 12px;
-  background: #3498db;
+  padding: 14px;
+  background: #5dade2;
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 12px;
   font-size: 1rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.1s ease;
+  transition: background 0.25s ease, transform 0.15s ease;
 }
 
 .add-note-form button:hover {
-  background: #2980b9;
+  background: #3498db;
   transform: scale(1.03);
 }
 
-/* Pagination */
+/* ===================== Selected Files ===================== */
+.selected-files {
+  margin-top: 10px;
+  background: #f4f6f6;
+  border-radius: 10px;
+  padding: 10px 14px;
+  width: fit-content;
+}
+
+.selected-files ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 6px 0 0 0;
+}
+
+.selected-files li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 4px 0;
+  padding: 3px 6px;
+  border-radius: 6px;
+  background: #ffffff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  transition: all 0.2s ease;
+}
+
+.selected-files li:hover {
+  background: #eaf2f8;
+}
+
+.remove-file-btn {
+  background: #f8d7da;
+  border-radius: 6px;
+  padding: 3px 6px;
+  border: none;
+  color: #c0392b;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
+
+.remove-file-btn:hover {
+  background: #e74c3c;
+  color: white;
+  transform: scale(1.1);
+}
+
+/* ===================== Pagination ===================== */
 .pagination {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   margin-bottom: 2rem;
   flex-wrap: wrap;
 }
 
 .pagination button {
-  padding: 6px 12px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  background: #fff;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid #dcdcdc;
+  background: #ffffff;
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.1s ease;
+  font-weight: 500;
+  transition: all 0.2s ease;
 }
 
 .pagination button:disabled {
@@ -181,51 +242,37 @@
   transform: scale(1.05);
 }
 
-/* Responsive */
-@media (max-width: 600px) {
-  /* Filtres verticalisés */
+/* ===================== Responsive ===================== */
+@media (max-width: 650px) {
   .notes-filters {
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
   }
 
+  .add-note-form input,
+  .add-note-form textarea,
   .notes-filters input,
   .notes-filters select,
   .notes-filters button {
-    flex: 1 1 100%;
+    width: 100%;
   }
 
-  /* Notes plus lisibles */
   .notes-list li {
-    font-size: 0.95rem;
-    padding: 12px;
+    font-size: 1rem;
+    padding: 14px;
   }
 
   .notes-meta {
     font-size: 0.85rem;
-    word-break: break-word;
+    gap: 6px;
   }
 
   .notes-list a {
-    font-size: 1.1rem;
-    display: block;
-    margin-bottom: 4px;
+    font-size: 1.15rem;
   }
 
-  /* Formulaire d'ajout */
-  .add-note-form input,
-  .add-note-form textarea {
-    font-size: 0.95rem;
-    padding: 10px;
-  }
-
-  .add-note-form button {
-    width: 100%;
-  }
-
-  /* Pagination verticale si trop étroit */
   .pagination {
     flex-direction: column;
-    gap: 5px;
+    gap: 6px;
   }
 }

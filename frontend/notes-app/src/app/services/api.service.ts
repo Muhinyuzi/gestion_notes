@@ -107,7 +107,6 @@ export class ApiService {
     if (search) params = params.set('search', search);
     if (author) params = params.set('author', author);
 
-    // 🔹 Le backend filtre automatiquement par équipe ou admin
     return this.http.get<NotesResponse>(`${this.baseUrl}notes/`, { params });
   }
 
@@ -118,6 +117,18 @@ export class ApiService {
 
   createNote(note: NoteCreate): Observable<Note> {
     return this.http.post<Note>(`${this.baseUrl}notes/`, note);
+  }
+
+  createNoteWithFiles(note: NoteCreate, files: File[]): Observable<Note> {
+    const formData = new FormData();
+    formData.append('titre', note.titre);
+    formData.append('contenu', note.contenu);
+    formData.append('auteur_id', note.auteur_id.toString());
+    if (note.equipe) formData.append('equipe', note.equipe);
+
+    files.forEach(file => formData.append('fichiers', file));
+
+    return this.http.post<Note>(`${this.baseUrl}notes/`, formData);
   }
 
   updateNote(id: number, note: Partial<Note>): Observable<Note> {

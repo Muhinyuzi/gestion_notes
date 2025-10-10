@@ -5,9 +5,14 @@ from models import Utilisateur, Note, Commentaire, FichierNote
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
 import random
+import os
 
 # 🔐 Contexte pour hasher les mots de passe
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# Répertoire pour fichiers attachés
+UPLOAD_DIR = "uploads"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 # Crée la session
 session = Session(bind=engine)
@@ -66,7 +71,7 @@ def seed():
             equipe=random.choice(["Dev", "QA", "DevOps"]),
             auteur=random.choice(users),
             created_at=now - timedelta(days=random.randint(0, 30), hours=random.randint(0, 23)),
-            updated_at=None
+            updated_at=now
         )
         session.add(note)
         notes.append(note)
@@ -80,9 +85,15 @@ def seed():
     for note in notes:
         nb_files = random.randint(0, 2)
         for j in range(nb_files):
+            filename = f"{note.titre.replace(' ', '_')}_file{j+1}.txt"
+            filepath = os.path.join(UPLOAD_DIR, filename)
+            # Création d'un fichier vide pour le seed
+            with open(filepath, "w") as f:
+                f.write(f"Fichier attaché pour {note.titre}, fichier {j+1}")
+
             fichier = FichierNote(
-                nom_fichier=f"{note.titre.replace(' ', '_')}_file{j+1}.txt",
-                chemin=f"/uploads/{note.titre.replace(' ', '_')}_file{j+1}.txt",
+                nom_fichier=filename,
+                chemin=filepath,
                 note_id=note.id
             )
             session.add(fichier)

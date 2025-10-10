@@ -30,6 +30,7 @@ def login(
             "id": user.id,
             "nom": user.nom,
             "email": user.email,
-            "equipe": user.equipe
+            "equipe": user.equipe,
+            "type": user.type
         }
     }

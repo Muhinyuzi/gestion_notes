@@ -55,7 +55,7 @@ class NoteOut(NoteBase):
     created_at: datetime
     updated_at: Optional[datetime] = None
     auteur: Optional[UtilisateurOut] = None
-    fichiers: Optional[List[FichierNoteOut]] = []
+    fichiers: Optional[List[FichierNoteOut]] = None
 
     class Config:
         orm_mode = True

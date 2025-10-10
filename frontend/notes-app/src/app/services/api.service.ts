@@ -8,9 +8,13 @@ export interface Utilisateur {
   id?: number;
   nom: string;
   email: string;
-  mot_de_passe: string;
-  equipe: string;
+  mot_de_passe?: string;
+  equipe?: string;
   type?: string;
+  poste?: string;
+  telephone?: string;
+  adresse?: string;
+  date_embauche?: string;
 }
 
 export interface UtilisateurDetailOut extends Utilisateur {
@@ -18,6 +22,13 @@ export interface UtilisateurDetailOut extends Utilisateur {
   date?: string;
   notes: Note[];
   commentaires: Commentaire[];
+}
+
+export interface UtilisateursResponse {
+  total: number;
+  page: number;
+  limit: number;
+  users: Utilisateur[];
 }
 
 // Pour créer une note
@@ -68,8 +79,11 @@ export class ApiService {
   constructor(private http: HttpClient) {}
 
   // ---------------- UTILISATEURS ----------------
-  getUtilisateurs(): Observable<Utilisateur[]> {
-    return this.http.get<Utilisateur[]>(`${this.baseUrl}utilisateurs/`);
+  getUtilisateurs(page: number = 1, limit: number = 10): Observable<UtilisateursResponse> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('limit', limit.toString());
+    return this.http.get<UtilisateursResponse>(`${this.baseUrl}utilisateurs/`, { params });
   }
 
   createUtilisateur(user: Utilisateur): Observable<Utilisateur> {

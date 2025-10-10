@@ -14,6 +14,9 @@ class Utilisateur(Base):
     type = Column(String(50), nullable=False, index=True)  # ex: employe
     equipe = Column(String(100), index=True)
     poste = Column(String(100), nullable=True)  # rôle ou poste de l'employé
+    telephone = Column(String(20), nullable=True)
+    adresse = Column(String(255), nullable=True)
+    date_embauche = Column(DateTime(timezone=True), nullable=True)
     date = Column(DateTime(timezone=True), server_default=func.now(), index=True)
 
     # Relations

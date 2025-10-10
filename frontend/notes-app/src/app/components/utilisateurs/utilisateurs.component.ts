@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ApiService, Utilisateur } from '../../services/api.service';
+import { ApiService, Utilisateur, UtilisateursResponse } from '../../services/api.service';
 
 @Component({
   selector: 'app-utilisateurs',
@@ -10,8 +10,8 @@ export class UtilisateursComponent implements OnInit {
   utilisateurs: Utilisateur[] = [];
 
   // Pour ajout et édition
-  newUser: Utilisateur = { nom: '', email: '', mot_de_passe: '', equipe: '' };
-  selectedUser: Utilisateur = { nom: '', email: '', mot_de_passe: '', equipe: '' };
+  newUser: Utilisateur = { nom: '', email: '', mot_de_passe: '', equipe: '', adresse: '', telephone: '', type: '' };
+  selectedUser: Utilisateur = { nom: '', email: '', mot_de_passe: '', equipe: '', adresse: '', telephone: '', type: '' };
   isEditing = false;
 
   isLoading = false;
@@ -22,15 +22,24 @@ export class UtilisateursComponent implements OnInit {
   filterEmail = '';
   filterEquipe = '';
 
+  // Pagination
+  page = 1;
+  limit = 10;
+  total = 0;
+
   constructor(private api: ApiService) {}
 
   ngOnInit(): void {
     this.loadUsers();
   }
 
-  // Getter pour le formulaire
+  // Getter pour formulaire
   get formUser(): Utilisateur {
     return this.isEditing ? this.selectedUser : this.newUser;
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.total / this.limit);
   }
 
   // Retourne la liste filtrée pour affichage
@@ -42,15 +51,18 @@ export class UtilisateursComponent implements OnInit {
     );
   }
 
-  // Charger les utilisateurs
+  // Appliquer les filtres (Angular met automatiquement à jour filteredUsers)
+  applyFilters(): void {}
+
+  // Charger les utilisateurs depuis backend avec pagination
   loadUsers(): void {
     this.isLoading = true;
     this.errorMessage = '';
 
-    this.api.getUtilisateurs().subscribe({
-      next: (data: any) => {
-        // Assurer que c’est toujours un tableau
-        this.utilisateurs = Array.isArray(data) ? data : data.utilisateurs || [];
+    this.api.getUtilisateurs(this.page, this.limit).subscribe({
+      next: (res: UtilisateursResponse) => {
+        this.utilisateurs = res.users;
+        this.total = res.total;
         this.isLoading = false;
       },
       error: (err) => {
@@ -61,16 +73,24 @@ export class UtilisateursComponent implements OnInit {
     });
   }
 
+  // Pagination
+  goToPage(page: number): void {
+    if (page < 1 || page > this.totalPages) return;
+    this.page = page;
+    this.loadUsers();
+  }
+
   // Ajouter un utilisateur
   addUtilisateur(): void {
-    if (!this.newUser.nom || !this.newUser.email) {
-      alert("Nom et email sont requis !");
+    if (!this.newUser.nom || !this.newUser.email || !this.newUser.mot_de_passe) {
+      alert("Nom, email et mot de passe sont requis !");
       return;
     }
 
     this.api.createUtilisateur(this.newUser).subscribe({
       next: (user) => {
-        this.utilisateurs.push(user);
+        this.utilisateurs.unshift(user);
+        this.total += 1;
         this.resetForm();
       },
       error: (err) => {
@@ -82,7 +102,7 @@ export class UtilisateursComponent implements OnInit {
 
   // Préparer la modification
   editUtilisateur(user: Utilisateur): void {
-    this.selectedUser = { ...user };
+    this.selectedUser = { ...user, mot_de_passe: '' }; // mot de passe vide
     this.isEditing = true;
   }
 
@@ -90,7 +110,10 @@ export class UtilisateursComponent implements OnInit {
   updateUtilisateur(): void {
     if (!this.selectedUser.id) return;
 
-    this.api.updateUtilisateur(this.selectedUser.id, this.selectedUser).subscribe({
+    const updatedData: Partial<Utilisateur> = { ...this.selectedUser };
+    if (!updatedData.mot_de_passe) delete updatedData.mot_de_passe;
+
+    this.api.updateUtilisateur(this.selectedUser.id, updatedData).subscribe({
       next: (updated) => {
         const index = this.utilisateurs.findIndex(u => u.id === updated.id);
         if (index !== -1) this.utilisateurs[index] = updated;
@@ -111,6 +134,7 @@ export class UtilisateursComponent implements OnInit {
     this.api.deleteUtilisateur(user.id).subscribe({
       next: () => {
         this.utilisateurs = this.utilisateurs.filter(u => u.id !== user.id);
+        this.total -= 1;
       },
       error: (err) => {
         console.error(err);
@@ -122,7 +146,7 @@ export class UtilisateursComponent implements OnInit {
   // Réinitialiser le formulaire
   resetForm(): void {
     this.isEditing = false;
-    this.selectedUser = { nom: '', email: '', mot_de_passe: '', equipe: '' };
-    this.newUser = { nom: '', email: '', mot_de_passe: '', equipe: '' };
+    this.selectedUser = { nom: '', email: '', mot_de_passe: '', equipe: '', adresse: '', telephone: '', type: '' };
+    this.newUser = { nom: '', email: '', mot_de_passe: '', equipe: '', adresse: '', telephone: '', type: '' };
   }
 }

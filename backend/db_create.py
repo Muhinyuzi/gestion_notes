@@ -10,11 +10,11 @@ import os
 # 🔐 Contexte pour hasher les mots de passe
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# Répertoire pour fichiers attachés
+# 📁 Répertoire pour fichiers attachés
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-# Crée la session
+# 🔗 Crée la session
 session = Session(bind=engine)
 
 def hash_password(password: str) -> str:
@@ -22,7 +22,7 @@ def hash_password(password: str) -> str:
 
 def seed():
     print("💣 Suppression des tables existantes avec CASCADE...")
-    
+
     with engine.connect() as conn:
         conn.execute(text("DROP TABLE IF EXISTS fichiers_note CASCADE;"))
         conn.execute(text("DROP TABLE IF EXISTS commentaires CASCADE;"))
@@ -34,15 +34,43 @@ def seed():
     Base.metadata.create_all(bind=engine)
     print("✅ Tables recréées avec succès !")
 
-    # -------------------------
-    # 1) Création des utilisateurs
-    # -------------------------
+    # ======================================================
+    # 1️⃣ Création des utilisateurs
+    # ======================================================
     users_data = [
-        {"nom": "Alice", "email": "alice@example.com", "mot_de_passe": "alice123", "type": "admin", "equipe": "Dev"},
-        {"nom": "Bob", "email": "bob@example.com", "mot_de_passe": "bob123", "type": "user", "equipe": "QA"},
-        {"nom": "Charlie", "email": "charlie@example.com", "mot_de_passe": "charlie123", "type": "user", "equipe": "DevOps"},
-        {"nom": "David", "email": "david@example.com", "mot_de_passe": "david123", "type": "user", "equipe": "Dev"},
-        {"nom": "Eva", "email": "eva@example.com", "mot_de_passe": "eva123", "type": "user", "equipe": "QA"},
+        {
+            "nom": "Alice",
+            "email": "alice@example.com",
+            "mot_de_passe": "alice123",
+            "type": "admin",
+            "equipe": "Dev",
+            "poste": "Chef de projet",
+            "telephone": "514-123-4567",
+            "adresse": "123 rue Sainte-Catherine, Montréal",
+            "date_embauche": datetime(2023, 1, 10),
+        },
+        {
+            "nom": "Bob",
+            "email": "bob@example.com",
+            "mot_de_passe": "bob123",
+            "type": "user",
+            "equipe": "QA",
+            "poste": "Testeur",
+            "telephone": "438-987-6543",
+            "adresse": "55 boulevard René-Lévesque, Laval",
+            "date_embauche": datetime(2022, 5, 22),
+        },
+        {
+            "nom": "Charlie",
+            "email": "charlie@example.com",
+            "mot_de_passe": "charlie123",
+            "type": "user",
+            "equipe": "DevOps",
+            "poste": "Ingénieur DevOps",
+            "telephone": "450-888-9999",
+            "adresse": "88 avenue du Parc, Longueuil",
+            "date_embauche": datetime(2021, 8, 30),
+        },
     ]
 
     users = []
@@ -52,16 +80,20 @@ def seed():
             email=u["email"],
             mot_de_passe=hash_password(u["mot_de_passe"]),
             type=u["type"],
-            equipe=u["equipe"]
+            equipe=u["equipe"],
+            poste=u["poste"],
+            telephone=u["telephone"],
+            adresse=u["adresse"],
+            date_embauche=u["date_embauche"],
         )
         session.add(user)
         users.append(user)
     session.commit()
     print(f"✅ {len(users)} utilisateurs créés avec succès !")
 
-    # -------------------------
-    # 2) Création des notes
-    # -------------------------
+    # ======================================================
+    # 2️⃣ Création des notes
+    # ======================================================
     notes = []
     now = datetime.utcnow()
     for i in range(20):
@@ -78,16 +110,15 @@ def seed():
     session.commit()
     print(f"✅ {len(notes)} notes créées avec succès !")
 
-    # -------------------------
-    # 3) Création des fichiers attachés
-    # -------------------------
+    # ======================================================
+    # 3️⃣ Fichiers attachés
+    # ======================================================
     fichiers = []
     for note in notes:
         nb_files = random.randint(0, 2)
         for j in range(nb_files):
             filename = f"{note.titre.replace(' ', '_')}_file{j+1}.txt"
             filepath = os.path.join(UPLOAD_DIR, filename)
-            # Création d'un fichier vide pour le seed
             with open(filepath, "w") as f:
                 f.write(f"Fichier attaché pour {note.titre}, fichier {j+1}")
 
@@ -101,9 +132,9 @@ def seed():
     session.commit()
     print(f"✅ {len(fichiers)} fichiers attachés créés avec succès !")
 
-    # -------------------------
-    # 4) Création des commentaires
-    # -------------------------
+    # ======================================================
+    # 4️⃣ Commentaires
+    # ======================================================
     commentaires = []
     for note in notes:
         nb_comments = random.randint(0, 3)

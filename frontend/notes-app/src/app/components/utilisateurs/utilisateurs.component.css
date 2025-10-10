@@ -1,49 +1,117 @@
-/* Container principal */
+/* --- Conteneur principal --- */
 .utilisateurs-container {
-  max-width: 800px;
-  margin: 2rem auto;
-  padding: 20px;
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 25px 30px;
   background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  font-family: Arial, sans-serif;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  font-family: "Inter", "Segoe UI", sans-serif;
+  color: #333;
 }
 
-/* Titres */
+/* --- Titre principal --- */
 .utilisateurs-container h3 {
-  margin-bottom: 1rem;
-  font-size: 1.5rem;
-  color: #2c3e50;
-  border-left: 5px solid #27ae60;
-  padding-left: 10px;
+  margin-bottom: 20px;
+  font-size: 22px;
+  color: #1a1a1a;
+  font-weight: 600;
 }
 
-/* Liste des utilisateurs */
+/* --- Filtres --- */
+.filters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+}
+
+.filters input {
+  padding: 10px 14px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  outline: none;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  background-color: #fafafa;
+}
+
+.filters input:focus {
+  border-color: #007bff;
+  background-color: #fff;
+  box-shadow: 0 0 6px rgba(0, 123, 255, 0.3);
+}
+
+/* --- Bouton Appliquer filtres --- */
+.filters button {
+  background: linear-gradient(135deg, #007bff, #00c6ff);
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 6px rgba(0, 123, 255, 0.3);
+}
+
+.filters button:hover {
+  background: linear-gradient(135deg, #0056d2, #00aaff);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 123, 255, 0.4);
+}
+
+.filters button:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+}
+
+/* --- Loader --- */
+.loading {
+  text-align: center;
+  color: #007bff;
+  font-weight: 600;
+  margin: 15px 0;
+}
+
+/* --- Message d'erreur --- */
+.error {
+  background-color: #ffe8e8;
+  color: #c62828;
+  padding: 12px 16px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  font-weight: 500;
+}
+
+/* --- Liste des utilisateurs --- */
 .utilisateurs-list {
   list-style: none;
   padding: 0;
-  margin: 0 0 2rem 0;
+  margin: 0;
 }
 
 .utilisateurs-list li {
-  background: #f9f9f9;
-  margin-bottom: 12px;
-  padding: 15px;
-  border-radius: 10px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  padding: 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  margin-bottom: 14px;
+  transition: all 0.3s ease;
+  background: #f9fafb;
 }
 
 .utilisateurs-list li:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+  transform: translateY(-2px);
+  background: #eef7ff;
+  border-color: #bcdfff;
 }
 
 .utilisateurs-list a {
-  font-size: 1.2rem;
-  color: #27ae60;
+  font-size: 17px;
+  color: #007bff;
+  font-weight: 600;
   text-decoration: none;
 }
 
@@ -52,139 +120,149 @@
 }
 
 .utilisateurs-meta {
-  font-size: 0.9rem;
-  color: #7f8c8d;
-  margin-top: 5px;
+  font-size: 14px;
+  margin-top: 8px;
+  color: #555;
 }
 
-/* Boutons Modifier / Supprimer */
+.utilisateurs-meta p {
+  margin: 2px 0;
+}
+
+/* --- Boutons Éditer / Supprimer --- */
 .utilisateurs-list button {
-  margin-left: 8px;
-  padding: 6px 12px;
-  font-size: 0.9rem;
+  margin-right: 10px;
+  padding: 8px 14px;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
+  font-size: 13px;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: 0.3s;
 }
 
 .utilisateurs-list button:first-of-type {
-  background: #3498db;
-  color: white;
+  background-color: #00b894;
+  color: #fff;
 }
 
 .utilisateurs-list button:first-of-type:hover {
-  background: #2980b9;
+  background-color: #009f7a;
 }
 
 .utilisateurs-list button:last-of-type {
-  background: #e74c3c;
-  color: white;
+  background-color: #ff7675;
+  color: #fff;
 }
 
 .utilisateurs-list button:last-of-type:hover {
-  background: #c0392b;
+  background-color: #e85958;
 }
 
-/* Formulaire Ajout / Edition */
+/* --- Message Aucun utilisateur --- */
+.no-users {
+  text-align: center;
+  color: #777;
+  font-style: italic;
+  margin-top: 20px;
+}
+
+/* --- Pagination --- */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: 25px;
+}
+
+.pagination button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.pagination button:hover:not(:disabled) {
+  background-color: #0056d2;
+}
+
+.pagination button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.pagination span {
+  font-weight: 500;
+  color: #333;
+}
+
+/* --- Formulaire ajout / édition --- */
 .add-utilisateur-form {
+  margin-top: 30px;
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
 .add-utilisateur-form input {
-  padding: 12px;
-  border-radius: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
   border: 1px solid #ccc;
-  font-size: 1rem;
-  width: 100%;
-  transition: border-color 0.2s ease;
+  background: #fafafa;
+  transition: 0.3s;
 }
 
 .add-utilisateur-form input:focus {
-  outline: none;
-  border-color: #27ae60;
-  box-shadow: 0 0 6px rgba(39,174,96,0.3);
+  border-color: #007bff;
+  background: #fff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.2);
 }
 
 .add-utilisateur-form button {
-  padding: 12px;
-  background: #27ae60;
-  color: white;
+  width: fit-content;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 10px;
   border: none;
-  border-radius: 8px;
-  font-size: 1rem;
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.1s ease;
+  transition: 0.3s;
 }
 
-.add-utilisateur-form button:hover {
-  background: #219150;
-  transform: scale(1.03);
+.add-utilisateur-form button[type="submit"] {
+  background: linear-gradient(135deg, #007bff, #00c6ff);
+  color: white;
 }
 
-/* Bouton Annuler */
+.add-utilisateur-form button[type="submit"]:hover {
+  background: linear-gradient(135deg, #0056d2, #00aaff);
+}
+
 .add-utilisateur-form button[type="button"] {
-  background: #bdc3c7;
-  color: #2c3e50;
+  background: #ccc;
+  color: #333;
 }
 
 .add-utilisateur-form button[type="button"]:hover {
-  background: #95a5a6;
+  background: #bbb;
 }
 
-/* Filtres */
-.filters {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 1rem;
-}
+/* --- Responsive --- */
+@media (max-width: 700px) {
+  .filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
 
-.filters input {
-  flex: 1;
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  font-size: 0.95rem;
-  transition: border-color 0.2s ease;
-}
+  .filters input,
+  .filters button {
+    width: 100%;
+  }
 
-.filters input:focus {
-  outline: none;
-  border-color: #27ae60;
-  box-shadow: 0 0 6px rgba(39,174,96,0.3);
-}
-
-/* Pagination */
-.pagination {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 1rem;
-}
-
-.pagination button {
-  padding: 8px 14px;
-  border-radius: 8px;
-  border: none;
-  background: #27ae60;
-  color: white;
-  cursor: pointer;
-  font-size: 0.95rem;
-  transition: background 0.2s ease;
-}
-
-.pagination button:hover:not(:disabled) {
-  background: #219150;
-}
-
-.pagination button:disabled {
-  background: #bdc3c7;
-  cursor: not-allowed;
-}
-
-.pagination span {
-  font-size: 0.95rem;
-  color: #2c3e50;
+  .add-utilisateur-form button {
+    width: 100%;
+  }
 }

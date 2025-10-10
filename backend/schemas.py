@@ -20,10 +20,10 @@ class UtilisateurCreate(UtilisateurBase):
 
 class UtilisateurOut(UtilisateurBase):
     id: int
-    date: datetime
+    date: Optional[datetime]
 
     class Config:
-        orm_mode = True
+        from_attributes = True  # ✅ Pydantic v2
 
 # ======================================================
 # FichierNote
@@ -37,7 +37,7 @@ class FichierNoteOut(FichierNoteBase):
     note_id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # ======================================================
 # Note
@@ -58,7 +58,7 @@ class NoteOut(NoteBase):
     fichiers: Optional[List[FichierNoteOut]] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class NoteDetailOut(NoteOut):
     commentaires: List["CommentaireOut"] = []
@@ -67,7 +67,7 @@ class NotesResponse(BaseModel):
     total: int
     page: int
     limit: int
-    notes: List[NoteOut]    
+    notes: List[NoteOut]
 
 # ======================================================
 # Commentaire
@@ -88,7 +88,7 @@ class CommentaireOut(CommentaireBase):
     note: Optional[NoteOut] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # ======================================================
 # Relations imbriquées
@@ -96,6 +96,9 @@ class CommentaireOut(CommentaireBase):
 class UtilisateurDetailOut(UtilisateurOut):
     notes: List[NoteOut] = []
     commentaires: List[CommentaireOut] = []
+
+    class Config:
+        from_attributes = True
 
 # 🔹 Résolution des références circulaires
 NoteDetailOut.update_forward_refs()

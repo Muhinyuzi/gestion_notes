@@ -1,5 +1,4 @@
 <div class="notes-container">
-
   <h3>📝 Liste des notes</h3>
 
   <!-- FILTRES / RECHERCHE -->
@@ -23,6 +22,7 @@
         <span *ngIf="n.updated_at" class="updated">
           — Modifiée le : {{ n.updated_at | date:'short' }}
         </span>
+        <span *ngIf="n.fichiers && n.fichiers.length > 0">📎 {{ n.fichiers.length }}</span>
       </div>
     </li>
   </ul>
@@ -39,7 +39,27 @@
   <form class="add-note-form" (ngSubmit)="addNote()">
     <input type="text" [(ngModel)]="newNote.titre" name="titre" placeholder="Titre" required>
     <textarea [(ngModel)]="newNote.contenu" name="contenu" placeholder="Contenu" required></textarea>
-    <input type="text" [(ngModel)]="newNote.equipe" name="equipe" placeholder="Équipe">
+
+    <!-- Équipe readonly pour les employés, editable pour admin -->
+    <input type="text" [(ngModel)]="newNote.equipe" name="equipe" placeholder="Équipe"
+           [readonly]="currentUser?.type !== 'admin'">
+
+    <!-- Upload fichiers -->
+    <!--<input type="file" (change)="handleFileInput($event)" multiple>-->
+    <!-- Upload fichiers -->
+<input type="file" #fileInput (change)="handleFileInput($event)" multiple>
+
+<!-- Liste des fichiers sélectionnés -->
+<div *ngIf="newFiles.length > 0" class="selected-files">
+  <p>📎 Fichiers sélectionnés :</p>
+  <ul>
+    <li *ngFor="let f of newFiles; let i = index">
+      {{ f.name }}
+      <button type="button" class="remove-file-btn" (click)="removeFile(i)">❌</button>
+    </li>
+  </ul>
+</div>
+
     <button type="submit">Ajouter</button>
   </form>
 </div>

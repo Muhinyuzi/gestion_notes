@@ -1,26 +1,59 @@
 <div class="utilisateurs-container">
   <h3>Liste des utilisateurs</h3>
 
+  <!-- Filtres -->
+  <div class="filters">
+    <input type="text" [(ngModel)]="filterNom" placeholder="Filtrer par nom">
+    <input type="text" [(ngModel)]="filterEmail" placeholder="Filtrer par email">
+    <input type="text" [(ngModel)]="filterEquipe" placeholder="Filtrer par équipe">
+    <button class="btn-filters" (click)="applyFilters()">Appliquer filtres</button>
+  </div>
+
+  <!-- Loader -->
   <div *ngIf="isLoading" class="loading">Chargement en cours...</div>
+
+  <!-- Message d'erreur -->
   <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
 
-  <ul class="utilisateurs-list" *ngIf="!isLoading && !errorMessage">
-    <li *ngFor="let u of utilisateurs">
-      <a [routerLink]="['/utilisateurs', u.id]">
-        {{ u.nom }}
-      </a>
+  <!-- Liste des utilisateurs -->
+  <ul class="utilisateurs-list" *ngIf="!isLoading && !errorMessage && filteredUsers.length > 0">
+    <li *ngFor="let u of filteredUsers">
+      <a [routerLink]="['/utilisateurs', u.id]">{{ u.nom }}</a>
       <div class="utilisateurs-meta">
-        {{ u.email }} — équipe : {{ u.equipe || 'Aucune' }}
+        <p><strong>Email :</strong> {{ u.email }}</p>
+        <p><strong>Équipe :</strong> {{ u.equipe || 'Aucune' }}</p>
+        <p><strong>Adresse :</strong> {{ u.adresse || 'Non spécifiée' }}</p>
+        <p><strong>Téléphone :</strong> {{ u.telephone || 'Non spécifié' }}</p>
+        <p><strong>Rôle :</strong> {{ u.type || 'Utilisateur' }}</p>
       </div>
+      <button (click)="editUtilisateur(u)">Éditer</button>
+      <button (click)="deleteUtilisateur(u)">Supprimer</button>
     </li>
   </ul>
 
-  <h3>Ajouter un utilisateur</h3>
-  <form class="add-utilisateur-form" (ngSubmit)="addUtilisateur()">
-    <input type="text" [(ngModel)]="newUser.nom" name="nom" placeholder="Nom" required>
-    <input type="email" [(ngModel)]="newUser.email" name="email" placeholder="Email" required>
-    <input type="password" [(ngModel)]="newUser.mot_de_passe" name="mot_de_passe" placeholder="Mot de passe" required>
-    <input type="text" [(ngModel)]="newUser.equipe" name="equipe" placeholder="Équipe">
-    <button type="submit">Ajouter</button>
+  <div *ngIf="!isLoading && filteredUsers.length === 0" class="no-users">
+    Aucun utilisateur trouvé.
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination" *ngIf="total > limit">
+    <button (click)="goToPage(page - 1)" [disabled]="page === 1">Précédent</button>
+    <span>Page {{ page }} / {{ totalPages }}</span>
+    <button (click)="goToPage(page + 1)" [disabled]="page === totalPages">Suivant</button>
+  </div>
+
+  <!-- Formulaire ajout / édition -->
+  <h3>{{ isEditing ? 'Modifier utilisateur' : 'Ajouter un utilisateur' }}</h3>
+
+  <form class="add-utilisateur-form" (ngSubmit)="isEditing ? updateUtilisateur() : addUtilisateur()">
+    <input type="text" [(ngModel)]="formUser.nom" name="nom" placeholder="Nom" required>
+    <input type="email" [(ngModel)]="formUser.email" name="email" placeholder="Email" required>
+    <input type="password" [(ngModel)]="formUser.mot_de_passe" name="mot_de_passe" placeholder="Mot de passe" [required]="!isEditing">
+    <input type="text" [(ngModel)]="formUser.equipe" name="equipe" placeholder="Équipe">
+    <input type="text" [(ngModel)]="formUser.adresse" name="adresse" placeholder="Adresse">
+    <input type="text" [(ngModel)]="formUser.telephone" name="telephone" placeholder="Téléphone">
+    <input type="text" [(ngModel)]="formUser.type" name="role" placeholder="Rôle (ex : admin, dev)" [readonly]="isEditing">
+    <button type="submit">{{ isEditing ? 'Mettre à jour' : 'Ajouter' }}</button>
+    <button type="button" *ngIf="isEditing" (click)="resetForm()">Annuler</button>
   </form>
 </div>

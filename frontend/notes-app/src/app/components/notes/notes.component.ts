@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { ApiService, Note, NoteCreate, NotesResponse } from '../../services/api.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-notes',
@@ -7,63 +8,61 @@ import { ApiService, Note, NoteCreate, NotesResponse } from '../../services/api.
   styleUrls: ['./notes.component.css']
 })
 export class NotesComponent implements OnInit {
+  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
   notes: Note[] = [];
-  newNote: NoteCreate = { titre: '', contenu: '', equipe: '', auteur_id: 1 };
+  newNote: NoteCreate = { titre: '', contenu: '', equipe: '', auteur_id: 0 };
+  newFiles: File[] = [];
 
-  // Pagination
   page: number = 1;
   limit: number = 10;
   total: number = 0;
 
-  // Filtres / tri
   searchTerm: string = '';
   selectedAuteur: string = '';
-  sort: string = 'date_desc';
+  sort: 'date_asc' | 'date_desc' = 'date_desc';
 
-  constructor(private api: ApiService) {}
+  currentUser: any = null;
+
+  constructor(private api: ApiService, private auth: AuthService) {}
 
   ngOnInit(): void {
+    this.currentUser = this.auth.getUser();
+
+    if (this.currentUser) {
+      this.newNote.auteur_id = this.currentUser.id;
+      this.newNote.equipe = this.currentUser.equipe;
+    }
+
     this.loadNotes();
   }
 
   // ---------------- CHARGER LES NOTES ----------------
   loadNotes(): void {
-    this.api.getNotes().subscribe({
-      next: (data: NotesResponse) => {
-        let filtered: Note[] = data.notes;
-
-        // ---------------- FILTRAGE ----------------
-        if (this.searchTerm) {
-          filtered = filtered.filter(n =>
-            n.titre.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-            n.contenu.toLowerCase().includes(this.searchTerm.toLowerCase())
-          );
+    this.api.getNotes(this.searchTerm, this.selectedAuteur, this.sort, this.page, this.limit)
+      .subscribe({
+        next: (res: NotesResponse) => {
+          // ✅ backend gère déjà pagination et filtrage
+          this.notes = res.notes ?? [];
+          this.total = res.total ?? 0;
+        },
+        error: (err: any) => {
+          console.error('Erreur lors du chargement des notes', err);
+          this.notes = [];
+          this.total = 0;
         }
+      });
+  }
 
-        if (this.selectedAuteur) {
-          filtered = filtered.filter(n =>
-            n.auteur?.nom.toLowerCase().includes(this.selectedAuteur.toLowerCase())
-          );
-        }
+  // ---------------- FICHIERS ----------------
+  handleFileInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files) {
+      this.newFiles = Array.from(input.files);
+    }
+  }
 
-        // ---------------- TRI ----------------
-        // ---------------- TRI ----------------
-  filtered.sort((a, b) => {
-    const dateA = new Date(a.updated_at ?? a.created_at).getTime();
-    const dateB = new Date(b.updated_at ?? b.created_at).getTime();
-    return this.sort === 'date_asc' ? dateA - dateB : dateB - dateA;
-  });
-
-        // ---------------- PAGINATION ----------------
-        this.total = filtered.length;
-        const start = (this.page - 1) * this.limit;
-        const end = start + this.limit;
-        this.notes = filtered.slice(start, end);
-      },
-      error: (err: any) => {
-        console.error('Erreur lors du chargement des notes', err);
-      }
-    });
+  removeFile(index: number): void {
+    this.newFiles.splice(index, 1);
   }
 
   // ---------------- AJOUTER UNE NOTE ----------------
@@ -73,16 +72,21 @@ export class NotesComponent implements OnInit {
       return;
     }
 
-    this.api.createNote(this.newNote).subscribe({
-      next: (note: Note) => {
-        this.notes.unshift(note); // Ajouter en haut
-        this.newNote = { titre: '', contenu: '', equipe: '', auteur_id: 1 };
-        this.total += 1;
-      },
-      error: (err: any) => {
-        console.error('Erreur lors de l’ajout de la note', err);
-      }
-    });
+    this.api.createNoteWithFiles(this.newNote, this.newFiles)
+      .subscribe({
+        next: (note: Note) => {
+          this.notes.unshift(note);
+          this.newNote = {
+            titre: '',
+            contenu: '',
+            equipe: this.currentUser?.equipe ?? '',
+            auteur_id: this.currentUser?.id ?? 0
+          };
+          this.newFiles = [];
+          this.total += 1;
+        },
+        error: (err: any) => console.error('Erreur lors de l’ajout de la note', err)
+      });
   }
 
   // ---------------- PAGINATION ----------------
@@ -98,11 +102,11 @@ export class NotesComponent implements OnInit {
 
   // ---------------- FILTRES / TRI ----------------
   applyFilters(): void {
-    this.page = 1; // Reset page
+    this.page = 1;
     this.loadNotes();
   }
 
-  changeSort(sort: string): void {
+  changeSort(sort: 'date_asc' | 'date_desc'): void {
     this.sort = sort;
     this.loadNotes();
   }

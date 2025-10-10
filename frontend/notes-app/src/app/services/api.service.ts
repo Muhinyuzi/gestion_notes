@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 // ---------------- TYPES ----------------
@@ -8,8 +8,13 @@ export interface Utilisateur {
   id?: number;
   nom: string;
   email: string;
-  mot_de_passe: string;
-  equipe: string;
+  mot_de_passe?: string;
+  equipe?: string;
+  type?: string;
+  poste?: string;
+  telephone?: string;
+  adresse?: string;
+  date_embauche?: string;
 }
 
 export interface UtilisateurDetailOut extends Utilisateur {
@@ -17,6 +22,13 @@ export interface UtilisateurDetailOut extends Utilisateur {
   date?: string;
   notes: Note[];
   commentaires: Commentaire[];
+}
+
+export interface UtilisateursResponse {
+  total: number;
+  page: number;
+  limit: number;
+  users: Utilisateur[];
 }
 
 // Pour créer une note
@@ -33,16 +45,17 @@ export interface Note {
   titre: string;
   contenu: string;
   equipe?: string;
-  created_at: string;       // ajouté
-  updated_at?: string;      // ajouté
+  created_at: string;
+  updated_at?: string;
   auteur?: Utilisateur;
   commentaires: Commentaire[];
+  fichiers?: any[];
 }
 
 export interface NotesResponse {
-  total: number;
-  page: number;
-  limit: number;
+  total?: number;
+  page?: number;
+  limit?: number;
   notes: Note[];
 }
 
@@ -61,58 +74,95 @@ export interface Commentaire {
   providedIn: 'root'
 })
 export class ApiService {
-  private baseUrl = 'http://127.0.0.1:8000';
+  private baseUrl = 'http://127.0.0.1:8000/';
 
   constructor(private http: HttpClient) {}
 
   // ---------------- UTILISATEURS ----------------
-  getUtilisateurs(): Observable<Utilisateur[]> {
-    return this.http.get<Utilisateur[]>(`${this.baseUrl}/utilisateurs`);
+  getUtilisateurs(page: number = 1, limit: number = 10): Observable<UtilisateursResponse> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('limit', limit.toString());
+    return this.http.get<UtilisateursResponse>(`${this.baseUrl}utilisateurs/`, { params });
   }
 
   createUtilisateur(user: Utilisateur): Observable<Utilisateur> {
-    return this.http.post<Utilisateur>(`${this.baseUrl}/utilisateurs`, user);
+    return this.http.post<Utilisateur>(`${this.baseUrl}utilisateurs/`, user);
   }
 
   getUtilisateurDetail(id: number): Observable<UtilisateurDetailOut> {
-    return this.http.get<UtilisateurDetailOut>(`${this.baseUrl}/utilisateurs/${id}`);
+    if (id == null) throw new Error('ID utilisateur manquant');
+    return this.http.get<UtilisateurDetailOut>(`${this.baseUrl}utilisateurs/${id}/`);
   }
 
   updateUtilisateur(userId: number, userData: Partial<Utilisateur>): Observable<Utilisateur> {
-    return this.http.put<Utilisateur>(`${this.baseUrl}/utilisateurs/${userId}`, userData);
+    if (userId == null) throw new Error('ID utilisateur manquant');
+    return this.http.put<Utilisateur>(`${this.baseUrl}utilisateurs/${userId}/`, userData);
   }
 
   deleteUtilisateur(userId: number): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/utilisateurs/${userId}`);
+    if (userId == null) throw new Error('ID utilisateur manquant');
+    return this.http.delete<void>(`${this.baseUrl}utilisateurs/${userId}/`);
   }
 
   // ---------------- NOTES ----------------
-getNotes(): Observable<NotesResponse> {
-  return this.http.get<NotesResponse>(`${this.baseUrl}/notes`);
-}
+  getNotes(
+    search?: string,
+    author?: string,
+    sort: 'date_asc' | 'date_desc' = 'date_desc',
+    page: number = 1,
+    limit: number = 10
+  ): Observable<NotesResponse> {
+    let params = new HttpParams()
+      .set('sort', sort)
+      .set('page', page.toString())
+      .set('limit', limit.toString());
+
+    if (search) params = params.set('search', search);
+    if (author) params = params.set('author', author);
+
+    return this.http.get<NotesResponse>(`${this.baseUrl}notes/`, { params });
+  }
 
   getNoteById(id: number): Observable<Note> {
-    return this.http.get<Note>(`${this.baseUrl}/notes/${id}`);
+    if (id == null) throw new Error('ID note manquant');
+    return this.http.get<Note>(`${this.baseUrl}notes/${id}/`);
   }
 
   createNote(note: NoteCreate): Observable<Note> {
-    return this.http.post<Note>(`${this.baseUrl}/notes`, note);
+    return this.http.post<Note>(`${this.baseUrl}notes/`, note);
+  }
+
+  createNoteWithFiles(note: NoteCreate, files: File[]): Observable<Note> {
+    const formData = new FormData();
+    formData.append('titre', note.titre);
+    formData.append('contenu', note.contenu);
+    formData.append('auteur_id', note.auteur_id.toString());
+    if (note.equipe) formData.append('equipe', note.equipe);
+
+    files.forEach(file => formData.append('fichiers', file));
+
+    return this.http.post<Note>(`${this.baseUrl}notes/`, formData);
   }
 
   updateNote(id: number, note: Partial<Note>): Observable<Note> {
-    return this.http.put<Note>(`${this.baseUrl}/notes/${id}`, note);
+    if (id == null) throw new Error('ID note manquant');
+    return this.http.put<Note>(`${this.baseUrl}notes/${id}/`, note);
   }
 
   deleteNote(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/notes/${id}`);
+    if (id == null) throw new Error('ID note manquant');
+    return this.http.delete<void>(`${this.baseUrl}notes/${id}/`);
   }
 
   // ---------------- COMMENTAIRES ----------------
   getCommentaires(noteId: number): Observable<Commentaire[]> {
-    return this.http.get<Commentaire[]>(`${this.baseUrl}/notes/${noteId}/commentaires`);
+    if (noteId == null) throw new Error('ID note manquant pour récupérer les commentaires');
+    return this.http.get<Commentaire[]>(`${this.baseUrl}notes/${noteId}/commentaires/`);
   }
 
   createCommentaire(noteId: number, commentaire: Commentaire): Observable<Commentaire> {
-    return this.http.post<Commentaire>(`${this.baseUrl}/notes/${noteId}/commentaires`, commentaire);
+    if (noteId == null) throw new Error('ID note manquant pour créer un commentaire');
+    return this.http.post<Commentaire>(`${this.baseUrl}notes/${noteId}/commentaires/`, commentaire);
   }
 }

@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewChild} from '@angular/core';
 import { ActivatedRoute, RouterModule, Router } from '@angular/router';
-import { ApiService, Note } from '../../services/api.service';
+import { ApiService, Note, Utilisateur } from '../../services/api.service';
+import { AuthService } from '../../services/auth.service';
 import { ToastComponent } from '../../components/shared/toast/toast.component';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from '../shared/confirm-dialog/confirm-dialog.component';
@@ -14,12 +15,13 @@ export class NoteDetailComponent implements OnInit {
   @ViewChild('toast') toast!: ToastComponent;
 
   note?: Note;
+  utilisateur?: Utilisateur;
   isLoading = true;
   errorMessage = '';
   isEditing = false;
 
   constructor(private route: ActivatedRoute, private api: ApiService, private router: Router,
-  private dialog: MatDialog
+  private dialog: MatDialog, private auth: AuthService,
   ) {}
 
   ngOnInit(): void {
@@ -66,5 +68,8 @@ deleteNote(): void {
       });
     }
   });
+}
+canEditOrDelete(note: Note): boolean {
+  return this.auth.getUser().id === note.auteur?.id || this.auth.getUser().type === 'admin';
 }
 }

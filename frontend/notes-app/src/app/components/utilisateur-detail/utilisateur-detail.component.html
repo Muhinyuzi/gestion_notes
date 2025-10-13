@@ -10,29 +10,56 @@
 <div *ngIf="!isLoading && utilisateur" class="utilisateur-container">
   <h2>Détails de l'utilisateur</h2>
 
-  <div *ngIf="!isEditing">
+  <!-- Affichage -->
+  <div *ngIf="!isEditing" class="user-details">
     <p><strong>Nom :</strong> {{ utilisateur.nom }}</p>
     <p><strong>Email :</strong> {{ utilisateur.email }}</p>
-    <p><strong>Équipe :</strong> {{ utilisateur.equipe }}</p>
+    <p><strong>Équipe :</strong> {{ utilisateur.equipe || 'Non spécifiée' }}</p>
+    <p><strong>Adresse :</strong> {{ utilisateur.adresse || 'Non spécifiée' }}</p>
+    <p><strong>Téléphone :</strong> {{ utilisateur.telephone || 'Non spécifié' }}</p>
+    <p><strong>Rôle :</strong> {{ utilisateur.type || 'Utilisateur' }}</p>
 
-    <button mat-raised-button color="primary" (click)="isEditing = true">✏️ Modifier</button>
-    <button mat-raised-button color="warn" (click)="deleteUtilisateur()">🗑 Supprimer</button>
+    <div class="actions">
+      <button mat-raised-button color="primary" (click)="isEditing = true">
+        ✏️ Modifier
+      </button>
+      <button mat-raised-button color="warn" (click)="deleteUtilisateur()">
+        🗑 Supprimer
+      </button>
+    </div>
   </div>
 
+  <!-- Formulaire d'édition -->
   <div *ngIf="isEditing" class="edit-form">
     <mat-form-field appearance="fill">
       <mat-label>Nom</mat-label>
-      <input matInput [(ngModel)]="utilisateur.nom">
+      <input matInput [(ngModel)]="utilisateur.nom" required>
     </mat-form-field>
 
     <mat-form-field appearance="fill">
       <mat-label>Email</mat-label>
-      <input matInput [(ngModel)]="utilisateur.email" type="email">
+      <input matInput [(ngModel)]="utilisateur.email" type="email" required>
     </mat-form-field>
 
     <mat-form-field appearance="fill">
       <mat-label>Équipe</mat-label>
       <input matInput [(ngModel)]="utilisateur.equipe">
+    </mat-form-field>
+
+    <mat-form-field appearance="fill">
+      <mat-label>Adresse</mat-label>
+      <input matInput [(ngModel)]="utilisateur.adresse">
+    </mat-form-field>
+
+    <mat-form-field appearance="fill">
+      <mat-label>Téléphone</mat-label>
+      <input matInput [(ngModel)]="utilisateur.telephone" type="tel">
+    </mat-form-field>
+
+    <mat-form-field appearance="fill">
+      <mat-label>Rôle</mat-label>
+      <input matInput [(ngModel)]="utilisateur.type" readonly>
+      <mat-hint>Ce champ ne peut pas être modifié</mat-hint>
     </mat-form-field>
 
     <div class="edit-buttons">

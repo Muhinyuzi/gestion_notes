@@ -110,4 +110,5 @@ export class NotesComponent implements OnInit {
     this.sort = sort;
     this.loadNotes();
   }
+
 }

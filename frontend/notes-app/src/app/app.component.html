@@ -1,32 +1,33 @@
 <div class="container mt-4 app-container">
   <h1>📒 Gestion de notes</h1>
 
-  <!-- Navigation -->
-  <nav *ngIf="auth.isLoggedIn()">
-    <!-- Logo -->
+  <!-- Navigation visible uniquement si l'utilisateur est connecté -->
+  <nav *ngIf="isLoggedIn()">
     <div class="logo">Notes</div>
 
     <!-- Hamburger -->
     <div class="hamburger" (click)="toggleMenu()">
-      <span></span>
-      <span></span>
-      <span></span>
+      <span></span><span></span><span></span>
     </div>
 
     <!-- Liens -->
     <div class="nav-links" [class.show]="menuOpen">
       <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeMenu()">🏠 Accueil</a>
-      <a routerLink="/utilisateurs" routerLinkActive="active" (click)="closeMenu()">👤 Utilisateurs</a>
+
+      <!-- Menu visible seulement pour admin -->
+      <a *ngIf="isAdmin()" routerLink="/utilisateurs" routerLinkActive="active" (click)="closeMenu()">👥 Utilisateurs</a>
+
+      <!-- Menu visible seulement pour les non-admin, lien vers leur détail -->
+      <a *ngIf="!isAdmin()" [routerLink]="['/utilisateurs', getUserId()]" routerLinkActive="active" (click)="closeMenu()">🙍‍♂️ Mon profil</a>
+
       <a routerLink="/notes" routerLinkActive="active" (click)="closeMenu()">📝 Notes</a>
 
-      <button *ngIf="auth.isLoggedIn()" (click)="logout()" class="logout-btn">🚪 Logout</button>
-      <!-- <a *ngIf="!auth.isLoggedIn()" routerLink="/login" class="logout-btn">🔑 Login</a> -->
+      <button *ngIf="isLoggedIn()" (click)="logout()" class="logout-btn">🚪 Logout</button>
     </div>
   </nav>
 
   <hr />
 
-  <!-- Contenu dynamique -->
   <div class="page-content">
     <router-outlet></router-outlet>
   </div>

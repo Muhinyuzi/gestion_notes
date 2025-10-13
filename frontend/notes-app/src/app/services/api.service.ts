@@ -47,6 +47,7 @@ export interface Note {
   equipe?: string;
   created_at: string;
   updated_at?: string;
+  auteur_id: number;
   auteur?: Utilisateur;
   commentaires: Commentaire[];
   fichiers?: any[];

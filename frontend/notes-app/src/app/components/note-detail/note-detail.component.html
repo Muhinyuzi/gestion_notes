@@ -17,10 +17,11 @@
       <p *ngIf="note.updated_at" class="updated">✏️ <strong>Modifiée le :</strong> {{ note.updated_at | date:'short' }}</p>
     </div>
 
-    <div class="actions">
+    <div class="actions" *ngIf="canEditOrDelete(note)">
       <button (click)="isEditing = true" class="edit-btn">✏️ Éditer</button>
       <button (click)="deleteNote()" class="delete-btn">🗑️ Supprimer</button>
     </div>
+
   </div>
 
   <!-- Mode édition -->

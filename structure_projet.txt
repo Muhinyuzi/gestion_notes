@@ -1,0 +1,31 @@
+src/
+├─ app/
+│  ├─ components/
+│  │  ├─ utilisateurs/
+│  │  │  ├─ utilisateurs.component.ts
+│  │  │  ├─ utilisateurs.component.html
+│  │  │  ├─ utilisateurs.component.css
+│  │  ├─ utilisateur-detail/
+│  │  │  ├─ utilisateur-detail.component.ts
+│  │  │  ├─ utilisateur-detail.component.html
+│  │  │  ├─ utilisateur-detail.component.css
+│  │  ├─ notes/
+│  │  │  ├─ notes.component.ts
+│  │  │  ├─ notes.component.html
+│  │  │  ├─ notes.component.css
+│  │  ├─ shared/
+│  │  │  ├─ toast/
+│  │  │  ├─ loader/
+│  ├─ services/
+│  │  ├─ auth.service.ts
+│  │  ├─ user.service.ts
+│  │  ├─ note.service.ts
+│  ├─ guards/
+│  │  ├─ auth.guard.ts
+│  │  ├─ admin.guard.ts
+│  ├─ interceptors/
+│  │  ├─ auth.interceptor.ts
+│  ├─ app-routing.module.ts
+│  ├─ app.component.ts
+│  ├─ app.component.html
+│  └─ app.component.css

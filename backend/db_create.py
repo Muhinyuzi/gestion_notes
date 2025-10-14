@@ -85,6 +85,7 @@ def seed():
             telephone=u["telephone"],
             adresse=u["adresse"],
             date_embauche=u["date_embauche"],
+            avatar_url = None  # Pas d'avatar initialement
         )
         session.add(user)
         users.append(user)

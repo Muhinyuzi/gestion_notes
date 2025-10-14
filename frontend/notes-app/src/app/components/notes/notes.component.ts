@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
-import { ApiService, Note, NoteCreate, NotesResponse } from '../../services/api.service';
+import { NoteService, Note, NoteCreate, NotesResponse } from '../../services/note.service';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
@@ -23,7 +23,7 @@ export class NotesComponent implements OnInit {
 
   currentUser: any = null;
 
-  constructor(private api: ApiService, private auth: AuthService) {}
+  constructor(private api: NoteService, private auth: AuthService) {}
 
   ngOnInit(): void {
     this.currentUser = this.auth.getUser();

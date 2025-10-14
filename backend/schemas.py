@@ -16,11 +16,13 @@ class UtilisateurBase(BaseModel):
     date_embauche: Optional[datetime] = None
 
 class UtilisateurCreate(UtilisateurBase):
-    mot_de_passe: str
+    mot_de_passe: Optional[str] = None 
 
 class UtilisateurOut(UtilisateurBase):
     id: int
     date: Optional[datetime]
+    mot_de_passe: Optional[str] = None
+    avatar_url: Optional[str] = None  # 🆕 lien vers l'avatar
 
     class Config:
         from_attributes = True  # ✅ Pydantic v2

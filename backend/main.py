@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from db import Base, engine
 import uvicorn
 
@@ -25,6 +26,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# 🔹 Pour servir les avatars stockés localement
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # ------------------------- Root -------------------------
 @app.get("/")

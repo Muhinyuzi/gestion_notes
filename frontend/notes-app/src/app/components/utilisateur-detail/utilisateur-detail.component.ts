@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ApiService, UtilisateurDetailOut } from '../../services/api.service';
-import { ToastComponent } from '../../components/shared/toast/toast.component';
+import { UtilisateurService, UtilisateurDetailOut } from '../../services/utilisateur.service';
+import { ToastComponent } from '../shared/toast/toast.component';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from '../shared/confirm-dialog/confirm-dialog.component';
 
@@ -16,10 +16,12 @@ export class UtilisateurDetailComponent implements OnInit {
   utilisateur?: UtilisateurDetailOut;
   isLoading = true;
   isEditing = false;
+  selectedFile: File | null = null;
+  avatarUrl: string = 'http://127.0.0.1:8000/uploads/avatars/default-avatar.png';
 
   constructor(
     private route: ActivatedRoute,
-    private api: ApiService,
+    private api: UtilisateurService,
     private router: Router,
     private dialog: MatDialog
   ) {}
@@ -39,6 +41,7 @@ export class UtilisateurDetailComponent implements OnInit {
     this.api.getUtilisateurDetail(id).subscribe({
       next: (data) => {
         this.utilisateur = data;
+        this.avatarUrl = data.avatar_url || 'http://127.0.0.1:8000/uploads/avatars/default-avatar.png';
         this.isLoading = false;
       },
       error: () => {
@@ -52,7 +55,7 @@ export class UtilisateurDetailComponent implements OnInit {
     if (!this.utilisateur) return;
     this.api.updateUtilisateur(this.utilisateur.id, this.utilisateur).subscribe({
       next: (updated) => {
-        this.utilisateur as UtilisateurDetailOut == updated;
+        this.utilisateur = updated as UtilisateurDetailOut;
         this.isEditing = false;
         this.toast.show("✅ Utilisateur mis à jour avec succès !", "success");
       },
@@ -69,11 +72,42 @@ export class UtilisateurDetailComponent implements OnInit {
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.api.deleteUtilisateur(this.utilisateur!.id).subscribe({
+      if (result && this.utilisateur) {
+        this.api.deleteUtilisateur(this.utilisateur.id).subscribe({
           next: () => this.router.navigate(['/utilisateurs']),
           error: () => this.toast.show("❌ Erreur lors de la suppression", "error")
         });
+      }
+    });
+  }
+
+  onAvatarSelected(event: any) {
+    const file = event.target.files[0];
+    if (file && file.type.startsWith('image/')) {
+      this.selectedFile = file;
+      this.avatarUrl = URL.createObjectURL(file); // Preview instantané
+    } else {
+      this.toast.show("❌ Veuillez sélectionner une image valide", "error");
+    }
+  }
+
+  uploadAvatar() {
+    if (!this.selectedFile || !this.utilisateur?.id) return;
+
+    const formData = new FormData();
+    formData.append("file", this.selectedFile);
+
+    this.api.uploadAvatar(this.utilisateur.id, formData).subscribe({
+      next: (res: any) => {
+        if (this.utilisateur) {
+          this.utilisateur.avatar_url = res.avatar_url;
+          this.avatarUrl = res.avatar_url;
+          this.toast.show("✅ Avatar mis à jour avec succès !", "success");
+        }
+      },
+      error: (err) => {
+        console.error(err);
+        this.toast.show("❌ Erreur lors de l'upload", "error");
       }
     });
   }

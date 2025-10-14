@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild} from '@angular/core';
 import { ActivatedRoute, RouterModule, Router } from '@angular/router';
-import { ApiService, Note, Utilisateur } from '../../services/api.service';
+import { NoteService, Note, Utilisateur } from '../../services/note.service';
 import { AuthService } from '../../services/auth.service';
 import { ToastComponent } from '../../components/shared/toast/toast.component';
 import { MatDialog } from '@angular/material/dialog';
@@ -20,7 +20,7 @@ export class NoteDetailComponent implements OnInit {
   errorMessage = '';
   isEditing = false;
 
-  constructor(private route: ActivatedRoute, private api: ApiService, private router: Router,
+  constructor(private route: ActivatedRoute, private api: NoteService, private router: Router,
   private dialog: MatDialog, private auth: AuthService,
   ) {}
 

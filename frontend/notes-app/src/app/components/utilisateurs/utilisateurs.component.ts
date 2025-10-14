@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ApiService, Utilisateur, UtilisateursResponse } from '../../services/api.service';
+import { UtilisateurService, Utilisateur, UtilisateursResponse } from '../../services/utilisateur.service';
 
 @Component({
   selector: 'app-utilisateurs',
@@ -27,7 +27,7 @@ export class UtilisateursComponent implements OnInit {
   limit = 10;
   total = 0;
 
-  constructor(private api: ApiService) {}
+  constructor(private api: UtilisateurService) {}
 
   ngOnInit(): void {
     this.loadUsers();

@@ -1,0 +1,50 @@
+<div class="notes-container">
+  <h3>➕ Créer une nouvelle note</h3>
+
+  <form class="add-note-form" (ngSubmit)="addNote()">
+
+    <!-- Titre -->
+    <input type="text" [(ngModel)]="newNote.titre" name="titre" placeholder="Titre" required>
+
+    <!-- Contenu -->
+    <textarea [(ngModel)]="newNote.contenu" name="contenu" placeholder="Contenu" required></textarea>
+
+    <!-- Équipe (readonly si non-admin) -->
+    <input type="text" [(ngModel)]="newNote.equipe" name="equipe" placeholder="Équipe">
+
+    <!-- Catégorie -->
+    <select [(ngModel)]="newNote.categorie" name="categorie" required>
+      <option value="" disabled selected>-- Choisir une catégorie --</option>
+      <option value="Technique">Technique</option>
+      <option value="RH">Ressources humaines</option>
+      <option value="Administration">Administration</option>
+      <option value="Autre">Autre</option>
+    </select>
+
+    <!-- Priorité -->
+    <select [(ngModel)]="newNote.priorite" name="priorite" required>
+      <option value="" disabled selected>-- Choisir la priorité --</option>
+      <option value="basse">Basse</option>
+      <option value="moyenne">Moyenne</option>
+      <option value="haute">Haute</option>
+    </select>
+
+    <!-- Upload fichiers -->
+    <input type="file" (change)="handleFileInput($event)" multiple>
+
+    <!-- Liste des fichiers sélectionnés -->
+    <div *ngIf="newFiles.length > 0" class="selected-files">
+      <p>📎 Fichiers sélectionnés :</p>
+      <ul>
+        <li *ngFor="let f of newFiles; let i = index">
+          {{ f.name }}
+          <button type="button" class="remove-file-btn" (click)="removeFile(i)">❌</button>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Bouton Ajouter -->
+    <button type="submit">Créer la note</button>
+
+  </form>
+</div>

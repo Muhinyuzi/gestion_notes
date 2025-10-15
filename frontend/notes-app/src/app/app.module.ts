@@ -12,7 +12,7 @@ import { HomeComponent } from './components/home/home.component';
 import { NoteDetailComponent } from './components/note-detail/note-detail.component';
 import { LoginComponent } from './components/login/login.component';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
-import { AuthInterceptor } from './auth.interceptor';
+import { AuthInterceptor } from './interceptors/auth.interceptor';
 import { ToastComponent } from './components/shared/toast/toast.component';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { ConfirmDialogComponent } from './components/shared/confirm-dialog/confirm-dialog.component';
@@ -23,7 +23,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatCardModule } from '@angular/material/card';
 import { UtilisateurDetailComponent } from './components/utilisateur-detail/utilisateur-detail.component';
+import { NoteCreateComponent } from './components/note-create/note-create.component';
 
 @NgModule({
   declarations: [
@@ -36,7 +39,8 @@ import { UtilisateurDetailComponent } from './components/utilisateur-detail/util
     LoginComponent,
     ToastComponent,
     ConfirmDialogComponent,
-    UtilisateurDetailComponent
+    UtilisateurDetailComponent,
+    NoteCreateComponent
   ],
   imports: [
     BrowserModule,
@@ -48,6 +52,8 @@ import { UtilisateurDetailComponent } from './components/utilisateur-detail/util
     MatProgressSpinnerModule,
     MatFormFieldModule,
     MatInputModule,
+    MatDividerModule,
+    MatCardModule,
   ],
   providers: [{ provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }, provideAnimationsAsync()],
   bootstrap: [AppComponent]

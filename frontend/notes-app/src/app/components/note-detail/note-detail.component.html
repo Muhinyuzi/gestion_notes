@@ -7,27 +7,87 @@
 
   <!-- Mode lecture -->
   <div *ngIf="!isEditing" class="view-mode">
-    <h2 class="note-title">📝 {{ note.titre }}</h2>
+    <h2 class="note-title">
+      📝 {{ note.titre }}
+      <span *ngIf="(note?.nb_vues || 0) > 100" class="badge-populaire">🔥 Populaire</span>
+      <span *ngIf="note?.created_at && isNew(note.created_at)" class="badge-nouveau">🆕 Nouveau</span>
+    </h2>
+
     <p class="note-content">{{ note.contenu }}</p>
+    <p *ngIf="note.resume_ia"><strong>🧠 Résumé :</strong> {{ note.resume_ia }}</p>
+
+    <!-- Fichiers existants -->
+    <div class="note-images" *ngIf="note.fichiers?.length">
+      <h4>📎 Fichiers / Images :</h4>
+      <ul>
+        <li *ngFor="let fichier of note.fichiers">
+          <a [href]="getFileUrl(fichier.chemin)" download>{{ fichier.nom_fichier }}</a>
+          <button *ngIf="canEditOrDelete(note)" type="button" class="remove-file-btn"
+            (click)="removeExistingFile(fichier.id)">❌</button>
+        </li>
+      </ul>
+    </div>
 
     <div class="meta">
-      <p>👥 <strong>Équipe :</strong> {{ note.equipe }}</p>
-      <p>✍️ <strong>Auteur :</strong> {{ note.auteur?.nom }}</p>
+      <p>👥 <strong>Équipe :</strong> {{ note.equipe || '—' }}</p>
+      <p>✍️ <strong>Auteur :</strong> {{ note.auteur?.nom || 'Inconnu' }}</p>
       <p class="created">📅 <strong>Créée le :</strong> {{ note.created_at | date:'short' }}</p>
       <p *ngIf="note.updated_at" class="updated">✏️ <strong>Modifiée le :</strong> {{ note.updated_at | date:'short' }}</p>
+      <p *ngIf="note.categorie"><strong>Catégorie :</strong> {{ note.categorie }}</p>
+      <p *ngIf="note.priorite"><strong>Priorité :</strong> {{ note.priorite }}</p>
+    </div>
+
+    <div class="stats">
+      <span>👁️ Vues : {{ note.nb_vues || 0 }}</span>
+      <span>❤️ Likes : {{ note.likes || 0 }}
+        <button (click)="likeNote()" [disabled]="hasLiked">👍</button>
+      </span>
     </div>
 
     <div class="actions" *ngIf="canEditOrDelete(note)">
       <button (click)="isEditing = true" class="edit-btn">✏️ Éditer</button>
       <button (click)="deleteNote()" class="delete-btn">🗑️ Supprimer</button>
     </div>
-
   </div>
 
   <!-- Mode édition -->
   <div *ngIf="isEditing" class="edit-mode">
     <input [(ngModel)]="note.titre" placeholder="Titre" class="edit-input" />
     <textarea [(ngModel)]="note.contenu" placeholder="Contenu" class="edit-textarea"></textarea>
+
+    <!-- Équipe -->
+    <input [(ngModel)]="note.equipe" placeholder="Équipe" [readonly]="currentUser?.type !== 'admin'" class="edit-input" />
+
+    <!-- Catégorie -->
+    <select [(ngModel)]="note.categorie" class="edit-select">
+      <option value="" disabled selected>-- Choisir une catégorie --</option>
+      <option value="Technique">Technique</option>
+      <option value="RH">Ressources humaines</option>
+      <option value="Administration">Administration</option>
+      <option value="Autre">Autre</option>
+    </select>
+
+    <!-- Priorité -->
+    <select [(ngModel)]="note.priorite" class="edit-select">
+      <option value="" disabled selected>-- Choisir la priorité --</option>
+      <option value="basse">Basse</option>
+      <option value="moyenne">Moyenne</option>
+      <option value="haute">Haute</option>
+    </select>
+
+    <!-- Upload fichiers -->
+    <input type="file" #fileInput (change)="handleFileInput($event)" multiple class="edit-input">
+
+    <!-- Liste fichiers ajoutés -->
+    <div *ngIf="newFiles.length > 0" class="selected-files">
+      <p>📎 Nouveaux fichiers :</p>
+      <ul>
+        <li *ngFor="let f of newFiles; let i = index">
+          {{ f.name }}
+          <button type="button" class="remove-file-btn" (click)="removeFile(i)">❌</button>
+        </li>
+      </ul>
+    </div>
 
     <div class="actions">
       <button (click)="updateNote()" class="save-btn">💾 Sauvegarder</button>

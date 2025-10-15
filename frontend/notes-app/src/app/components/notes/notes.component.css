@@ -79,6 +79,7 @@
   border-radius: 14px;
   transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  position: relative;
 }
 
 .notes-list li:hover {
@@ -118,6 +119,41 @@
   color: #d35400;
 }
 
+/* ===================== Priority Badge ===================== */
+.badge-priorite {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  color: white;
+  margin-right: 8px;
+}
+
+.badge-priorite.basse {
+  background-color: #27ae60;
+}
+
+.badge-priorite.moyenne {
+  background-color: #f39c12;
+}
+
+.badge-priorite.haute {
+  background-color: #e74c3c;
+}
+
+/* ===================== Category Badge ===================== */
+.badge-categorie {
+  background: #eaf2f8;
+  color: #2980b9;
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin-left: 6px;
+}
+
 /* ===================== Add Note Form ===================== */
 .add-note-form {
   display: flex;
@@ -127,7 +163,8 @@
 }
 
 .add-note-form input,
-.add-note-form textarea {
+.add-note-form textarea,
+.add-note-form select {
   padding: 14px;
   border-radius: 12px;
   border: 1px solid #dcdcdc;
@@ -141,7 +178,8 @@
 }
 
 .add-note-form input:focus,
-.add-note-form textarea:focus {
+.add-note-form textarea:focus,
+.add-note-form select:focus {
   outline: none;
   border-color: #5dade2;
   box-shadow: 0 0 10px rgba(93,173,226,0.3);
@@ -242,6 +280,24 @@
   transform: scale(1.05);
 }
 
+/* ===================== Créer une note ===================== */
+.create-note-btn {
+  display: inline-block;
+  padding: 10px 18px;
+  background-color: #5dade2;
+  color: white;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background 0.25s ease, transform 0.15s ease;
+  margin-bottom: 16px;
+}
+
+.create-note-btn:hover {
+  background-color: #3498db;
+  transform: scale(1.05);
+}
+
 /* ===================== Responsive ===================== */
 @media (max-width: 650px) {
   .notes-filters {
@@ -274,5 +330,11 @@
   .pagination {
     flex-direction: column;
     gap: 6px;
+  }
+  .create-note-btn {
+    width: 100%;
+    text-align: center;
+    padding: 12px 0;
+    font-size: 1rem;
   }
 }

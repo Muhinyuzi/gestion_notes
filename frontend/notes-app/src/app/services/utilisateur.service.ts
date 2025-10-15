@@ -1,3 +1,5 @@
+
+
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -20,6 +22,7 @@ export interface Utilisateur {
 export interface UtilisateurDetailOut extends Utilisateur {
   id: number;
   date?: string;
+  avatar_url: string;
   notes: Note[];
   commentaires: Commentaire[];
 }
@@ -74,7 +77,7 @@ export interface Commentaire {
 @Injectable({
   providedIn: 'root'
 })
-export class ApiService {
+export class UtilisateurService {
   private baseUrl = 'http://127.0.0.1:8000/';
 
   constructor(private http: HttpClient) {}
@@ -106,64 +109,18 @@ export class ApiService {
     return this.http.delete<void>(`${this.baseUrl}utilisateurs/${userId}/`);
   }
 
-  // ---------------- NOTES ----------------
-  getNotes(
-    search?: string,
-    author?: string,
-    sort: 'date_asc' | 'date_desc' = 'date_desc',
-    page: number = 1,
-    limit: number = 10
-  ): Observable<NotesResponse> {
-    let params = new HttpParams()
-      .set('sort', sort)
-      .set('page', page.toString())
-      .set('limit', limit.toString());
+  uploadAvatar(userId: number, formData: FormData) {
+  return this.http.post(`${this.baseUrl}utilisateurs/${userId}/avatar`, formData);
+}
+getAvatar(userId: number): Observable<Blob> {
+  if (userId == null) throw new Error('ID utilisateur manquant');
+  return this.http.get(`${this.baseUrl}utilisateurs/${userId}/avatar`, { responseType: 'blob' });
+}
 
-    if (search) params = params.set('search', search);
-    if (author) params = params.set('author', author);
+// URL de fallback par défaut côté backend
+getDefaultAvatarUrl() {
+  return `${this.baseUrl}avatars/default`;
+}
 
-    return this.http.get<NotesResponse>(`${this.baseUrl}notes/`, { params });
-  }
 
-  getNoteById(id: number): Observable<Note> {
-    if (id == null) throw new Error('ID note manquant');
-    return this.http.get<Note>(`${this.baseUrl}notes/${id}/`);
-  }
-
-  createNote(note: NoteCreate): Observable<Note> {
-    return this.http.post<Note>(`${this.baseUrl}notes/`, note);
-  }
-
-  createNoteWithFiles(note: NoteCreate, files: File[]): Observable<Note> {
-    const formData = new FormData();
-    formData.append('titre', note.titre);
-    formData.append('contenu', note.contenu);
-    formData.append('auteur_id', note.auteur_id.toString());
-    if (note.equipe) formData.append('equipe', note.equipe);
-
-    files.forEach(file => formData.append('fichiers', file));
-
-    return this.http.post<Note>(`${this.baseUrl}notes/`, formData);
-  }
-
-  updateNote(id: number, note: Partial<Note>): Observable<Note> {
-    if (id == null) throw new Error('ID note manquant');
-    return this.http.put<Note>(`${this.baseUrl}notes/${id}/`, note);
-  }
-
-  deleteNote(id: number): Observable<void> {
-    if (id == null) throw new Error('ID note manquant');
-    return this.http.delete<void>(`${this.baseUrl}notes/${id}/`);
-  }
-
-  // ---------------- COMMENTAIRES ----------------
-  getCommentaires(noteId: number): Observable<Commentaire[]> {
-    if (noteId == null) throw new Error('ID note manquant pour récupérer les commentaires');
-    return this.http.get<Commentaire[]>(`${this.baseUrl}notes/${noteId}/commentaires/`);
-  }
-
-  createCommentaire(noteId: number, commentaire: Commentaire): Observable<Commentaire> {
-    if (noteId == null) throw new Error('ID note manquant pour créer un commentaire');
-    return this.http.post<Commentaire>(`${this.baseUrl}notes/${noteId}/commentaires/`, commentaire);
-  }
 }

@@ -16,11 +16,13 @@ class UtilisateurBase(BaseModel):
     date_embauche: Optional[datetime] = None
 
 class UtilisateurCreate(UtilisateurBase):
-    mot_de_passe: str
+    mot_de_passe: Optional[str] = None 
 
 class UtilisateurOut(UtilisateurBase):
     id: int
     date: Optional[datetime]
+    mot_de_passe: Optional[str] = None
+    avatar_url: Optional[str] = None  # 🆕 lien vers l'avatar
 
     class Config:
         from_attributes = True  # ✅ Pydantic v2
@@ -46,12 +48,17 @@ class NoteBase(BaseModel):
     titre: str
     contenu: str
     equipe: Optional[str] = None
+    categorie: Optional[str] = None
+    priorite: Optional[str] = "Moyenne"
+    resume_ia: Optional[str] = None
 
 class NoteCreate(NoteBase):
     auteur_id: int
 
 class NoteOut(NoteBase):
     id: int
+    likes: int
+    nb_vues: int
     created_at: datetime
     updated_at: Optional[datetime] = None
     auteur: Optional[UtilisateurOut] = None

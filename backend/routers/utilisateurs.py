@@ -1,4 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
+from fastapi.responses import FileResponse
+import os
+import shutil
 from sqlalchemy.orm import Session, joinedload
 from typing import List
 from db import get_db
@@ -9,6 +12,9 @@ from auth import get_current_user
 
 router = APIRouter()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+UPLOAD_DIR = "uploads/avatars"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 def hash_password(password: str):
     return pwd_context.hash(password)
@@ -97,8 +103,13 @@ def get_user_detail(user_id: int, db: Session = Depends(get_db),
 
 # ---------------- UPDATE USER ----------------
 @router.put("/{user_id}", response_model=UtilisateurOut)
-def update_user(user_id: int, updated: UtilisateurCreate, db: Session = Depends(get_db),
-                current_user: Utilisateur = Depends(get_current_user)):
+def update_user(
+    user_id: int,
+    updated: UtilisateurCreate,  # UtilisateurCreate avec mot_de_passe optionnel
+    db: Session = Depends(get_db),
+    current_user: Utilisateur = Depends(get_current_user)
+):
+    # Vérification des droits : admin ou propriétaire
     if current_user.type != "admin" and current_user.id != user_id:
         raise HTTPException(status_code=403, detail="Accès non autorisé")
 
@@ -106,20 +117,17 @@ def update_user(user_id: int, updated: UtilisateurCreate, db: Session = Depends(
     if not user:
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
 
-    user.nom = updated.nom
-    user.email = updated.email
-    user.equipe = updated.equipe
-    user.type = updated.type or user.type
-    user.poste = updated.poste
-    user.telephone = updated.telephone
-    user.adresse = updated.adresse
-    user.date_embauche = updated.date_embauche
-    if updated.mot_de_passe:
-        user.mot_de_passe = hash_password(updated.mot_de_passe)
+    # Update seulement des champs envoyés
+    for key, value in updated.dict(exclude_unset=True).items():
+        if key == "mot_de_passe" and value:
+            user.mot_de_passe = hash_password(value)
+        else:
+            setattr(user, key, value)
 
     db.commit()
     db.refresh(user)
-    return UtilisateurOut.from_orm(user)  # ✅ transformer
+
+    return UtilisateurOut.from_orm(user)
 
 # ---------------- DELETE USER ----------------
 @router.delete("/{user_id}", status_code=204)
@@ -134,3 +142,49 @@ def delete_user(user_id: int, db: Session = Depends(get_db),
     db.delete(user)
     db.commit()
     return None
+
+@router.post("/{user_id}/avatar")
+async def upload_avatar(user_id: int, file: UploadFile = File(...), db: Session = Depends(get_db)):
+    user = db.query(Utilisateur).filter(Utilisateur.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+
+    # Vérifier type MIME
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="Le fichier doit être une image")
+
+    # Créer un nom de fichier unique
+    file_path = os.path.join(UPLOAD_DIR, f"user_{user_id}_{file.filename}")
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+    # Sauvegarder le fichier
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    # Mettre à jour l'URL complète
+    user.avatar_url = f"http://127.0.0.1:8000/uploads/avatars/user_{user_id}_{file.filename}"
+    db.commit()
+    db.refresh(user)
+
+    return {"avatar_url": user.avatar_url}
+
+@router.get("/{user_id}/avatar")
+async def get_avatar(user_id: int, db: Session = Depends(get_db)):
+    """
+    Retourne le fichier avatar de l'utilisateur.
+    """
+    # Cherche dans la base
+    user = db.query(Utilisateur).filter(Utilisateur.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+
+    if not user.avatar_url:
+        raise HTTPException(status_code=404, detail="Aucun avatar défini")
+
+    file_path = user.avatar_url.lstrip("/")  # ex: "uploads/avatars/user_1_avatar.jpg"
+
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="Fichier non trouvé")
+
+    return FileResponse(file_path)
+

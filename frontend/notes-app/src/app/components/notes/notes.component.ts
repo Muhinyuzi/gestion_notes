@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
-import { ApiService, Note, NoteCreate, NotesResponse } from '../../services/api.service';
+import { NoteService, Note, NoteCreate, NotesResponse } from '../../services/note.service';
 import { AuthService } from '../../services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-notes',
@@ -10,7 +11,14 @@ import { AuthService } from '../../services/auth.service';
 export class NotesComponent implements OnInit {
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
   notes: Note[] = [];
-  newNote: NoteCreate = { titre: '', contenu: '', equipe: '', auteur_id: 0 };
+  newNote: NoteCreate = { 
+  titre: '', 
+  contenu: '', 
+  equipe: '', 
+  auteur_id: 0, 
+  categorie: '', 
+  priorite: '' 
+}
   newFiles: File[] = [];
 
   page: number = 1;
@@ -23,7 +31,7 @@ export class NotesComponent implements OnInit {
 
   currentUser: any = null;
 
-  constructor(private api: ApiService, private auth: AuthService) {}
+  constructor(private api: NoteService, private auth: AuthService, private router: Router) {}
 
   ngOnInit(): void {
     this.currentUser = this.auth.getUser();
@@ -65,28 +73,35 @@ export class NotesComponent implements OnInit {
     this.newFiles.splice(index, 1);
   }
 
-  // ---------------- AJOUTER UNE NOTE ----------------
+    // ---------------- AJOUTER UNE NOTE ----------------
   addNote(): void {
-    if (!this.newNote.titre || !this.newNote.contenu) {
-      alert('Veuillez entrer un titre et un contenu.');
+    if (!this.newNote.titre || !this.newNote.contenu || !this.newNote.categorie || !this.newNote.priorite) {
+      alert('Veuillez remplir tous les champs obligatoires.');
       return;
     }
 
-    this.api.createNoteWithFiles(this.newNote, this.newFiles)
-      .subscribe({
-        next: (note: Note) => {
-          this.notes.unshift(note);
-          this.newNote = {
-            titre: '',
-            contenu: '',
-            equipe: this.currentUser?.equipe ?? '',
-            auteur_id: this.currentUser?.id ?? 0
-          };
-          this.newFiles = [];
-          this.total += 1;
-        },
-        error: (err: any) => console.error('Erreur lors de l’ajout de la note', err)
-      });
+    this.api.createNoteWithFiles(this.newNote, this.newFiles).subscribe({
+      next: (note: Note) => {
+        if (!note.id) {
+          console.error('ID manquant dans la note créée', note);
+          return;
+        }
+        this.notes.unshift(note);
+        this.newNote = {
+          titre: '',
+          contenu: '',
+          equipe: this.currentUser?.equipe ?? '',
+          auteur_id: this.currentUser?.id ?? 0,
+          categorie: '',
+          priorite: ''
+        };
+        this.newFiles = [];
+        this.total += 1;
+        // Redirection vers la page détail de la note
+        this.router.navigate(['/notes', note.id]);
+      },
+      error: (err: any) => console.error('Erreur lors de l’ajout de la note', err)
+    });
   }
 
   // ---------------- PAGINATION ----------------

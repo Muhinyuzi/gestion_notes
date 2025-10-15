@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { ApiService, Commentaire } from '../../services/api.service';
+import { CommentaireService, Commentaire } from '../../services/commentaire.service';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
@@ -13,7 +13,7 @@ export class CommentairesComponent implements OnInit {
   newComment: { contenu: string } = { contenu: '' };
   errorMessage = '';
 
-  constructor(private api: ApiService, private auth: AuthService) {}
+  constructor(private api: CommentaireService, private auth: AuthService) {}
 
   ngOnInit(): void {
     this.loadCommentaires();

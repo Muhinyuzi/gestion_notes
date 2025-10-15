@@ -4,6 +4,7 @@ import { HomeComponent } from './components/home/home.component';
 import { UtilisateursComponent } from './components/utilisateurs/utilisateurs.component';
 import { UtilisateurDetailComponent } from './components/utilisateur-detail/utilisateur-detail.component';
 import { NotesComponent } from './components/notes/notes.component';
+import { NoteCreateComponent } from './components/note-create/note-create.component';
 import { NoteDetailComponent } from './components/note-detail/note-detail.component';
 import { LoginComponent } from './components/login/login.component';
 import { AuthGuard } from './guards/auth.guard';
@@ -14,6 +15,7 @@ const routes: Routes = [
   { path: 'utilisateurs', component: UtilisateursComponent, canActivate: [AuthGuard, AdminGuard] },
   { path: 'utilisateurs/:id', component: UtilisateurDetailComponent },
   { path: 'notes', component: NotesComponent, canActivate: [AuthGuard] },
+  { path: 'notes/create', component: NoteCreateComponent },
   { path: 'notes/:id', component: NoteDetailComponent, canActivate: [AuthGuard] },
   { path: 'login', component: LoginComponent },
   { path: '**', redirectTo: 'login' }, // fallback to home

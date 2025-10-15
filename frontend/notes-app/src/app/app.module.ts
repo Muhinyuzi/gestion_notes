@@ -26,6 +26,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatCardModule } from '@angular/material/card';
 import { UtilisateurDetailComponent } from './components/utilisateur-detail/utilisateur-detail.component';
+import { NoteCreateComponent } from './components/note-create/note-create.component';
 
 @NgModule({
   declarations: [
@@ -38,7 +39,8 @@ import { UtilisateurDetailComponent } from './components/utilisateur-detail/util
     LoginComponent,
     ToastComponent,
     ConfirmDialogComponent,
-    UtilisateurDetailComponent
+    UtilisateurDetailComponent,
+    NoteCreateComponent
   ],
   imports: [
     BrowserModule,

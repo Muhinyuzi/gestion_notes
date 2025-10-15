@@ -13,6 +13,7 @@ export class UtilisateursComponent implements OnInit {
   newUser: Utilisateur = { nom: '', email: '', mot_de_passe: '', equipe: '', adresse: '', telephone: '', type: '' };
   selectedUser: Utilisateur = { nom: '', email: '', mot_de_passe: '', equipe: '', adresse: '', telephone: '', type: '' };
   isEditing = false;
+  isAdding = false; 
 
   isLoading = false;
   errorMessage = '';
@@ -149,4 +150,16 @@ export class UtilisateursComponent implements OnInit {
     this.selectedUser = { nom: '', email: '', mot_de_passe: '', equipe: '', adresse: '', telephone: '', type: '' };
     this.newUser = { nom: '', email: '', mot_de_passe: '', equipe: '', adresse: '', telephone: '', type: '' };
   }
+
+  startAdding() {
+  this.isAdding = true;
+  this.isEditing = false;
+  this.resetForm(); // vide le formulaire pour un nouvel utilisateur
+ }
+
+ cancelForm() {
+  this.isAdding = false;
+  this.isEditing = false;
+  this.resetForm();
+}
 }

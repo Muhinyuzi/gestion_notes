@@ -1,59 +1,79 @@
 <div class="utilisateurs-container">
-  <h3>Liste des utilisateurs</h3>
 
-  <!-- Filtres -->
-  <div class="filters">
-    <input type="text" [(ngModel)]="filterNom" placeholder="Filtrer par nom">
-    <input type="text" [(ngModel)]="filterEmail" placeholder="Filtrer par email">
-    <input type="text" [(ngModel)]="filterEquipe" placeholder="Filtrer par équipe">
-    <button class="btn-filters" (click)="applyFilters()">Appliquer filtres</button>
-  </div>
+  <!-- Header avec titre et bouton Ajouter -->
+  <header class="utilisateurs-header">
+    <h2>Gestion des utilisateurs</h2>
+    <button class="btn-add" *ngIf="!isAdding && !isEditing" (click)="startAdding()">
+      ➕ Ajouter un utilisateur
+    </button>
+  </header>
 
-  <!-- Loader -->
-  <div *ngIf="isLoading" class="loading">Chargement en cours...</div>
+  <!-- Liste et filtres -->
+  <section *ngIf="!isAdding && !isEditing" class="utilisateurs-liste-section">
 
-  <!-- Message d'erreur -->
-  <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
+    <!-- Filtres -->
+    <div class="filters">
+      <input type="text" [(ngModel)]="filterNom" placeholder="Filtrer par nom">
+      <input type="text" [(ngModel)]="filterEmail" placeholder="Filtrer par email">
+      <input type="text" [(ngModel)]="filterEquipe" placeholder="Filtrer par équipe">
+      <button class="btn-filters" (click)="applyFilters()">🔍 Appliquer filtres</button>
+    </div>
 
-  <!-- Liste des utilisateurs -->
-  <ul class="utilisateurs-list" *ngIf="!isLoading && !errorMessage && filteredUsers.length > 0">
-    <li *ngFor="let u of filteredUsers">
-      <a [routerLink]="['/utilisateurs', u.id]">{{ u.nom }}</a>
-      <div class="utilisateurs-meta">
-        <p><strong>Email :</strong> {{ u.email }}</p>
-        <p><strong>Équipe :</strong> {{ u.equipe || 'Aucune' }}</p>
-        <p><strong>Adresse :</strong> {{ u.adresse || 'Non spécifiée' }}</p>
-        <p><strong>Téléphone :</strong> {{ u.telephone || 'Non spécifié' }}</p>
-        <p><strong>Rôle :</strong> {{ u.type || 'Utilisateur' }}</p>
-      </div>
-      <button (click)="editUtilisateur(u)">Éditer</button>
-      <button (click)="deleteUtilisateur(u)">Supprimer</button>
-    </li>
-  </ul>
+    <!-- Loader et message d'erreur -->
+    <div *ngIf="isLoading" class="loading">Chargement en cours...</div>
+    <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
 
-  <div *ngIf="!isLoading && filteredUsers.length === 0" class="no-users">
-    Aucun utilisateur trouvé.
-  </div>
+    <!-- Liste des utilisateurs -->
+    <ul class="utilisateurs-list" *ngIf="!isLoading && !errorMessage && filteredUsers.length > 0">
+      <li *ngFor="let u of filteredUsers">
+        <div class="utilisateur-header">
+          <a [routerLink]="['/utilisateurs', u.id]" class="utilisateur-nom">{{ u.nom }}</a>
+          <div class="utilisateur-actions">
+            <button (click)="editUtilisateur(u)" title="Éditer utilisateur">✏️</button>
+            <button (click)="deleteUtilisateur(u)" title="Supprimer utilisateur">🗑️</button>
+          </div>
+        </div>
+        <div class="utilisateurs-meta">
+          <p><strong>Email :</strong> {{ u.email }}</p>
+          <p><strong>Équipe :</strong> {{ u.equipe || 'Aucune' }}</p>
+          <p><strong>Adresse :</strong> {{ u.adresse || 'Non spécifiée' }}</p>
+          <p><strong>Téléphone :</strong> {{ u.telephone || 'Non spécifié' }}</p>
+          <p><strong>Rôle :</strong> {{ u.type || 'Utilisateur' }}</p>
+        </div>
+      </li>
+    </ul>
 
-  <!-- Pagination -->
-  <div class="pagination" *ngIf="total > limit">
-    <button (click)="goToPage(page - 1)" [disabled]="page === 1">Précédent</button>
-    <span>Page {{ page }} / {{ totalPages }}</span>
-    <button (click)="goToPage(page + 1)" [disabled]="page === totalPages">Suivant</button>
-  </div>
+    <div *ngIf="!isLoading && filteredUsers.length === 0" class="no-users">
+      Aucun utilisateur trouvé.
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination" *ngIf="total > limit">
+      <button (click)="goToPage(page - 1)" [disabled]="page === 1">⬅️ Précédent</button>
+      <span>Page {{ page }} / {{ totalPages }}</span>
+      <button (click)="goToPage(page + 1)" [disabled]="page === totalPages">Suivant ➡️</button>
+    </div>
+
+  </section>
 
   <!-- Formulaire ajout / édition -->
-  <h3>{{ isEditing ? 'Modifier utilisateur' : 'Ajouter un utilisateur' }}</h3>
+  <section *ngIf="isAdding || isEditing" class="form-section">
+    <h3>{{ isEditing ? 'Modifier utilisateur' : 'Ajouter un utilisateur' }}</h3>
 
-  <form class="add-utilisateur-form" (ngSubmit)="isEditing ? updateUtilisateur() : addUtilisateur()">
-    <input type="text" [(ngModel)]="formUser.nom" name="nom" placeholder="Nom" required>
-    <input type="email" [(ngModel)]="formUser.email" name="email" placeholder="Email" required>
-    <input type="password" [(ngModel)]="formUser.mot_de_passe" name="mot_de_passe" placeholder="Mot de passe" [required]="!isEditing">
-    <input type="text" [(ngModel)]="formUser.equipe" name="equipe" placeholder="Équipe">
-    <input type="text" [(ngModel)]="formUser.adresse" name="adresse" placeholder="Adresse">
-    <input type="text" [(ngModel)]="formUser.telephone" name="telephone" placeholder="Téléphone">
-    <input type="text" [(ngModel)]="formUser.type" name="role" placeholder="Rôle (ex : admin, dev)" [readonly]="isEditing">
-    <button type="submit">{{ isEditing ? 'Mettre à jour' : 'Ajouter' }}</button>
-    <button type="button" *ngIf="isEditing" (click)="resetForm()">Annuler</button>
-  </form>
+    <form class="add-utilisateur-form" (ngSubmit)="isEditing ? updateUtilisateur() : addUtilisateur()">
+      <input type="text" [(ngModel)]="formUser.nom" name="nom" placeholder="Nom complet" required>
+      <input type="email" [(ngModel)]="formUser.email" name="email" placeholder="Adresse email" required>
+      <input type="password" [(ngModel)]="formUser.mot_de_passe" name="mot_de_passe" placeholder="Mot de passe" [required]="!isEditing">
+      <input type="text" [(ngModel)]="formUser.equipe" name="equipe" placeholder="Équipe">
+      <input type="text" [(ngModel)]="formUser.adresse" name="adresse" placeholder="Adresse">
+      <input type="text" [(ngModel)]="formUser.telephone" name="telephone" placeholder="Téléphone">
+      <input type="text" [(ngModel)]="formUser.type" name="role" placeholder="Rôle (ex : admin, dev)" [readonly]="isEditing">
+
+      <div class="form-actions">
+        <button type="submit" class="btn-submit">{{ isEditing ? 'Mettre à jour' : 'Ajouter' }}</button>
+        <button type="button" class="btn-cancel" (click)="cancelForm()">Annuler</button>
+      </div>
+    </form>
+  </section>
+
 </div>

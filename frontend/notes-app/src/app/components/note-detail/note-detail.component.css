@@ -1,3 +1,4 @@
+/* ---------------- Note Detail Container ---------------- */
 .note-detail {
   background: #fff;
   padding: 25px;
@@ -12,6 +13,7 @@
   transform: scale(1.01);
 }
 
+/* ---------------- Title & Badges ---------------- */
 .note-title {
   font-size: 2rem;
   color: #2c3e50;
@@ -20,6 +22,26 @@
   padding-bottom: 8px;
 }
 
+.badge-populaire,
+.badge-nouveau {
+  display: inline-block;
+  margin-left: 10px;
+  padding: 4px 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 12px;
+  color: #fff;
+}
+
+.badge-populaire {
+  background: #e74c3c;
+}
+
+.badge-nouveau {
+  background: #27ae60;
+}
+
+/* ---------------- Note Content ---------------- */
 .note-content {
   font-size: 1.15rem;
   line-height: 1.7;
@@ -27,6 +49,7 @@
   color: #333;
 }
 
+/* ---------------- Meta Info ---------------- */
 .meta {
   background: #f0f4f8;
   padding: 12px;
@@ -41,6 +64,17 @@
   color: #555;
 }
 
+.meta .created {
+  color: #2980b9;
+  font-weight: 600;
+}
+
+.meta .updated {
+  color: #e67e22;
+  font-weight: 600;
+}
+
+/* ---------------- Loading & Error ---------------- */
 .loading {
   text-align: center;
   font-size: 1.2rem;
@@ -54,9 +88,10 @@
   margin: 15px 0;
 }
 
-/* ------------ Mode édition ------------ */
+/* ---------------- Mode Edition ---------------- */
 .edit-mode .edit-input,
-.edit-mode .edit-textarea {
+.edit-mode .edit-textarea,
+.edit-mode .edit-select {
   width: 100%;
   padding: 10px 12px;
   margin: 10px 0;
@@ -71,6 +106,12 @@
   resize: vertical;
 }
 
+.edit-mode .edit-select {
+  appearance: none;
+  cursor: pointer;
+}
+
+/* ---------------- Actions Buttons ---------------- */
 .actions {
   margin-top: 15px;
 }
@@ -121,36 +162,126 @@
   background: #d35400;
 }
 
-.meta .created {
-  color: #2980b9;
-  font-weight: 600;
-}
-
-.meta .updated {
-  color: #e67e22;
-  font-weight: 600;
-}
-
+/* ---------------- Images & File List ---------------- */
 .note-images {
   margin-top: 20px;
 }
 
-.image-gallery {
+.note-images ul,
+.selected-files ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 6px 0 0 0;
+}
+
+.note-images li,
+.selected-files li {
   display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin: 4px 0;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: #ffffff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  transition: all 0.2s ease;
 }
 
-.note-image {
-  width: 200px;
-  height: 150px;
-  object-fit: cover;
-  border-radius: 10px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  transition: transform 0.2s ease;
+.note-images li:hover,
+.selected-files li:hover {
+  background: #eaf2f8;
 }
 
-.note-image:hover {
-  transform: scale(1.05);
+.note-images a {
+  color: #2980b9;
+  text-decoration: none;
+  transition: color 0.2s ease;
 }
 
+.note-images a:hover {
+  color: #1f618d;
+  text-decoration: underline;
+}
+
+/* ---------------- Remove file button ---------------- */
+.remove-file-btn {
+  background: #f8d7da;
+  border-radius: 6px;
+  padding: 3px 6px;
+  border: none;
+  color: #c0392b;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
+
+.remove-file-btn:hover {
+  background: #e74c3c;
+  color: white;
+  transform: scale(1.1);
+}
+
+/* ---------------- Input fichiers ---------------- */
+.edit-input[type="file"] {
+  margin-top: 10px;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #dcdcdc;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: border 0.25s ease, box-shadow 0.25s ease;
+}
+
+.edit-input[type="file"]:focus {
+  outline: none;
+  border-color: #5dade2;
+  box-shadow: 0 0 8px rgba(93,173,226,0.3);
+}
+
+/* ---------------- Stats (Vues / Likes) ---------------- */
+.stats {
+  margin: 15px 0;
+  display: flex;
+  gap: 20px;
+  font-size: 0.95rem;
+  align-items: center;
+}
+
+.stats button {
+  margin-left: 5px;
+  padding: 2px 6px;
+  font-size: 0.85rem;
+  border-radius: 6px;
+  background: #2980b9;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.stats button:hover {
+  background: #1f618d;
+}
+
+/* ---------------- Responsive ---------------- */
+@media (max-width: 650px) {
+  .selected-files li,
+  .note-images li {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .remove-file-btn {
+    align-self: flex-end;
+  }
+
+  .edit-input[type="file"] {
+    width: 100%;
+  }
+
+  .note-image {
+    width: 100%;
+    height: auto;
+  }
+}

@@ -1,74 +1,86 @@
 /* --- Conteneur principal --- */
 .utilisateurs-container {
-  max-width: 900px;
+  max-width: 950px;
   margin: 40px auto;
-  padding: 25px 30px;
-  background: #ffffff;
+  padding: 30px 35px;
+  background: #fff;
   border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.08);
   font-family: "Inter", "Segoe UI", sans-serif;
   color: #333;
 }
 
-/* --- Titre principal --- */
-.utilisateurs-container h3 {
-  margin-bottom: 20px;
-  font-size: 22px;
-  color: #1a1a1a;
+/* --- Header --- */
+.utilisateurs-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.utilisateurs-header h2 {
+  font-size: 24px;
   font-weight: 600;
+  color: #1a1a1a;
+}
+
+.utilisateurs-header .btn-add {
+  background: linear-gradient(135deg, #007bff, #00c6ff);
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.utilisateurs-header .btn-add:hover {
+  background: linear-gradient(135deg, #0056d2, #00aaff);
+  transform: translateY(-2px);
 }
 
 /* --- Filtres --- */
 .filters {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 25px;
   flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
 }
 
 .filters input {
   padding: 10px 14px;
   border: 1px solid #ccc;
   border-radius: 10px;
-  outline: none;
   font-size: 14px;
+  background: #fafafa;
+  outline: none;
   transition: all 0.3s ease;
-  background-color: #fafafa;
 }
 
 .filters input:focus {
   border-color: #007bff;
-  background-color: #fff;
+  background: #fff;
   box-shadow: 0 0 6px rgba(0, 123, 255, 0.3);
 }
 
-/* --- Bouton Appliquer filtres --- */
-.filters button {
+.filters .btn-filters {
+  padding: 10px 16px;
   background: linear-gradient(135deg, #007bff, #00c6ff);
-  color: white;
+  color: #fff;
   border: none;
-  padding: 10px 18px;
   border-radius: 10px;
-  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 6px rgba(0, 123, 255, 0.3);
 }
 
-.filters button:hover {
+.filters .btn-filters:hover {
   background: linear-gradient(135deg, #0056d2, #00aaff);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(0, 123, 255, 0.4);
 }
 
-.filters button:active {
-  transform: translateY(1px);
-  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
-}
-
-/* --- Loader --- */
+/* --- Loader et Erreur --- */
 .loading {
   text-align: center;
   color: #007bff;
@@ -76,7 +88,6 @@
   margin: 15px 0;
 }
 
-/* --- Message d'erreur --- */
 .error {
   background-color: #ffe8e8;
   color: #c62828;
@@ -94,34 +105,56 @@
 }
 
 .utilisateurs-list li {
-  padding: 16px;
-  border: 1px solid #e0e0e0;
-  border-radius: 12px;
-  margin-bottom: 14px;
-  transition: all 0.3s ease;
   background: #f9fafb;
+  border: 1px solid #e0e0e0;
+  border-radius: 14px;
+  padding: 18px 20px;
+  margin-bottom: 16px;
+  transition: all 0.3s ease;
 }
 
 .utilisateurs-list li:hover {
-  transform: translateY(-2px);
   background: #eef7ff;
   border-color: #bcdfff;
+  transform: translateY(-2px);
 }
 
-.utilisateurs-list a {
+/* --- Header utilisateur --- */
+.utilisateur-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.utilisateur-nom {
   font-size: 17px;
-  color: #007bff;
   font-weight: 600;
+  color: #007bff;
   text-decoration: none;
 }
 
-.utilisateurs-list a:hover {
+.utilisateur-nom:hover {
   text-decoration: underline;
 }
 
+.utilisateur-actions button {
+  background: #f0f0f0;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 10px;
+  margin-left: 6px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.utilisateur-actions button:hover {
+  background: #d0e7ff;
+}
+
+/* --- Meta utilisateur --- */
 .utilisateurs-meta {
   font-size: 14px;
-  margin-top: 8px;
   color: #555;
 }
 
@@ -129,40 +162,11 @@
   margin: 2px 0;
 }
 
-/* --- Boutons Éditer / Supprimer --- */
-.utilisateurs-list button {
-  margin-right: 10px;
-  padding: 8px 14px;
-  border: none;
-  border-radius: 8px;
-  font-size: 13px;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-.utilisateurs-list button:first-of-type {
-  background-color: #00b894;
-  color: #fff;
-}
-
-.utilisateurs-list button:first-of-type:hover {
-  background-color: #009f7a;
-}
-
-.utilisateurs-list button:last-of-type {
-  background-color: #ff7675;
-  color: #fff;
-}
-
-.utilisateurs-list button:last-of-type:hover {
-  background-color: #e85958;
-}
-
 /* --- Message Aucun utilisateur --- */
 .no-users {
   text-align: center;
-  color: #777;
   font-style: italic;
+  color: #777;
   margin-top: 20px;
 }
 
@@ -200,11 +204,17 @@
 }
 
 /* --- Formulaire ajout / édition --- */
+.form-section h3 {
+  margin-bottom: 18px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
 .add-utilisateur-form {
-  margin-top: 30px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 .add-utilisateur-form input {
@@ -212,57 +222,74 @@
   border-radius: 10px;
   border: 1px solid #ccc;
   background: #fafafa;
-  transition: 0.3s;
+  font-size: 14px;
+  transition: all 0.3s;
 }
 
 .add-utilisateur-form input:focus {
   border-color: #007bff;
   background: #fff;
-  box-shadow: 0 0 5px rgba(0, 123, 255, 0.2);
+  box-shadow: 0 0 6px rgba(0, 123, 255, 0.2);
 }
 
-.add-utilisateur-form button {
-  width: fit-content;
-  padding: 10px 18px;
-  font-size: 14px;
-  font-weight: 600;
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;
-  transition: 0.3s;
+/* Boutons formulaire */
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
 }
 
-.add-utilisateur-form button[type="submit"] {
+.btn-submit {
   background: linear-gradient(135deg, #007bff, #00c6ff);
-  color: white;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-.add-utilisateur-form button[type="submit"]:hover {
+.btn-submit:hover {
   background: linear-gradient(135deg, #0056d2, #00aaff);
+  transform: translateY(-2px);
 }
 
-.add-utilisateur-form button[type="button"] {
+.btn-cancel {
   background: #ccc;
   color: #333;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 12px;
+  cursor: pointer;
 }
 
-.add-utilisateur-form button[type="button"]:hover {
+.btn-cancel:hover {
   background: #bbb;
 }
 
 /* --- Responsive --- */
-@media (max-width: 700px) {
+@media (max-width: 780px) {
   .filters {
     flex-direction: column;
     align-items: stretch;
   }
 
   .filters input,
-  .filters button {
+  .filters .btn-filters,
+  .utilisateurs-header .btn-add,
+  .form-actions button {
     width: 100%;
   }
 
-  .add-utilisateur-form button {
-    width: 100%;
+  .utilisateur-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .utilisateur-actions {
+    display: flex;
+    gap: 6px;
   }
 }

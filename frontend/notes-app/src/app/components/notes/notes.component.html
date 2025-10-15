@@ -1,6 +1,9 @@
 <div class="notes-container">
   <h3>📝 Liste des notes</h3>
 
+  <!-- BOUTON POUR CRÉER UNE NOTE -->
+  <a routerLink="/notes/create" class="create-note-btn">➕ Créer une nouvelle note</a>
+
   <!-- FILTRES / RECHERCHE -->
   <div class="notes-filters">
     <input type="text" [(ngModel)]="searchTerm" placeholder="Rechercher un mot-clé...">
@@ -33,33 +36,4 @@
     <span>Page {{ page }} / {{ totalPages }}</span>
     <button [disabled]="page >= totalPages" (click)="goToPage(page + 1)">Suivant</button>
   </div>
-
-  <!-- AJOUTER UNE NOTE -->
-  <h3>➕ Ajouter une note</h3>
-  <form class="add-note-form" (ngSubmit)="addNote()">
-    <input type="text" [(ngModel)]="newNote.titre" name="titre" placeholder="Titre" required>
-    <textarea [(ngModel)]="newNote.contenu" name="contenu" placeholder="Contenu" required></textarea>
-
-    <!-- Équipe readonly pour les employés, editable pour admin -->
-    <input type="text" [(ngModel)]="newNote.equipe" name="equipe" placeholder="Équipe"
-           [readonly]="currentUser?.type !== 'admin'">
-
-    <!-- Upload fichiers -->
-    <!--<input type="file" (change)="handleFileInput($event)" multiple>-->
-    <!-- Upload fichiers -->
-<input type="file" #fileInput (change)="handleFileInput($event)" multiple>
-
-<!-- Liste des fichiers sélectionnés -->
-<div *ngIf="newFiles.length > 0" class="selected-files">
-  <p>📎 Fichiers sélectionnés :</p>
-  <ul>
-    <li *ngFor="let f of newFiles; let i = index">
-      {{ f.name }}
-      <button type="button" class="remove-file-btn" (click)="removeFile(i)">❌</button>
-    </li>
-  </ul>
-</div>
-
-    <button type="submit">Ajouter</button>
-  </form>
 </div>

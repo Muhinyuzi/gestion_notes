@@ -31,15 +31,24 @@ export interface UtilisateursResponse {
   users: Utilisateur[];
 }
 
-// Pour créer une note
-export interface NoteCreate {
-  titre: string;
-  contenu: string;
-  equipe?: string;
-  auteur_id: number;
+// ---------- Fichier associé ----------
+export interface FichierNote {
+  id: number;
+  nom_fichier: string;
+  chemin: string;
 }
 
-// Pour lire une note
+// ---------- Commentaire ----------
+export interface Commentaire {
+  id?: number;
+  contenu: string;
+  auteur_id: number;
+  note_id: number;
+  date?: string;
+  auteur?: Utilisateur;
+}
+
+// ---------- Note ----------
 export interface Note {
   id: number;
   titre: string;
@@ -50,7 +59,23 @@ export interface Note {
   auteur_id: number;
   auteur?: Utilisateur;
   commentaires: Commentaire[];
-  fichiers?: any[];
+  fichiers?: FichierNote[];
+
+  // Champs additionnels
+  nb_vues?: number;
+  likes?: number;
+  resume_ia?: string;
+  categorie?: string;
+  priorite?: string;
+}
+
+export interface NoteCreate {
+  titre: string;
+  contenu: string;
+  equipe?: string;
+  auteur_id: number;
+  priorite?: string;
+  categorie?: string;
 }
 
 export interface NotesResponse {
@@ -58,15 +83,6 @@ export interface NotesResponse {
   page?: number;
   limit?: number;
   notes: Note[];
-}
-
-export interface Commentaire {
-  id?: number;
-  contenu: string;
-  auteur_id: number;
-  note_id: number;
-  date?: string;
-  auteur?: Utilisateur;
 }
 
 // ---------------- SERVICE ----------------
@@ -80,12 +96,13 @@ export class NoteService {
 
   constructor(private http: HttpClient) {}
 
-    getBaseUrl(): string {
+  getBaseUrl(): string {
     return this.baseUrl;
   }
 
-
   // ---------------- NOTES ----------------
+
+  /** Liste paginée et filtrée des notes */
   getNotes(
     search?: string,
     author?: string,
@@ -104,34 +121,83 @@ export class NoteService {
     return this.http.get<NotesResponse>(`${this.baseUrl}notes/`, { params });
   }
 
+  /** Récupère une note par son ID */
   getNoteById(id: number): Observable<Note> {
     if (id == null) throw new Error('ID note manquant');
     return this.http.get<Note>(`${this.baseUrl}notes/${id}/`);
   }
 
+  /** Crée une note sans fichier (cas simple) */
   createNote(note: NoteCreate): Observable<Note> {
     return this.http.post<Note>(`${this.baseUrl}notes/`, note);
   }
 
+  /** Crée une note avec fichiers, catégorie et priorité */
   createNoteWithFiles(note: NoteCreate, files: File[]): Observable<Note> {
     const formData = new FormData();
     formData.append('titre', note.titre);
     formData.append('contenu', note.contenu);
     formData.append('auteur_id', note.auteur_id.toString());
     if (note.equipe) formData.append('equipe', note.equipe);
+    if (note.priorite) formData.append('priorite', note.priorite);
+    if (note.categorie) formData.append('categorie', note.categorie);
 
     files.forEach(file => formData.append('fichiers', file));
 
     return this.http.post<Note>(`${this.baseUrl}notes/`, formData);
   }
 
+  /** Met à jour une note */
   updateNote(id: number, note: Partial<Note>): Observable<Note> {
     if (id == null) throw new Error('ID note manquant');
     return this.http.put<Note>(`${this.baseUrl}notes/${id}/`, note);
   }
 
+  /** Met à jour une note avec fichiers, catégorie et priorité */
+updateNoteWithFiles(id: number, note: NoteCreate, files: File[]): Observable<Note> {
+  if (id == null) throw new Error('ID note manquant');
+  
+  const formData = new FormData();
+  formData.append('titre', note.titre);
+  formData.append('contenu', note.contenu);
+  formData.append('auteur_id', note.auteur_id.toString());
+  if (note.equipe) formData.append('equipe', note.equipe);
+  if (note.priorite) formData.append('priorite', note.priorite);
+  if (note.categorie) formData.append('categorie', note.categorie);
+
+  files.forEach(file => formData.append('fichiers', file));
+
+  return this.http.put<Note>(`${this.baseUrl}notes/${id}/`, formData);
+}
+
+  /** Supprime une note */
   deleteNote(id: number): Observable<void> {
     if (id == null) throw new Error('ID note manquant');
     return this.http.delete<void>(`${this.baseUrl}notes/${id}/`);
   }
+
+  /** Like une note */
+  likeNote(id: number): Observable<{ likes: number }> {
+    if (id == null) throw new Error('ID note manquant');
+    return this.http.post<{ likes: number }>(`${this.baseUrl}notes/${id}/like`, {});
+  }
+
+  // ---------------- COMMENTAIRES ----------------
+
+  getCommentaires(noteId: number): Observable<Commentaire[]> {
+    if (noteId == null) throw new Error('ID note manquant');
+    return this.http.get<Commentaire[]>(`${this.baseUrl}notes/${noteId}/commentaires`);
+  }
+
+  addCommentaire(noteId: number, commentaire: Commentaire): Observable<Commentaire> {
+    if (noteId == null) throw new Error('ID note manquant');
+    return this.http.post<Commentaire>(`${this.baseUrl}notes/${noteId}/commentaires`, commentaire);
+  }
+
+  // ---------------- Fichiers ----------------
+  deleteFile(fileId: number): Observable<{ detail: string }> {
+    if (fileId == null) throw new Error('ID fichier manquant');
+    return this.http.delete<{ detail: string }>(`${this.baseUrl}notes/fichiers/${fileId}`);
+  }
+
 }

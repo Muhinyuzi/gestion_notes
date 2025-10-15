@@ -1,0 +1,178 @@
+/* ===================== Notes Container ===================== */
+.notes-container {
+  max-width: 650px;
+  margin: 2rem auto;
+  padding: 25px;
+  background: #fdfdfd;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* ===================== Section Titles ===================== */
+.notes-container h3 {
+  margin-bottom: 1.2rem;
+  font-size: 1.6rem;
+  color: #34495e;
+  border-left: 6px solid #5dade2;
+  padding-left: 12px;
+  transition: color 0.3s ease;
+}
+
+.notes-container h3:hover {
+  color: #2e86c1;
+}
+
+/* ===================== Add Note Form ===================== */
+.add-note-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 1.5rem;
+}
+
+.add-note-form input,
+.add-note-form textarea,
+.add-note-form select {
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #dcdcdc;
+  font-size: 1rem;
+  transition: all 0.25s ease;
+}
+
+.add-note-form textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.add-note-form input:focus,
+.add-note-form textarea:focus,
+.add-note-form select:focus {
+  outline: none;
+  border-color: #5dade2;
+  box-shadow: 0 0 10px rgba(93, 173, 226, 0.3);
+}
+
+/* ===================== Submit Button ===================== */
+.add-note-form button {
+  padding: 14px;
+  background: #5dade2;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.25s ease, transform 0.15s ease;
+}
+
+.add-note-form button:hover {
+  background: #3498db;
+  transform: scale(1.03);
+}
+
+/* ===================== Selected Files ===================== */
+.selected-files {
+  margin-top: 10px;
+  background: #f4f6f6;
+  border-radius: 10px;
+  padding: 10px 14px;
+  width: fit-content;
+}
+
+.selected-files ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 6px 0 0 0;
+}
+
+.selected-files li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 4px 0;
+  padding: 3px 6px;
+  border-radius: 6px;
+  background: #ffffff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  transition: all 0.2s ease;
+}
+
+.selected-files li:hover {
+  background: #eaf2f8;
+}
+
+.remove-file-btn {
+  background: #f8d7da;
+  border-radius: 6px;
+  padding: 3px 6px;
+  border: none;
+  color: #c0392b;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
+
+.remove-file-btn:hover {
+  background: #e74c3c;
+  color: white;
+  transform: scale(1.1);
+}
+
+/* ===================== Success Toast ===================== */
+.toast-success {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #2ecc71;
+  color: white;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  z-index: 9999;
+  opacity: 0;
+  transform: translateY(-20px);
+  animation: showToast 0.5s forwards;
+}
+
+@keyframes showToast {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===================== New Note Badge ===================== */
+.new-note-badge {
+  display: inline-block;
+  background: #f1c40f;
+  color: #34495e;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-left: 10px;
+  animation: pulseBadge 1.5s infinite;
+}
+
+@keyframes pulseBadge {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+/* ===================== Responsive ===================== */
+@media (max-width: 650px) {
+  .notes-container {
+    padding: 18px;
+  }
+
+  .add-note-form input,
+  .add-note-form textarea,
+  .add-note-form select,
+  .add-note-form button {
+    width: 100%;
+  }
+}

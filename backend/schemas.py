@@ -48,12 +48,17 @@ class NoteBase(BaseModel):
     titre: str
     contenu: str
     equipe: Optional[str] = None
+    categorie: Optional[str] = None
+    priorite: Optional[str] = "Moyenne"
+    resume_ia: Optional[str] = None
 
 class NoteCreate(NoteBase):
     auteur_id: int
 
 class NoteOut(NoteBase):
     id: int
+    likes: int
+    nb_vues: int
     created_at: datetime
     updated_at: Optional[datetime] = None
     auteur: Optional[UtilisateurOut] = None

@@ -36,6 +36,14 @@ class Note(Base):
     equipe = Column(String(100), index=True)
 
     auteur_id = Column(Integer, ForeignKey("utilisateurs.id", ondelete="CASCADE"), index=True)
+
+        # 🆕 Nouveaux champs
+    categorie = Column(String, nullable=True)
+    priorite = Column(String, default="Moyenne")
+    likes = Column(Integer, default=0)
+    nb_vues = Column(Integer, default=0)
+    resume_ia = Column(Text, nullable=True)
+
     auteur = relationship("Utilisateur", back_populates="notes")
 
     created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)

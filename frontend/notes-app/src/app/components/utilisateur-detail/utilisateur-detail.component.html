@@ -11,8 +11,11 @@
       <img [src]="avatarUrl" alt="Avatar" class="avatar" />
 
       <div class="avatar-actions">
-        <input type="file" (change)="onAvatarSelected($event)" accept="image/*">
-        <button mat-stroked-button color="primary" (click)="uploadAvatar()">📤 Upload</button>
+        <input #fileInput type="file" (change)="onAvatarSelected($event)" accept="image/*" hidden>
+         <button mat-stroked-button color="primary" (click)="openFilePicker(fileInput)">
+           📤 Choisir une image
+         </button>
+         <button mat-raised-button color="accent" (click)="uploadAvatar()">💾 Upload</button>
       </div>
     </div>
 

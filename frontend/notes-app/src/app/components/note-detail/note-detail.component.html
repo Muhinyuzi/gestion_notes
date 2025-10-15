@@ -10,6 +10,17 @@
     <h2 class="note-title">📝 {{ note.titre }}</h2>
     <p class="note-content">{{ note.contenu }}</p>
 
+    <!-- 🖼️ Images associées à la note -->
+    <div class="note-images" *ngIf="note.fichiers && note.fichiers.length > 0">
+      <h4>📎 Fichiers / Images :</h4>
+      <div class="image-gallery">
+        <img *ngFor="let fichier of note.fichiers"
+             [src]="getFileUrl(fichier.chemin)"
+             [alt]="fichier.nom_fichier"
+             class="note-image" />
+      </div>
+    </div>
+
     <div class="meta">
       <p>👥 <strong>Équipe :</strong> {{ note.equipe }}</p>
       <p>✍️ <strong>Auteur :</strong> {{ note.auteur?.nom }}</p>
@@ -21,7 +32,6 @@
       <button (click)="isEditing = true" class="edit-btn">✏️ Éditer</button>
       <button (click)="deleteNote()" class="delete-btn">🗑️ Supprimer</button>
     </div>
-
   </div>
 
   <!-- Mode édition -->

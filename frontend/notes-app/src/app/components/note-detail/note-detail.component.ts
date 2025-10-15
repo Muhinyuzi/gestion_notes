@@ -69,7 +69,11 @@ deleteNote(): void {
     }
   });
 }
-canEditOrDelete(note: Note): boolean {
-  return this.auth.getUser().id === note.auteur?.id || this.auth.getUser().type === 'admin';
+  canEditOrDelete(note: Note): boolean {
+    return this.auth.getUser().id === note.auteur?.id || this.auth.getUser().type === 'admin';
+  }
+  getFileUrl(path: string): string {
+  const fixedPath = path.replace(/\\/g, '/');
+  return `${this.api.getBaseUrl()}${fixedPath}`;
 }
 }

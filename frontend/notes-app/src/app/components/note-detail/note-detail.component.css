@@ -131,3 +131,26 @@
   font-weight: 600;
 }
 
+.note-images {
+  margin-top: 20px;
+}
+
+.image-gallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.note-image {
+  width: 200px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  transition: transform 0.2s ease;
+}
+
+.note-image:hover {
+  transform: scale(1.05);
+}
+

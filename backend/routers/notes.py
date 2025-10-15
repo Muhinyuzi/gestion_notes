@@ -6,7 +6,7 @@ import os
 import shutil
 from db import get_db
 from models import Note, Utilisateur, Commentaire, FichierNote
-from schemas import NoteOut, NoteDetailOut, CommentaireOut, NotesResponse
+from schemas import NoteOut, NoteDetailOut, CommentaireOut, NotesResponse, CommentaireCreate
 from auth import get_current_user
 
 router = APIRouter()
@@ -162,10 +162,11 @@ def get_commentaires(note_id: int, db: Session = Depends(get_db)):
 
 # ---------------- ADD COMMENTAIRE ----------------
 @router.post("/{note_id}/commentaires", response_model=CommentaireOut)
-def add_commentaire(note_id: int, commentaire: CommentaireOut, db: Session = Depends(get_db)):
+def add_commentaire(note_id: int, commentaire: CommentaireCreate, db: Session = Depends(get_db)):
     note = db.query(Note).filter(Note.id == note_id).first()
     if not note:
         raise HTTPException(status_code=404, detail="Note non trouvée")
+
     new_comment = Commentaire(
         contenu=commentaire.contenu,
         auteur_id=commentaire.auteur_id,

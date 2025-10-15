@@ -111,4 +111,9 @@ export class UtilisateurDetailComponent implements OnInit {
       }
     });
   }
+
+  openFilePicker(input: HTMLInputElement) {
+  input.click();
+}
+
 }

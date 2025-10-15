@@ -75,9 +75,14 @@ export interface Commentaire {
   providedIn: 'root'
 })
 export class NoteService {
+
   private baseUrl = 'http://127.0.0.1:8000/';
 
   constructor(private http: HttpClient) {}
+
+    getBaseUrl(): string {
+    return this.baseUrl;
+  }
 
 
   // ---------------- NOTES ----------------

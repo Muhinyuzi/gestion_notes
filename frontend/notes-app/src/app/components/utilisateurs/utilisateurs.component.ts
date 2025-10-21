@@ -1,5 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { UtilisateurService, Utilisateur, UtilisateursResponse } from '../../services/utilisateur.service';
+import { ToastComponent } from '../../components/shared/toast/toast.component';
+import { MatDialog } from '@angular/material/dialog';
+import { ConfirmDialogComponent } from '../shared/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-utilisateurs',
@@ -28,7 +31,7 @@ export class UtilisateursComponent implements OnInit {
   limit = 10;
   total = 0;
 
-  constructor(private api: UtilisateurService) {}
+  constructor(private api: UtilisateurService, private dialog: MatDialog) {}
 
   ngOnInit(): void {
     this.loadUsers();
@@ -129,20 +132,30 @@ export class UtilisateursComponent implements OnInit {
 
   // Supprimer un utilisateur
   deleteUtilisateur(user: Utilisateur): void {
-    if (!user.id) return;
-    if (!confirm(`Voulez-vous vraiment supprimer ${user.nom} ?`)) return;
+  if (!user.id) return;
 
-    this.api.deleteUtilisateur(user.id).subscribe({
-      next: () => {
-        this.utilisateurs = this.utilisateurs.filter(u => u.id !== user.id);
-        this.total -= 1;
-      },
-      error: (err) => {
-        console.error(err);
-        this.errorMessage = "Erreur lors de la suppression.";
-      }
+  // Ouvrir le dialogue de confirmation
+  const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+    width: '350px',
+    data: { message: `Voulez-vous vraiment supprimer ${user.nom} ?` }
+  });
+
+  dialogRef.afterClosed().subscribe(result => {
+    if (result) { // si l'utilisateur a confirmé
+      this.api.deleteUtilisateur(user.id!).subscribe({
+        next: () => {
+          this.utilisateurs = this.utilisateurs.filter(u => u.id !== user.id);
+          this.total -= 1;
+        },
+        error: (err) => {
+          console.error(err);
+          this.errorMessage = "Erreur lors de la suppression.";
+        }
+      });
+    }
     });
-  }
+   }
+
 
   // Réinitialiser le formulaire
   resetForm(): void {

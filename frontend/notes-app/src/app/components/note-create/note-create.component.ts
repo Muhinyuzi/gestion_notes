@@ -1,6 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { NoteService, NoteCreate, Note, Utilisateur } from '../../services/note.service';
+import { AuthService } from '../../services/auth.service';
+import { KENDO_EDITOR } from '@progress/kendo-angular-editor';
+import DOMPurify from 'dompurify';
 
 @Component({
   selector: 'app-note-create',
@@ -21,13 +24,13 @@ export class NoteCreateComponent implements OnInit {
   newFiles: File[] = [];
   currentUser?: Utilisateur;
 
-  constructor(private api: NoteService, private router: Router) {}
+  constructor(private api: NoteService, private router: Router, private auth: AuthService) {}
 
   ngOnInit(): void {
-    // Récupérer l'utilisateur courant depuis le localStorage
-    this.currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    this.newNote.equipe = this.currentUser?.equipe || '';
-    this.newNote.auteur_id = this.currentUser?.id || 0;
+    this.currentUser = this.auth.getUser();
+    // ⚡ Important : on initialise l’équipe seulement après avoir chargé currentUser
+    this.newNote.equipe = this.currentUser?.equipe ?? '';
+    this.newNote.auteur_id = this.currentUser?.id ?? 0;
   }
 
   /** Gestion des fichiers sélectionnés */
@@ -49,6 +52,7 @@ export class NoteCreateComponent implements OnInit {
       alert('Veuillez remplir tous les champs obligatoires.');
       return;
     }
+    this.newNote.contenu = DOMPurify.sanitize(this.newNote.contenu);
 
     this.api.createNoteWithFiles(this.newNote, this.newFiles).subscribe({
       next: (note: Note) => {

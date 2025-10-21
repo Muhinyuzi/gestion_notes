@@ -27,6 +27,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatCardModule } from '@angular/material/card';
 import { UtilisateurDetailComponent } from './components/utilisateur-detail/utilisateur-detail.component';
 import { NoteCreateComponent } from './components/note-create/note-create.component';
+import { EditorModule } from '@progress/kendo-angular-editor';
 
 @NgModule({
   declarations: [
@@ -54,6 +55,7 @@ import { NoteCreateComponent } from './components/note-create/note-create.compon
     MatInputModule,
     MatDividerModule,
     MatCardModule,
+    EditorModule,
   ],
   providers: [{ provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }, provideAnimationsAsync()],
   bootstrap: [AppComponent]

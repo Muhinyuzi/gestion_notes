@@ -1,0 +1,55 @@
+<div class="eleves-container">
+  <h2>Liste des élèves</h2>
+
+  <!-- Loader -->
+  <div *ngIf="isLoading" class="loading">Chargement en cours...</div>
+
+  <!-- Message d'erreur -->
+  <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
+
+  <div class="actions-bar">
+    <button class="btn btn-primary add" (click)="addEleve()">➕ Ajouter un élève</button>
+  </div>
+
+  <table class="eleves-table" *ngIf="!isLoading && eleves?.length! > 0">
+    <thead>
+      <tr>
+        <th>Nom</th>
+        <th>Prénom</th>
+        <th>Adresse</th>
+        <th>Note assignée</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let eleve of eleves">
+        <td>
+          <a [routerLink]="['/eleves', eleve.id]" class="eleve-link">
+            {{ eleve.nom }}
+          </a>
+        </td>
+        <td>{{ eleve.prenom }}</td>
+        <td>{{ eleve.adresse || '-' }}</td>
+        <td>
+          <span *ngIf="eleve.note_id; else noNote">
+            Note #{{ eleve.note_id }}
+            <!--<button class="btn btn-sm btn-warning" (click)="deassignNote(eleve)">❌ Désassigner</button>-->
+          </span>
+          <ng-template #noNote>
+            <select (change)="onNoteSelect(eleve, $event)">
+              <option value="">-- Assign a Note --</option>
+              <option *ngFor="let note of notes" [value]="note.id">{{ note.titre }}</option>
+            </select>
+          </ng-template>
+        </td>
+        <td>
+          <div class="actions-buttons">
+            <button class="btn btn-info" (click)="editEleve(eleve)">✏️ Éditer</button>
+            <button class="btn btn-danger" (click)="deleteEleve(eleve)">🗑️ Supprimer</button>
+            <button *ngIf="eleve.note_id" class="btn btn-warning" (click)="deassignNote(eleve)">❌ Désassigner</button>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr
-from typing import Optional, List
+from typing import Optional, List, Dict
 from datetime import datetime
 
 # ======================================================
@@ -63,6 +63,8 @@ class NoteOut(NoteBase):
     updated_at: Optional[datetime] = None
     auteur: Optional[UtilisateurOut] = None
     fichiers: Optional[List[FichierNoteOut]] = None
+    # liste des élèves assignés (optionnelle)
+    eleves: Optional[List["EleveOut"]] = []
 
     class Config:
         from_attributes = True
@@ -107,7 +109,57 @@ class UtilisateurDetailOut(UtilisateurOut):
     class Config:
         from_attributes = True
 
+# -------------------- Base Eleve --------------------
+class EleveBase(BaseModel):
+    nom: str
+    prenom: str
+    adresse: Optional[str] = None
+    en_attente: Optional[bool] = True
+    actif: Optional[bool] = True
+    ferme: Optional[bool] = False
+    note_id: Optional[int] = None
+
+# -------------------- Création Eleve --------------------
+class EleveCreate(EleveBase):
+    created_by: int  # ID de l'utilisateur qui crée l'élève
+
+# -------------------- Mise à jour Eleve --------------------
+class EleveUpdate(BaseModel):
+    nom: Optional[str] = None
+    prenom: Optional[str] = None
+    adresse: Optional[str] = None
+    en_attente: Optional[bool] = None
+    actif: Optional[bool] = None
+    ferme: Optional[bool] = None
+    note_id: Optional[int] = None
+    updated_by: int  # ID de l'utilisateur qui met à jour
+
+# -------------------- Lecture Eleve --------------------
+class EleveOut(EleveBase):
+    id: int
+    created_by: int
+    updated_by: Optional[int]
+    created_at: datetime
+    updated_at: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+
+# -------------------- Historique Eleve --------------------
+class EleveHistoryBase(BaseModel):
+    eleve_id: int
+    edited_by: int
+    edited_at: datetime
+    changes: Dict[str, Dict[str, Optional[str]]]  # { "field": {"old": old_value, "new": new_value} }
+
+class EleveHistoryOut(EleveHistoryBase):
+    id: int
+
+    class Config:
+        from_attributes = True    
+
 # 🔹 Résolution des références circulaires
 NoteDetailOut.update_forward_refs()
 UtilisateurDetailOut.update_forward_refs()
 CommentaireOut.update_forward_refs()
+NoteOut.update_forward_refs()

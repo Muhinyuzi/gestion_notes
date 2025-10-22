@@ -1,0 +1,40 @@
+<div class="eleve-detail-container" *ngIf="!isLoading && eleve; else loadingTpl">
+
+  <h2>Détails de l’élève</h2>
+
+  <div class="eleve-card">
+    <div class="info">
+      <h3>{{ eleve.prenom }} {{ eleve.nom }}</h3>
+      <p><strong>Adresse :</strong> {{ eleve.adresse || 'Non spécifiée' }}</p>
+      <p><strong>Actif :</strong> {{ eleve.actif ? 'Oui' : 'Non' }}</p>
+      <p><strong>En attente :</strong> {{ eleve.en_attente ? 'Oui' : 'Non' }}</p>
+    </div>
+
+    <div class="actions">
+      <button class="btn edit" (click)="editEleve()">Modifier</button>
+      <button class="btn delete" (click)="deleteEleve()">Supprimer</button>
+    </div>
+  </div>
+
+  <div class="note-section">
+    <h3>Note assignée</h3>
+
+    <div *ngIf="note; else noNoteTpl" class="note-card">
+      <h4>{{ note.titre }}</h4>
+      <p>{{ note.contenu }}</p>
+      <button class="btn unassign" (click)="unassignNote()">Désassigner la note</button>
+    </div>
+
+    <ng-template #noNoteTpl>
+      <p>Aucune note assignée à cet élève.</p>
+    </ng-template>
+  </div>
+
+</div>
+
+<ng-template #loadingTpl>
+  <div class="loading">Chargement en cours...</div>
+</ng-template>
+
+<div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
+

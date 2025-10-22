@@ -28,6 +28,8 @@ import { MatCardModule } from '@angular/material/card';
 import { UtilisateurDetailComponent } from './components/utilisateur-detail/utilisateur-detail.component';
 import { NoteCreateComponent } from './components/note-create/note-create.component';
 import { EditorModule } from '@progress/kendo-angular-editor';
+import { ElevesComponent } from './components/eleves/eleves.component';
+import { EleveDetailComponent } from './components/eleves/eleve-detail/eleve-detail.component';
 
 @NgModule({
   declarations: [
@@ -41,7 +43,9 @@ import { EditorModule } from '@progress/kendo-angular-editor';
     ToastComponent,
     ConfirmDialogComponent,
     UtilisateurDetailComponent,
-    NoteCreateComponent
+    NoteCreateComponent,
+    ElevesComponent,
+    EleveDetailComponent
   ],
   imports: [
     BrowserModule,

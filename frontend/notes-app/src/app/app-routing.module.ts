@@ -8,6 +8,7 @@ import { NoteCreateComponent } from './components/note-create/note-create.compon
 import { NoteDetailComponent } from './components/note-detail/note-detail.component';
 import { ElevesComponent } from './components/eleves/eleves.component';
 import { EleveDetailComponent } from './components/eleves/eleve-detail/eleve-detail.component';
+import { EleveCreateComponent } from './components/eleves/eleve-create/eleve-create.component';
 import { LoginComponent } from './components/login/login.component';
 import { AuthGuard } from './guards/auth.guard';
 import { AdminGuard } from './guards/admin.guard';
@@ -21,7 +22,8 @@ const routes: Routes = [
   { path: 'notes/:id', component: NoteDetailComponent, canActivate: [AuthGuard] },
   { path: 'notes', component: NotesComponent, canActivate: [AuthGuard] },
   { path: 'eleves', component: ElevesComponent, canActivate: [AuthGuard] },
-  { path: 'eleves/:id', component: EleveDetailComponent },
+    { path: 'eleves/create', component: EleveCreateComponent , canActivate: [AuthGuard]},
+  { path: 'eleves/:id', component: EleveDetailComponent , canActivate: [AuthGuard]},
   { path: 'login', component: LoginComponent },
   { path: '**', redirectTo: 'login' }, // fallback to home
 ];

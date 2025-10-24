@@ -121,7 +121,7 @@ class EleveBase(BaseModel):
 
 # -------------------- Création Eleve --------------------
 class EleveCreate(EleveBase):
-    created_by: int  # ID de l'utilisateur qui crée l'élève
+    pass
 
 # -------------------- Mise à jour Eleve --------------------
 class EleveUpdate(BaseModel):

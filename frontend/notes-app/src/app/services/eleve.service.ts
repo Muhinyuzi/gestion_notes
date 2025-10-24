@@ -99,13 +99,13 @@ export class EleveService {
   assignNoteToEleve(eleveId: number, noteId: number): Observable<Eleve> {
     if (eleveId == null || noteId == null)
       throw new Error('Élève ou note manquant');
-    return this.http.post<Eleve>(`${this.baseUrl}eleves/${eleveId}/assign_note`, { note_id: noteId });
+    return this.http.put<Eleve>(`${this.baseUrl}eleves/${eleveId}/assign_note`, { note_id: noteId });
   }
 
   /** Désassigner une note d’un élève */
   unassignNoteFromEleve(eleveId: number): Observable<Eleve> {
     if (eleveId == null) throw new Error('ID élève manquant');
-    return this.http.post<Eleve>(`${this.baseUrl}eleves/${eleveId}/unassign_note`, {});
+    return this.http.put<Eleve>(`${this.baseUrl}eleves/${eleveId}/unassign_note`, {});
   }
 
   // ---------------- HISTORIQUE ----------------

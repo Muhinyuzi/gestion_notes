@@ -1,10 +1,7 @@
 <div class="eleves-container">
   <h2>Liste des élèves</h2>
 
-  <!-- Loader -->
   <div *ngIf="isLoading" class="loading">Chargement en cours...</div>
-
-  <!-- Message d'erreur -->
   <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
 
   <div class="actions-bar">
@@ -24,32 +21,53 @@
     <tbody>
       <tr *ngFor="let eleve of eleves">
         <td>
-          <a [routerLink]="['/eleves', eleve.id]" class="eleve-link">
-            {{ eleve.nom }}
-          </a>
+          <a [routerLink]="['/eleves', eleve.id]" class="eleve-link">{{ eleve.nom }}</a>
         </td>
         <td>{{ eleve.prenom }}</td>
         <td>{{ eleve.adresse || '-' }}</td>
+
         <td>
-          <span *ngIf="eleve.note_id; else noNote">
-            Note #{{ eleve.note_id }}
-            <!--<button class="btn btn-sm btn-warning" (click)="deassignNote(eleve)">❌ Désassigner</button>-->
+          <span *ngIf="eleve.note_id; else noNote" class="note-badge">
+          Note #{{ eleve.note_id }}
           </span>
           <ng-template #noNote>
-            <select (change)="onNoteSelect(eleve, $event)">
-              <option value="">-- Assign a Note --</option>
-              <option *ngFor="let note of notes" [value]="note.id">{{ note.titre }}</option>
-            </select>
+          <button class="btn btn-outline-primary btn-sm" (click)="openAssignModal(eleve)">
+          📘 Assigner une note
+          </button>
           </ng-template>
         </td>
+
         <td>
           <div class="actions-buttons">
             <button class="btn btn-info" (click)="editEleve(eleve)">✏️ Éditer</button>
             <button class="btn btn-danger" (click)="deleteEleve(eleve)">🗑️ Supprimer</button>
-            <button *ngIf="eleve.note_id" class="btn btn-warning" (click)="deassignNote(eleve)">❌ Désassigner</button>
+            <button
+              *ngIf="eleve.note_id"
+              class="btn btn-warning"
+              (click)="deassignNote(eleve)"
+            >
+              ❌ Désassigner
+            </button>
           </div>
         </td>
       </tr>
     </tbody>
   </table>
+
+  <!-- ✅ Modale d’assignation -->
+  <div class="modal-overlay" *ngIf="showAssignModal">
+    <div class="modal">
+      <h3>Assigner une note à {{ selectedEleve?.nom }}</h3>
+
+      <select [(ngModel)]="selectedNoteId">
+        <option value="">-- Sélectionnez une note --</option>
+        <option *ngFor="let note of notes" [value]="note.id">{{ note.titre }}</option>
+      </select>
+
+      <div class="modal-actions">
+        <button class="btn btn-primary" (click)="confirmAssignNote()">✅ Assigner</button>
+        <button class="btn btn-secondary" (click)="closeAssignModal()">❌ Annuler</button>
+      </div>
+    </div>
+  </div>
 </div>

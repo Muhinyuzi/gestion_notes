@@ -14,6 +14,9 @@ export class ElevesComponent implements OnInit {
   notes: Note[] = [];
   isLoading = false;
   errorMessage: string = '';
+  showAssignModal = false;
+  selectedEleve: Eleve | null = null;
+  selectedNoteId: number | null = null;
 
   constructor(
     private api: EleveService,
@@ -106,5 +109,32 @@ export class ElevesComponent implements OnInit {
     error: err => console.error(err)
   });
 }
+
+openAssignModal(eleve: Eleve) {
+  this.selectedEleve = eleve;
+  this.selectedNoteId = null;
+  this.showAssignModal = true;
+}
+
+closeAssignModal() {
+  this.showAssignModal = false;
+  this.selectedEleve = null;
+}
+
+confirmAssignNote() {
+  if (!this.selectedNoteId || !this.selectedEleve) return;
+
+  this.api.assignNoteToEleve(this.selectedEleve.id!, this.selectedNoteId).subscribe({
+    next: (updatedEleve) => {
+      this.selectedEleve!.note_id = updatedEleve.note_id;
+      this.closeAssignModal();
+    },
+    error: (err) => {
+      console.error('Erreur assignation:', err);
+      alert("Impossible d'assigner la note.");
+    }
+  });
+}
+
 
 }

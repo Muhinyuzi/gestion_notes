@@ -5,7 +5,7 @@ from db import Base, engine
 import uvicorn
 
 # ------------------------- Routers -------------------------
-from routers import utilisateurs, notes, commentaires, login
+from routers import utilisateurs, notes, commentaires, login, eleves
 
 # ------------------------- Création des tables -------------------------
 Base.metadata.create_all(bind=engine)
@@ -40,6 +40,7 @@ app.include_router(login.router)
 app.include_router(utilisateurs.router, prefix="/utilisateurs", tags=["Utilisateurs"])
 app.include_router(notes.router, prefix="/notes", tags=["Notes"])
 app.include_router(commentaires.router, prefix="", tags=["Commentaires"])  # endpoints commentaires intégrés aux notes
+app.include_router(eleves.router, prefix="/eleves", tags=["eleves"])
 
 # ------------------------- Lancer l'app -------------------------
 if __name__ == "__main__":

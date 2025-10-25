@@ -2,6 +2,7 @@ import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { NoteService, Note, NoteCreate, NotesResponse } from '../../services/note.service';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-notes',
@@ -31,7 +32,10 @@ export class NotesComponent implements OnInit {
 
   currentUser: any = null;
 
-  constructor(private api: NoteService, private auth: AuthService, private router: Router) {}
+  constructor(private api: NoteService, private auth: AuthService, private router: Router, private sanitizer: DomSanitizer) {}
+  sanitize(html: string): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(html);
+  }
 
   ngOnInit(): void {
     this.currentUser = this.auth.getUser();

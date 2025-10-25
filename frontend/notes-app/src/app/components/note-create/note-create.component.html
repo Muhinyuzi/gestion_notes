@@ -7,10 +7,26 @@
     <input type="text" [(ngModel)]="newNote.titre" name="titre" placeholder="Titre" required>
 
     <!-- Contenu -->
-    <textarea [(ngModel)]="newNote.contenu" name="contenu" placeholder="Contenu" required></textarea>
+   <!-- <textarea [(ngModel)]="newNote.contenu" name="contenu" placeholder="Contenu" required>-->
+   <!-- Contenu avec Kendo WYSIWYG -->
+   <label for="contenu">Contenu</label>
+   <kendo-editor
+     [(ngModel)]="newNote.contenu"
+     name="contenu"
+     [resizable]="true"
+     style="height: 300px;"
+     required>
+    </kendo-editor>
 
-    <!-- Équipe (readonly si non-admin) -->
-    <input type="text" [(ngModel)]="newNote.equipe" name="equipe" placeholder="Équipe">
+<!-- Aperçu en direct -->
+<div class="note-preview">
+  <h4>👀 Aperçu de la note</h4>
+  <div class="preview-box" [innerHTML]="newNote.contenu"></div>
+</div>
+   <!-- </textarea> -->
+
+    <!-- Équipe readonly -->
+    <input type="text" [(ngModel)]="newNote.equipe" name="equipe" placeholder="Équipe" readonly>
 
     <!-- Catégorie -->
     <select [(ngModel)]="newNote.categorie" name="categorie" required>

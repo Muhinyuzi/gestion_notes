@@ -1,11 +1,13 @@
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 from db import engine, Base
-from models import Utilisateur, Note, Commentaire, FichierNote
+from models import Utilisateur, Note, Commentaire, FichierNote, Eleve
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
 import random
 import os
+
+from routers import notes
 
 # 🔐 Hasher les mots de passe
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -26,6 +28,7 @@ def seed():
         conn.execute(text("DROP TABLE IF EXISTS fichiers_note CASCADE;"))
         conn.execute(text("DROP TABLE IF EXISTS commentaires CASCADE;"))
         conn.execute(text("DROP TABLE IF EXISTS notes CASCADE;"))
+        conn.execute(text("DROP TABLE IF EXISTS eleves CASCADE;"))
         conn.execute(text("DROP TABLE IF EXISTS utilisateurs CASCADE;"))
         conn.commit()
 
@@ -70,14 +73,13 @@ def seed():
     for i in range(20):
         note = Note(
             titre=f"Note {i+1}",
-            contenu=f"Contenu de la note {i+1}. C'est un exemple de texte pour tester le résumé IA et les fichiers.",
+            contenu=f"Contenu de la note {i+1}. Exemple de texte pour tests.",
             equipe=random.choice(["Dev", "QA", "DevOps"]),
             auteur=random.choice(users),
-            created_at=now - timedelta(days=random.randint(0, 30), hours=random.randint(0, 23)),
+            created_at=now - timedelta(days=random.randint(0, 30)),
             updated_at=now,
             nb_vues=random.randint(0, 200),
             likes=random.randint(0, 50),
-            resume_ia=None
         )
         session.add(note)
         notes.append(note)
@@ -89,7 +91,6 @@ def seed():
     # ======================================================
     fichiers = []
     for note in notes:
-        # fichiers texte
         for j in range(random.randint(0, 2)):
             filename = f"{note.titre.replace(' ', '_')}_file{j+1}.txt"
             filepath = os.path.join(UPLOAD_DIR, filename)
@@ -98,17 +99,6 @@ def seed():
             fichier = FichierNote(nom_fichier=filename, chemin=filepath, note_id=note.id)
             session.add(fichier)
             fichiers.append(fichier)
-
-        # fichiers images simulés
-        for img_name in ["sample1.png", "sample2.jpg"]:
-            if random.random() > 0.5:
-                filename = f"{note.titre.replace(' ', '_')}_{img_name}"
-                filepath = os.path.join(UPLOAD_DIR, filename)
-                with open(filepath, "wb") as f:
-                    f.write(os.urandom(1024))  # Contenu binaire simulé
-                fichier = FichierNote(nom_fichier=filename, chemin=filepath, note_id=note.id)
-                session.add(fichier)
-                fichiers.append(fichier)
     session.commit()
     print(f"✅ {len(fichiers)} fichiers attachés créés avec succès !")
 
@@ -128,5 +118,70 @@ def seed():
             commentaires.append(com)
     session.commit()
     print(f"✅ {len(commentaires)} commentaires créés avec succès !")
+
+    # ======================================================
+    # 5️⃣ Création des élèves
+    # ======================================================
+    eleves_data = [
+        {"nom": "Durand", "prenom": "Émilie", "adresse": "22 rue Saint-Denis, Montréal"},
+        {"nom": "Tremblay", "prenom": "Marc", "adresse": "14 avenue Papineau, Laval"},
+        {"nom": "Nguyen", "prenom": "Sophie", "adresse": "66 boulevard Saint-Laurent, Longueuil"},
+        {"nom": "Smith", "prenom": "John", "adresse": "99 rue Sherbrooke, Montréal"},
+        {"nom": "Dubois", "prenom": "Camille", "adresse": "5 rue Ontario, Montréal"},
+        {"nom": "Lefebvre", "prenom": "Alexandre", "adresse": "23 rue de la Montagne, Laval"},
+    ]
+
+    eleves = []
+    for data in eleves_data:
+        note = random.choice(notes) if random.random() > 0.5 else None
+        createur = random.choice(users)  # 👈 utilisateur aléatoire comme créateur
+
+        eleve = Eleve(
+            nom=data["nom"],
+            prenom=data["prenom"],
+            adresse=data["adresse"],
+            actif=random.choice([True, True, False]),
+            note_id=note.id if note else None,
+            date_note_assignee=datetime.utcnow() if note else None,
+            created_by=createur.id,      # 👈 obligatoire
+            updated_by=None              # 👈 facultatif
+        )
+        session.add(eleve)
+        eleves.append(eleve)
+
+    session.commit()
+    print(f"✅ {len(eleves)} élèves créés avec succès !")
+
+    print("🎉 Données initiales insérées avec succès !")
+
+        # ======================================================
+    # 6️⃣ Historique des élèves (EleveHistory)
+    # ======================================================
+    from models import EleveHistory  # 👈 à placer tout en haut du fichier si pas déjà importé
+
+    histories = []
+    for eleve in eleves:
+        # On simule qu'un utilisateur a déjà édité ou modifié la note
+        if random.random() > 0.4:  # 60% des élèves ont un historique
+            editor = random.choice(users)
+            change_type = random.choice(["Modification de l'adresse", "Changement de note", "Réactivation"])
+
+            history = EleveHistory(
+                eleve_id=eleve.id,
+                edited_by=editor.id,
+                edited_at=datetime.utcnow() - timedelta(days=random.randint(0, 15)),
+                raison_changement=change_type,
+                changes={
+                    "adresse": {"old": eleve.adresse, "new": f"{eleve.adresse} (modifiée)"} if "adresse" in change_type else None,
+                    "note_id": {"old": eleve.note_id, "new": None} if "note" in change_type else None
+                }
+            )
+            session.add(history)
+            histories.append(history)
+
+    session.commit()
+    print(f"✅ {len(histories)} historiques d'élèves créés avec succès !")
+
+    print("🎉 Données initiales insérées avec succès !")
 
 seed()

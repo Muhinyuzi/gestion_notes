@@ -13,8 +13,8 @@
       <span *ngIf="note?.created_at && isNew(note.created_at)" class="badge-nouveau">🆕 Nouveau</span>
     </h2>
 
-    <p class="note-content">{{ note.contenu }}</p>
-    <p *ngIf="note.resume_ia"><strong>🧠 Résumé :</strong> {{ note.resume_ia }}</p>
+    <p class="note-content" [innerHTML]="note.contenu">{{ note.contenu }}</p>
+    <p *ngIf="note.resume_ia" [innerHTML]="note.resume_ia"><strong>🧠 Résumé :</strong> {{ note.resume_ia }}</p>
 
     <!-- Fichiers existants -->
     <div class="note-images" *ngIf="note.fichiers?.length">
@@ -53,8 +53,8 @@
   <!-- Mode édition -->
   <div *ngIf="isEditing" class="edit-mode">
     <input [(ngModel)]="note.titre" placeholder="Titre" class="edit-input" />
-    <textarea [(ngModel)]="note.contenu" placeholder="Contenu" class="edit-textarea"></textarea>
-
+    <!--<textarea [(ngModel)]="note.contenu" placeholder="Contenu" class="edit-textarea"></textarea>-->
+    <kendo-editor [(ngModel)]="note.contenu" [resizable]="true" placeholder="Contenu"></kendo-editor>
     <!-- Équipe -->
     <input [(ngModel)]="note.equipe" placeholder="Équipe" [readonly]="currentUser?.type !== 'admin'" class="edit-input" />
 

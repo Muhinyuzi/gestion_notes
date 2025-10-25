@@ -16,6 +16,8 @@
 
       <!-- Menu visible seulement pour admin -->
       <a *ngIf="isAdmin()" routerLink="/utilisateurs" routerLinkActive="active" (click)="closeMenu()">👥 Utilisateurs</a>
+      
+      <a routerLink="/eleves" routerLinkActive="active" (click)="closeMenu()">👥 Eleves</a>
 
       <!-- Menu visible seulement pour les non-admin, lien vers leur détail -->
       <a *ngIf="!isAdmin()" [routerLink]="['/utilisateurs', getUserId()]" routerLinkActive="active" (click)="closeMenu()">🙍‍♂️ Mon profil</a>

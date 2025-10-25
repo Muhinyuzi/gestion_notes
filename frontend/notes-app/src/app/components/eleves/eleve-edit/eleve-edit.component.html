@@ -1,0 +1,40 @@
+<div class="eleve-edit-container">
+  <h2>✏️ Modifier un élève</h2>
+
+  <div *ngIf="isLoading" class="loading">Chargement en cours...</div>
+  <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
+
+  <form *ngIf="!isLoading" (ngSubmit)="onSubmit()" class="eleve-form">
+    <div class="form-group">
+      <label for="nom">Nom *</label>
+      <input id="nom" type="text" [(ngModel)]="eleve.nom" name="nom" required />
+    </div>
+
+    <div class="form-group">
+      <label for="prenom">Prénom *</label>
+      <input id="prenom" type="text" [(ngModel)]="eleve.prenom" name="prenom" required />
+    </div>
+
+    <div class="form-group">
+      <label for="adresse">Adresse</label>
+      <input id="adresse" type="text" [(ngModel)]="eleve.adresse" name="adresse" />
+    </div>
+
+    <div class="form-group checkboxes">
+      <label>
+        <input type="checkbox" [(ngModel)]="eleve.actif" name="actif" />
+        Actif
+      </label>
+      <label>
+        <input type="checkbox" [(ngModel)]="eleve.en_attente" name="en_attente" />
+        En attente
+      </label>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit">💾 Enregistrer</button>
+      <button class="btn btn-secondary" type="button" (click)="cancel()">↩️ Annuler</button>
+    </div>
+  </form>
+</div>
+

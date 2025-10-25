@@ -27,6 +27,11 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatCardModule } from '@angular/material/card';
 import { UtilisateurDetailComponent } from './components/utilisateur-detail/utilisateur-detail.component';
 import { NoteCreateComponent } from './components/note-create/note-create.component';
+import { EditorModule } from '@progress/kendo-angular-editor';
+import { ElevesComponent } from './components/eleves/eleves.component';
+import { EleveDetailComponent } from './components/eleves/eleve-detail/eleve-detail.component';
+import { EleveCreateComponent } from './components/eleves/eleve-create/eleve-create.component';
+import { EleveEditComponent } from './components/eleves/eleve-edit/eleve-edit.component';
 
 @NgModule({
   declarations: [
@@ -40,7 +45,11 @@ import { NoteCreateComponent } from './components/note-create/note-create.compon
     ToastComponent,
     ConfirmDialogComponent,
     UtilisateurDetailComponent,
-    NoteCreateComponent
+    NoteCreateComponent,
+    ElevesComponent,
+    EleveDetailComponent,
+    EleveCreateComponent,
+    EleveEditComponent
   ],
   imports: [
     BrowserModule,
@@ -54,6 +63,7 @@ import { NoteCreateComponent } from './components/note-create/note-create.compon
     MatInputModule,
     MatDividerModule,
     MatCardModule,
+    EditorModule,
   ],
   providers: [{ provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }, provideAnimationsAsync()],
   bootstrap: [AppComponent]

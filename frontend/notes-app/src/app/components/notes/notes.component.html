@@ -1,5 +1,5 @@
 <div class="notes-container">
-  <h3>📝 Liste des notes</h3>
+  <h2>📝 Liste des notes</h2>
 
   <!-- BOUTON POUR CRÉER UNE NOTE -->
   <a routerLink="/notes/create" class="create-note-btn">➕ Créer une nouvelle note</a>
@@ -18,7 +18,7 @@
   <!-- LISTE DES NOTES -->
   <ul class="notes-list">
     <li *ngFor="let n of notes">
-      <a [routerLink]="['/notes', n.id]"><strong>{{ n.titre }}</strong></a> - {{ n.contenu }}
+      <a [routerLink]="['/notes', n.id]"><strong>{{ n.titre }}</strong></a> -<span [innerHTML]="sanitize(n.contenu)"></span>
       <div class="notes-meta">
         (Équipe : {{ n.equipe || '—' }}) — Auteur : {{ n.auteur?.nom || 'Inconnu' }}<br>
         📅 Créée le : <span class="created">{{ n.created_at | date:'short' }}</span>

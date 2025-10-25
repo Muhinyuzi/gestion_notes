@@ -9,6 +9,7 @@ import { NoteDetailComponent } from './components/note-detail/note-detail.compon
 import { ElevesComponent } from './components/eleves/eleves.component';
 import { EleveDetailComponent } from './components/eleves/eleve-detail/eleve-detail.component';
 import { EleveCreateComponent } from './components/eleves/eleve-create/eleve-create.component';
+import { EleveEditComponent } from './components/eleves/eleve-edit/eleve-edit.component';
 import { LoginComponent } from './components/login/login.component';
 import { AuthGuard } from './guards/auth.guard';
 import { AdminGuard } from './guards/admin.guard';
@@ -24,6 +25,7 @@ const routes: Routes = [
   { path: 'eleves', component: ElevesComponent, canActivate: [AuthGuard] },
     { path: 'eleves/create', component: EleveCreateComponent , canActivate: [AuthGuard]},
   { path: 'eleves/:id', component: EleveDetailComponent , canActivate: [AuthGuard]},
+  { path: 'eleves/edit/:id', component: EleveEditComponent, canActivate: [AuthGuard] },
   { path: 'login', component: LoginComponent },
   { path: '**', redirectTo: 'login' }, // fallback to home
 ];

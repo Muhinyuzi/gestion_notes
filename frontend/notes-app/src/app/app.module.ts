@@ -31,6 +31,7 @@ import { EditorModule } from '@progress/kendo-angular-editor';
 import { ElevesComponent } from './components/eleves/eleves.component';
 import { EleveDetailComponent } from './components/eleves/eleve-detail/eleve-detail.component';
 import { EleveCreateComponent } from './components/eleves/eleve-create/eleve-create.component';
+import { EleveEditComponent } from './components/eleves/eleve-edit/eleve-edit.component';
 
 @NgModule({
   declarations: [
@@ -47,7 +48,8 @@ import { EleveCreateComponent } from './components/eleves/eleve-create/eleve-cre
     NoteCreateComponent,
     ElevesComponent,
     EleveDetailComponent,
-    EleveCreateComponent
+    EleveCreateComponent,
+    EleveEditComponent
   ],
   imports: [
     BrowserModule,

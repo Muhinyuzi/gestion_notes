@@ -158,3 +158,31 @@ def unassign_note_from_eleve(
     db.refresh(eleve)
     return eleve
 
+
+# 🔹 Obtenir l’historique des changements d’un élève
+@router.get("/{eleve_id}/history", response_model=List[dict])
+def get_eleve_history(
+    eleve_id: int,
+    db: Session = Depends(get_db)
+):
+    history = (
+        db.query(EleveHistory)
+        .filter(EleveHistory.eleve_id == eleve_id)
+        .order_by(EleveHistory.edited_at.desc())
+        .all()
+    )
+
+    if not history:
+        raise HTTPException(status_code=404, detail="Aucun historique trouvé pour cet élève")
+
+    return [
+        {
+            "id": h.id,
+            "edited_at": h.edited_at,
+            "edited_by": h.edited_by,
+            "changes": h.changes,
+            "raison_changement": h.raison_changement
+        }
+        for h in history
+    ]
+

@@ -27,13 +27,13 @@
         <td>{{ eleve.adresse || '-' }}</td>
 
         <td>
-          <span *ngIf="eleve.note_id; else noNote" class="note-badge">
-          Note #{{ eleve.note_id }}
+          <span *ngIf="eleve.note_id; else assignButton">
+            Note #{{ eleve.note_id }}
           </span>
-          <ng-template #noNote>
-          <button class="btn btn-outline-primary btn-sm" (click)="openAssignModal(eleve)">
-          📘 Assigner une note
-          </button>
+          <ng-template #assignButton>
+            <button class="btn btn-outline-primary btn-sm" (click)="openAssignModal(eleve)">
+              📘 Assigner une note
+            </button>
           </ng-template>
         </td>
 
@@ -41,11 +41,7 @@
           <div class="actions-buttons">
             <button class="btn btn-info" (click)="editEleve(eleve)">✏️ Éditer</button>
             <button class="btn btn-danger" (click)="deleteEleve(eleve)">🗑️ Supprimer</button>
-            <button
-              *ngIf="eleve.note_id"
-              class="btn btn-warning"
-              (click)="deassignNote(eleve)"
-            >
+            <button *ngIf="eleve.note_id" class="btn btn-warning" (click)="openDeassignModal(eleve)">
               ❌ Désassigner
             </button>
           </div>
@@ -54,19 +50,32 @@
     </tbody>
   </table>
 
-  <!-- ✅ Modale d’assignation -->
-  <div class="modal-overlay" *ngIf="showAssignModal">
+  <!-- Modale assignation/désassignation -->
+  <div class="modal-overlay" *ngIf="showNoteModal">
     <div class="modal">
-      <h3>Assigner une note à {{ selectedEleve?.nom }}</h3>
+      <h3 *ngIf="modalMode==='assign'">Assigner une note à {{ modalEleve?.nom }}</h3>
+      <h3 *ngIf="modalMode==='deassign'">Désassigner la note de {{ modalEleve?.nom }}</h3>
 
-      <select [(ngModel)]="selectedNoteId">
-        <option value="">-- Sélectionnez une note --</option>
-        <option *ngFor="let note of notes" [value]="note.id">{{ note.titre }}</option>
-      </select>
+      <div *ngIf="modalMode==='assign'">
+        <select [(ngModel)]="selectedNoteId">
+          <option value="">-- Sélectionnez une note --</option>
+          <option *ngFor="let note of notes" [value]="note.id">{{ note.titre }}</option>
+        </select>
+      </div>
+
+      <div *ngIf="modalMode==='deassign'">
+        <p>
+          Êtes-vous sûr de vouloir désassigner la note 
+          <strong>{{ selectedNoteTitle }}</strong> de 
+          <strong>{{ modalEleve?.nom }} {{ modalEleve?.prenom }}</strong> ?
+        </p>
+      </div>
 
       <div class="modal-actions">
-        <button class="btn btn-primary" (click)="confirmAssignNote()">✅ Assigner</button>
-        <button class="btn btn-secondary" (click)="closeAssignModal()">❌ Annuler</button>
+        <button class="btn btn-primary" (click)="confirmNoteAction()">
+          {{ modalMode==='assign' ? '✅ Assigner' : '❌ Désassigner' }}
+        </button>
+        <button class="btn btn-secondary" (click)="closeNoteModal()">Annuler</button>
       </div>
     </div>
   </div>

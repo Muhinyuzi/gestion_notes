@@ -14,9 +14,13 @@ export class ElevesComponent implements OnInit {
   notes: Note[] = [];
   isLoading = false;
   errorMessage: string = '';
-  showAssignModal = false;
-  selectedEleve: Eleve | null = null;
+
+  // Variables modale
+  showNoteModal = false;
+  modalEleve: Eleve | null = null;
+  modalMode: 'assign' | 'deassign' = 'assign';
   selectedNoteId: number | null = null;
+  selectedNoteTitle: string | null = null;
 
   constructor(
     private api: EleveService,
@@ -30,25 +34,24 @@ export class ElevesComponent implements OnInit {
   }
 
   loadEleves(): void {
-  this.isLoading = true;
-  this.api.getEleves().subscribe({
-    next: (data) => {
-      console.log('✅ Données reçues du backend:', data);
-      this.eleves = data; // data est déjà une liste
-      this.isLoading = false;
-    },
-    error: (err) => {
-      this.errorMessage = 'Erreur lors du chargement des élèves';
-      this.isLoading = false;
-      console.error('❌ Erreur API:', err);
-    }
-  });
-}
+    this.isLoading = true;
+    this.api.getEleves().subscribe({
+      next: data => {
+        this.eleves = data;
+        this.isLoading = false;
+      },
+      error: err => {
+        this.errorMessage = 'Erreur lors du chargement des élèves';
+        this.isLoading = false;
+        console.error(err);
+      }
+    });
+  }
 
   loadNotes(): void {
     this.noteService.getNotes().subscribe({
-      next: (data) => this.notes = data.notes,
-      error: (err) => console.error('Erreur chargement notes', err)
+      next: data => this.notes = data.notes,
+      error: err => console.error('Erreur chargement notes', err)
     });
   }
 
@@ -66,75 +69,62 @@ export class ElevesComponent implements OnInit {
 
   deleteEleve(eleve: Eleve) {
     if (!confirm(`Supprimer l'élève ${eleve.nom} ${eleve.prenom} ?`)) return;
-
     this.api.deleteEleve(eleve.id!).subscribe({
       next: () => this.eleves = this.eleves.filter(e => e.id !== eleve.id),
-      error: (err) => {
+      error: err => {
         alert('Erreur lors de la suppression');
         console.error(err);
       }
     });
   }
 
-  assignNote(eleve: Eleve, noteId: number) {
-    this.api.assignNoteToEleve(eleve.id!, noteId).subscribe({
-      next: updated => {
-        const index = this.eleves.findIndex(e => e.id === eleve.id);
-        if (index !== -1) this.eleves[index] = updated;
-      },
-      error: err => console.error('Erreur assignation note', err)
-    });
+  // 🔹 Modale assignation
+  openAssignModal(eleve: Eleve) {
+    this.modalEleve = eleve;
+    this.modalMode = 'assign';
+    this.selectedNoteId = null;
+    this.showNoteModal = true;
   }
 
-  deassignNote(eleve: Eleve) {
-    this.api.unassignNoteFromEleve(eleve.id!).subscribe({
-      next: updated => {
-        const index = this.eleves.findIndex(e => e.id === eleve.id);
-        if (index !== -1) this.eleves[index] = updated;
-      },
-      error: err => console.error('Erreur désassignation note', err)
-    });
+  // 🔹 Modale désassignation
+  openDeassignModal(eleve: Eleve) {
+    this.modalEleve = eleve;
+    this.modalMode = 'deassign';
+    const note = this.notes.find(n => n.id === eleve.note_id);
+    this.selectedNoteTitle = note ? note.titre : `#${eleve.note_id}`;
+    this.showNoteModal = true;
   }
 
-  onNoteSelect(eleve: Eleve, event: Event) {
-  const select = event.target as HTMLSelectElement;
-  const noteId = Number(select.value);
-  if (!noteId) return;
+  // Confirmer assignation ou désassignation
+  confirmNoteAction() {
+    if (!this.modalEleve) return;
 
-  this.api.assignNoteToEleve(eleve.id!, noteId).subscribe({
-    next: updatedEleve => {
-      const index = this.eleves.findIndex(e => e.id === eleve.id);
-      if (index !== -1) this.eleves[index] = updatedEleve;
-    },
-    error: err => console.error(err)
-  });
-}
-
-openAssignModal(eleve: Eleve) {
-  this.selectedEleve = eleve;
-  this.selectedNoteId = null;
-  this.showAssignModal = true;
-}
-
-closeAssignModal() {
-  this.showAssignModal = false;
-  this.selectedEleve = null;
-}
-
-confirmAssignNote() {
-  if (!this.selectedNoteId || !this.selectedEleve) return;
-
-  this.api.assignNoteToEleve(this.selectedEleve.id!, this.selectedNoteId).subscribe({
-    next: (updatedEleve) => {
-      this.selectedEleve!.note_id = updatedEleve.note_id;
-      this.closeAssignModal();
-    },
-    error: (err) => {
-      console.error('Erreur assignation:', err);
-      alert("Impossible d'assigner la note.");
+    if (this.modalMode === 'assign') {
+      if (!this.selectedNoteId) return;
+      this.api.assignNoteToEleve(this.modalEleve.id!, this.selectedNoteId).subscribe({
+        next: updated => {
+          const index = this.eleves.findIndex(e => e.id === updated.id);
+          if (index !== -1) this.eleves[index] = updated;
+          this.closeNoteModal();
+        },
+        error: err => console.error('Erreur assignation note', err)
+      });
+    } else if (this.modalMode === 'deassign') {
+      this.api.unassignNoteFromEleve(this.modalEleve.id!).subscribe({
+        next: updated => {
+          const index = this.eleves.findIndex(e => e.id === updated.id);
+          if (index !== -1) this.eleves[index] = updated;
+          this.closeNoteModal();
+        },
+        error: err => console.error('Erreur désassignation note', err)
+      });
     }
-  });
-}
+  }
 
-
+  closeNoteModal() {
+    this.showNoteModal = false;
+    this.modalEleve = null;
+    this.selectedNoteId = null;
+    this.selectedNoteTitle = null;
+  }
 }

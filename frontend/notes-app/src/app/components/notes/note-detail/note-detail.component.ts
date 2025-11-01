@@ -1,10 +1,10 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { NoteService, Note, Utilisateur, NoteCreate } from '../../services/note.service';
-import { AuthService } from '../../services/auth.service';
-import { ToastComponent } from '../../components/shared/toast/toast.component';
+import { NoteService, Note, Utilisateur, NoteCreate } from '../../../services/note.service';
+import { AuthService } from '../../../services/auth.service';
+import { ToastComponent } from '../../shared/toast/toast.component';
 import { MatDialog } from '@angular/material/dialog';
-import { ConfirmDialogComponent } from '../shared/confirm-dialog/confirm-dialog.component';
+import { ConfirmDialogComponent } from '../../shared/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-note-detail',

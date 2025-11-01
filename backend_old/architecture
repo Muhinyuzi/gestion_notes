@@ -1,0 +1,33 @@
+backend/
+├── app/
+│   ├── main.py
+│   ├── core/
+│   │   ├── config.py
+│   │   ├── security.py
+│   ├── db/
+│   │   ├── database.py
+│   ├── models/
+│   │   ├── eleve_model.py
+│   │   ├── note_model.py
+│   │   ├── utilisateur_model.py
+│   ├── schemas/
+│   │   ├── eleve_schema.py
+│   │   ├── note_schema.py
+│   │   ├── utilisateur_schema.py
+│   ├── routers/
+│   │   ├── eleves_router.py
+│   │   ├── notes_router.py
+│   │   ├── utilisateurs_router.py
+│   ├── services/
+│   │   ├── eleve_service.py
+│   │   ├── note_service.py
+│   │   ├── utilisateur_service.py
+│   ├── utils/
+│   │   ├── hash.py
+│   │   ├── jwt_handler.py
+│   └── tests/
+│       ├── test_eleves.py
+│       ├── test_notes.py
+│       └── test_utilisateurs.py
+├── requirements.txt
+└── .env

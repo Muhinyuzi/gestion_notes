@@ -1,9 +1,9 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { UtilisateurService, UtilisateurDetailOut } from '../../services/utilisateur.service';
-import { ToastComponent } from '../shared/toast/toast.component';
+import { UtilisateurService, UtilisateurDetailOut } from '../../../services/utilisateur.service';
+import { ToastComponent } from '../../shared/toast/toast.component';
 import { MatDialog } from '@angular/material/dialog';
-import { ConfirmDialogComponent } from '../shared/confirm-dialog/confirm-dialog.component';
+import { ConfirmDialogComponent } from '../../shared/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-utilisateur-detail',

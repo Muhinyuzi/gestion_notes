@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { NoteService, NoteCreate, Note, Utilisateur } from '../../services/note.service';
-import { AuthService } from '../../services/auth.service';
+import { NoteService, NoteCreate, Note, Utilisateur } from '../../../services/note.service';
+import { AuthService } from '../../../services/auth.service';
 import { KENDO_EDITOR } from '@progress/kendo-angular-editor';
 import DOMPurify from 'dompurify';
 

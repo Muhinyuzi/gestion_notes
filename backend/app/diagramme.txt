@@ -1,0 +1,39 @@
+┌───────────────┐
+│  Utilisateur  │
+│   (Employé)   │
+├───────────────┤
+│ id            │
+│ nom           │
+│ email         │
+│ mot_de_passe  │
+│ type          │
+│ equipe        │
+│ date          │
+└───────┬───────┘
+        │ 1
+        │
+        │
+        │ N
+┌───────▼───────┐
+│     Note      │
+├───────────────┤
+│ id            │
+│ titre         │
+│ contenu       │
+│ equipe        │
+│ auteur_id     │
+│ created_at    │
+│ updated_at    │
+└───────┬───────┘
+        │ 1
+        │
+        │ N
+┌───────▼──────────┐
+│   Commentaire    │
+├─────────────────┤
+│ id               │
+│ contenu          │
+│ date             │
+│ auteur_id        │
+│ note_id          │
+└─────────────────┘

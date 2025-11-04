@@ -1,0 +1,4 @@
+pytest app/tests/test_service_utilisateurs.py
+pytest -v
+pytest
+pytest -q

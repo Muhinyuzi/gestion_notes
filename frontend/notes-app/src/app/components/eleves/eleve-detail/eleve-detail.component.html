@@ -2,100 +2,133 @@
 
   <h2>Détails de l’élève</h2>
 
-  <!-- Carte élève -->
+  <!-- 🧍 Carte d'identité -->
   <div class="eleve-card">
     <div class="info">
       <h3>{{ eleve.prenom }} {{ eleve.nom }}</h3>
+
       <p><strong>Adresse :</strong> {{ eleve.adresse || 'Non spécifiée' }}</p>
-      <p><strong>Actif :</strong> {{ eleve.actif ? 'Oui' : 'Non' }}</p>
+
+      <p><strong>Actif :</strong>
+        <span class="status" [ngClass]="eleve.actif ? 'oui' : 'non'">
+          {{ eleve.actif ? 'Oui' : 'Non' }}
+        </span>
+      </p>
+
       <p><strong>En attente :</strong> {{ eleve.en_attente ? 'Oui' : 'Non' }}</p>
     </div>
 
     <div class="actions">
-      <button class="btn edit" (click)="editEleve()">Modifier</button>
-      <button class="btn delete" (click)="deleteEleve()">Supprimer</button>
+      <button class="btn edit" (click)="editEleve()">✏️ Modifier</button>
+      <button class="btn delete" (click)="deleteEleve()">🗑️ Supprimer</button>
     </div>
   </div>
 
-  <!-- Section note -->
+  <!-- 📘 Note assignée -->
   <div class="note-section">
     <h3>Note assignée</h3>
 
     <div *ngIf="note; else noNoteTpl" class="note-card">
       <h4>{{ note.titre }}</h4>
       <p>{{ note.contenu }}</p>
+
       <div class="note-actions">
         <button class="btn unassign" (click)="openDeassignModal(eleve)">❌ Désassigner</button>
       </div>
     </div>
 
     <ng-template #noNoteTpl>
-      <p>Aucune note assignée à cet élève.</p>
+      <p>Aucune note assignée.</p>
       <button class="btn assign" (click)="openAssignModal(eleve)">➕ Assigner une note</button>
     </ng-template>
   </div>
 
-  <!-- Section historique -->
+  <!-- 🕓 Historique -->
   <div class="history-section">
     <h3>Historique</h3>
 
-    <div *ngIf="loadingHistory" class="loading">Chargement de l’historique...</div>
-    <div *ngIf="!loadingHistory && history.length === 0">Aucun historique disponible pour cet élève.</div>
+    <div *ngIf="loadingHistory" class="loading">Chargement...</div>
+    <div *ngIf="!loadingHistory && history.length === 0">
+      Aucun historique disponible.
+    </div>
 
     <div *ngIf="!loadingHistory && history.length > 0" class="history-list">
       <div *ngFor="let h of history" class="history-item">
+
         <div class="history-header">
           <span class="history-date">{{ h.edited_at | date:'short' }}</span>
           <span class="history-user">Par {{ getUserName(h.edited_by) }}</span>
         </div>
+
         <div class="history-changes">
           <ul>
             <li *ngFor="let key of getChangeKeys(h.changes)">
-              <strong>{{ key }}:</strong> "{{ h.changes[key].old }}" → "{{ h.changes[key].new }}"
-            </li>
+  <ng-container *ngIf="h.changes && h.changes[key]">
+    <strong>{{ key }} :</strong>
+    "{{ h.changes[key]?.old ?? '—' }}" → "{{ h.changes[key]?.new ?? '—' }}"
+  </ng-container>
+</li>
           </ul>
         </div>
+
         <div class="history-reason">
-          <em>Raison: {{ h.raison_changement }}</em>
+          <em>Raison : {{ h.raison_changement }}</em>
         </div>
+
       </div>
     </div>
 
     <div *ngIf="errorHistory" class="error">{{ errorHistory }}</div>
   </div>
-
 </div>
 
-<!-- Modale assignation/désassignation -->
+<!-- ============================== -->
+<!-- ✅ MODALE (PLACÉE EN DEHORS DU CONTAINER) -->
 <div class="modal-overlay" *ngIf="showNoteModal">
   <div class="modal">
-    <h3 *ngIf="modalMode==='assign'">Assigner une note à {{ modalEleve?.nom }}</h3>
-    <h3 *ngIf="modalMode==='deassign'">Désassigner la note de {{ modalEleve?.nom }}</h3>
 
+    <h3 *ngIf="modalMode==='assign'">
+      Assigner une note à {{ modalEleve?.prenom }} {{ modalEleve?.nom }}
+    </h3>
+
+    <h3 *ngIf="modalMode==='deassign'">
+      Retirer la note de {{ modalEleve?.prenom }} {{ modalEleve?.nom }}
+    </h3>
+
+    <!-- Sélection de note -->
     <div *ngIf="modalMode==='assign'">
-      <select [(ngModel)]="selectedNoteId">
-        <option value="">-- Sélectionnez une note --</option>
-        <option *ngFor="let note of notes" [value]="note.id">{{ note.titre }}</option>
+      <label>Choisir une note :</label>
+      <select [(ngModel)]="selectedNoteId" class="form-select">
+        <option [ngValue]="null" disabled selected>
+          -- Sélectionner une note --
+        </option>
+        <option *ngFor="let note of notes" [ngValue]="note.id">
+          {{ note.titre }}
+        </option>
       </select>
     </div>
 
-    <div *ngIf="modalMode==='deassign'">
-      <p>
-        Êtes-vous sûr de vouloir désassigner la note 
-        <strong>{{ selectedNoteTitle }}</strong> de 
-        <strong>{{ modalEleve?.nom }} {{ modalEleve?.prenom }}</strong> ?
-      </p>
-    </div>
+    <!-- Affichage quand on retire -->
+    <p *ngIf="modalMode==='deassign'">
+      Note actuelle :
+      <strong>{{ selectedNoteTitle }}</strong>
+    </p>
 
+    <!-- Boutons -->
     <div class="modal-actions">
       <button class="btn btn-primary" (click)="confirmNoteAction()">
-        {{ modalMode==='assign' ? '✅ Assigner' : '❌ Désassigner' }}
+        {{ modalMode==='assign' ? 'Assigner' : 'Retirer' }}
       </button>
-      <button class="btn btn-secondary" (click)="closeNoteModal()">Annuler</button>
+
+      <button class="btn btn-secondary" (click)="closeNoteModal()">
+        Annuler
+      </button>
     </div>
+
   </div>
 </div>
 
+<!-- Loader -->
 <ng-template #loadingTpl>
   <div class="loading">Chargement en cours...</div>
 </ng-template>

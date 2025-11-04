@@ -13,20 +13,22 @@ export class EleveDetailComponent implements OnInit {
 
   eleve?: Eleve;
   note?: Note;
+  notes: Note[] = [];
+  users: any[] = [];
+
   isLoading = false;
   errorMessage = '';
+
   history: any[] = [];
   loadingHistory = false;
   errorHistory = '';
-  users: any[] = []; 
-  notes: Note[] = [];
 
-  // Modale assignation/désassignation
+  // 🔹 Modale
   showNoteModal = false;
+  modalEleve: Eleve | null = null;
   modalMode: 'assign' | 'deassign' = 'assign';
   selectedNoteId: number | null = null;
   selectedNoteTitle: string | null = null;
-  modalEleve: Eleve | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -41,12 +43,16 @@ export class EleveDetailComponent implements OnInit {
     if (id) {
       this.loadEleve(id);
       this.loadHistory(id);
-      this.loadNotes();
       this.loadUsers();
+      this.loadNotes(); // ✅ même logique que la liste
     } else {
       this.errorMessage = 'ID élève non valide.';
     }
   }
+
+  // ===============================
+  // 🔹 Chargements
+  // ===============================
 
   loadEleve(id: number): void {
     this.isLoading = true;
@@ -55,6 +61,7 @@ export class EleveDetailComponent implements OnInit {
         this.eleve = data;
         this.isLoading = false;
 
+        // Charger la note associée si présente
         if (data.note_id) {
           this.noteService.getNoteById(data.note_id).subscribe({
             next: (n) => this.note = n,
@@ -64,8 +71,8 @@ export class EleveDetailComponent implements OnInit {
       },
       error: (err) => {
         this.errorMessage = 'Erreur lors du chargement de l’élève.';
-        console.error(err);
         this.isLoading = false;
+        console.error(err);
       }
     });
   }
@@ -84,37 +91,7 @@ export class EleveDetailComponent implements OnInit {
     });
   }
 
-  editEleve(): void {
-    if (this.eleve?.id)
-      this.router.navigate(['/eleves/edit', this.eleve.id]);
-  }
-
-  deleteEleve(): void {
-    if (!this.eleve?.id) return;
-    if (!confirm(`Supprimer ${this.eleve.prenom} ${this.eleve.nom} ?`)) return;
-
-    this.eleveService.deleteEleve(this.eleve.id).subscribe({
-      next: () => this.router.navigate(['/eleves']),
-      error: (err) => {
-        alert('Erreur lors de la suppression');
-        console.error(err);
-      }
-    });
-  }
-
-  unassignNote(): void {
-    if (!this.eleve?.id) return;
-
-    this.eleveService.unassignNoteFromEleve(this.eleve.id).subscribe({
-      next: (updated) => {
-        this.eleve = updated;
-        this.note = undefined;
-      },
-      error: (err) => console.error('Erreur désassignation', err)
-    });
-  }
-
-  loadHistory(id: number) {
+  loadHistory(id: number): void {
     this.loadingHistory = true;
     this.eleveService.getEleveHistory(id).subscribe({
       next: data => {
@@ -128,30 +105,70 @@ export class EleveDetailComponent implements OnInit {
     });
   }
 
-  getChangeKeys(changes: any): string[] {
-    return Object.keys(changes);
-  }
+  // ===============================
+  // 🔹 Helpers
+  // ===============================
 
   getUserName(userId: number): string {
     const user = this.users.find(u => u.id === userId);
-    return user ? `${user.nom} , Role: ${user.type}` : `Utilisateur #${userId}`;
+    return user ? `${user.nom} (${user.type})` : `Utilisateur #${userId}`;
   }
 
-  // ==============================
-  // 🔹 Modale assignation/désassignation
-  // ==============================
-  openAssignModal(eleve: Eleve) {
-    this.modalEleve = eleve;
-    this.modalMode = 'assign';
-    this.selectedNoteId = null;
+  getChangeKeys(changes: any): string[] {
+  if (!changes || typeof changes !== 'object') return [];
+  return Object.keys(changes);
+}
+
+  // ===============================
+  // 🔹 Actions élève
+  // ===============================
+
+  editEleve(): void {
+    if (this.eleve?.id)
+      this.router.navigate(['/eleves/edit', this.eleve.id]);
+  }
+
+  deleteEleve(): void {
+    if (!this.eleve?.id) return;
+    if (!confirm(`Supprimer ${this.eleve.prenom} ${this.eleve.nom} ?`)) return;
+
+    this.eleveService.deleteEleve(this.eleve.id).subscribe({
+      next: () => this.router.navigate(['/eleves']),
+      error: err => {
+        alert('Erreur lors de la suppression');
+        console.error(err);
+      }
+    });
+  }
+
+  // ===============================
+  // 🔹 Modale assignation / désassignation (même logique que la liste)
+  // ===============================
+
+openAssignModal(eleve: Eleve) {
+  this.modalEleve = eleve;
+  this.modalMode = 'assign';
+  this.selectedNoteId = null;
+
+  // ⚙️ Charger les notes si elles ne sont pas encore prêtes
+  if (this.notes.length === 0) {
+    this.noteService.getNotes().subscribe({
+      next: data => {
+        this.notes = data.notes;  // ou data si ton backend renvoie un tableau simple
+        this.showNoteModal = true;
+      },
+      error: err => console.error('Erreur chargement notes', err)
+    });
+  } else {
     this.showNoteModal = true;
   }
+}
 
   openDeassignModal(eleve: Eleve) {
     this.modalEleve = eleve;
     this.modalMode = 'deassign';
     const note = this.notes.find(n => n.id === eleve.note_id);
-    this.selectedNoteTitle = note ? note.titre : `#${eleve?.note_id}`;
+    this.selectedNoteTitle = note ? note.titre : `#${eleve.note_id}`;
     this.showNoteModal = true;
   }
 
@@ -163,14 +180,18 @@ export class EleveDetailComponent implements OnInit {
       this.eleveService.assignNoteToEleve(this.modalEleve.id!, this.selectedNoteId).subscribe({
         next: updated => {
           this.eleve = updated;
+
+          // Rafraîchir la note affichée
           if (updated.note_id) {
             const n = this.notes.find(n => n.id === updated.note_id);
-            this.note = n ? n : undefined;
+            this.note = n ?? undefined;
           }
+
           this.closeNoteModal();
         },
         error: err => console.error('Erreur assignation note', err)
       });
+
     } else if (this.modalMode === 'deassign') {
       this.eleveService.unassignNoteFromEleve(this.modalEleve.id!).subscribe({
         next: updated => {

@@ -16,3 +16,7 @@ def test_login(client):
 
     assert response.status_code == 200
     assert "access_token" in response.json()
+
+def test_login_wrong_password(client):
+    r = client.post("/login", data={"username": "admin@test.com", "password": "wrong"})
+    assert r.status_code == 401    

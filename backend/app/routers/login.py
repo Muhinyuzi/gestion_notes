@@ -1,20 +1,31 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from app.db import get_db
 from app.models.utilisateur import Utilisateur
-import app.auth  # contient create_access_token et verify_password
+import app.auth
 
-router = APIRouter(tags=["auth"])  # pas de prefix pour garder /login
+router = APIRouter(tags=["auth"])
 
 @router.post("/login")
-def login(
-    form_data: OAuth2PasswordRequestForm = Depends(),
-    db: Session = Depends(get_db)
+async def login(
+    request: Request,
+    db: Session = Depends(get_db),
+    form_data: OAuth2PasswordRequestForm = Depends()
 ):
-    # Cherche l'utilisateur par email
-    user = db.query(Utilisateur).filter(Utilisateur.email == form_data.username).first()
-    if not user or not app.auth.verify_password(form_data.password, user.mot_de_passe):
+    # 🔹 Si JSON: on parse manuellement
+    if request.headers.get("content-type", "").startswith("application/json"):
+        data = await request.json()
+        username = data.get("email")
+        password = data.get("password")
+    else:
+        # 🔹 Si formulaire OAuth2
+        username = form_data.username
+        password = form_data.password
+
+    user = db.query(Utilisateur).filter(Utilisateur.email == username).first()
+
+    if not user or not app.auth.verify_password(password, user.mot_de_passe):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Email ou mot de passe incorrect",

@@ -9,7 +9,7 @@ class Utilisateur(Base):
     __tablename__ = "utilisateurs"
 
     id = Column(Integer, primary_key=True, index=True)
-    nom = Column(String(100), unique=True, nullable=False, index=True)
+    nom = Column(String(100), nullable=False, index=True)
     email = Column(String(255), unique=True, nullable=False, index=True)
     mot_de_passe = Column(String(255), nullable=False)  # hashé
     type = Column(String(50), nullable=False, index=True)  # ex: employe

@@ -1,76 +1,19 @@
 # app/tests/test_router_eleves.py
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-
 from app.main import app
-from app.db import Base, get_db
-from app.models.utilisateur import Utilisateur
+from app.tests.conftest import TestingSessionLocal
 from app.models.note import Note
-from app.auth import get_current_user
-
-# ✅ SQLite test DB
-engine = create_engine("sqlite:///./test_router_eleves.db", connect_args={"check_same_thread": False})
-TestingSessionLocal = sessionmaker(bind=engine)
-
-# ✅ Override DB dependency
-def override_get_db():
-    db = TestingSessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-app.dependency_overrides[get_db] = override_get_db
-
-# ✅ Fake admin user
-class FakeAdmin:
-    id = 1
-    type = "admin"
-    equipe = "Dev"
-
-def override_get_current_user():
-    return FakeAdmin()
-
-app.dependency_overrides[get_current_user] = override_get_current_user
 
 client = TestClient(app)
 
-# ✅ Setup DB + seed admin
-@pytest.fixture(autouse=True)
-def setup():
-    Base.metadata.drop_all(bind=engine)
-    Base.metadata.create_all(bind=engine)
-
-    db = TestingSessionLocal()
-    admin = Utilisateur(id=1, nom="Admin", email="admin@test.com", type="admin", equipe="Dev", mot_de_passe="pass")
-    db.add(admin)
-    db.commit()
-    db.close()
-    yield
-
-# ----------------------------------------------------------------
-# ✅ CREATE ELEVE
-# ----------------------------------------------------------------
-def test_create_eleve():
-    eleve = {
-        "nom": "Jean",
-        "prenom": "Claude",
-        "adresse": "Rue Test",
-        "actif": True,
-        "en_attente": False,
-        "ferme": False
-    }
-
-    r = client.post("/eleves/", json=eleve)
-    assert r.status_code == 200, r.text
+def test_create_eleve(create_test_user):
+    r = client.post("/eleves/", json={"nom":"Jean","prenom":"Claude"})
+    assert r.status_code == 200
     assert r.json()["nom"] == "Jean"
 
-# ----------------------------------------------------------------
-# ✅ GET ELEVE
-# ----------------------------------------------------------------
-def test_get_eleve():
+
+def test_get_eleve(create_test_user):
     res = client.post("/eleves/", json={"nom":"A","prenom":"B"})
     eleve_id = res.json()["id"]
 
@@ -78,57 +21,48 @@ def test_get_eleve():
     assert r.status_code == 200
     assert r.json()["id"] == eleve_id
 
-# ----------------------------------------------------------------
-# ✅ LIST ELEVE
-# ----------------------------------------------------------------
-def test_list_eleves():
+
+def test_list_eleves(client, create_test_user):
+    r0 = client.get("/eleves/")
+    initial = len(r0.json())
+
     client.post("/eleves/", json={"nom":"A","prenom":"B"})
     r = client.get("/eleves/")
-    assert r.status_code == 200
-    assert len(r.json()) == 1
 
-# ----------------------------------------------------------------
-# ✅ UPDATE ELEVE
-# ----------------------------------------------------------------
-def test_update_eleve():
+    assert r.status_code == 200
+    assert len(r.json()) == initial + 1
+
+
+def test_update_eleve(create_test_user):
     res = client.post("/eleves/", json={"nom":"A","prenom":"B"})
     eleve_id = res.json()["id"]
 
     r = client.put(
-    f"/eleves/{eleve_id}",
-    json={
-        "nom": "A",
-        "prenom": "B",
-        "adresse": "Nouvelle Rue"
-    }
-)
+        f"/eleves/{eleve_id}",
+        json={"nom":"A","prenom":"B","adresse":"Rue X","updated_by":create_test_user["id"]}
+    )
     assert r.status_code == 200
-    assert r.json()["adresse"] == "Nouvelle Rue"
+    assert r.json()["adresse"] == "Rue X"
 
-# ----------------------------------------------------------------
-# ✅ ASSIGN NOTE
-# ----------------------------------------------------------------
-def test_assign_note_to_eleve():
+
+def test_assign_note_to_eleve(create_test_user):
     db = TestingSessionLocal()
-    note = Note(titre="Note", contenu="Test", auteur_id=1, equipe="Dev")
-    db.add(note)
-    db.commit()
+    note = Note(titre="N", contenu="T", auteur_id=create_test_user["id"], equipe="Dev")
+    db.add(note); db.commit()
     note_id = note.id
     db.close()
 
     eleve = client.post("/eleves/", json={"nom":"A","prenom":"B"}).json()
     r = client.put(f"/eleves/{eleve['id']}/assign_note/{note_id}")
+
     assert r.status_code == 200
     assert r.json()["note_id"] == note_id
 
-# ----------------------------------------------------------------
-# ✅ UNASSIGN NOTE
-# ----------------------------------------------------------------
-def test_unassign_note_from_eleve():
+
+def test_unassign_note_from_eleve(create_test_user):
     db = TestingSessionLocal()
-    note = Note(titre="Note", contenu="Test", auteur_id=1, equipe="Dev")
-    db.add(note)
-    db.commit()
+    note = Note(titre="N", contenu="T", auteur_id=create_test_user["id"], equipe="Dev")
+    db.add(note); db.commit()
     note_id = note.id
     db.close()
 
@@ -139,25 +73,71 @@ def test_unassign_note_from_eleve():
     assert r.status_code == 200
     assert r.json()["note_id"] is None
 
-# ----------------------------------------------------------------
-# ✅ GET HISTORY
-# ----------------------------------------------------------------
-def test_get_eleve_history():
+
+def test_get_eleve_history(create_test_user):
     eleve = client.post("/eleves/", json={"nom":"A","prenom":"B"}).json()
 
-    # 🟢 Trigger history by updating the student
-    client.put(f"/eleves/{eleve['id']}", json={"nom":"A","prenom":"B","adresse":"Rue X"})
+    client.put(
+        f"/eleves/{eleve['id']}",
+        json={"nom":"A","prenom":"B","adresse":"Rue","updated_by":create_test_user["id"]}
+    )
 
     r = client.get(f"/eleves/{eleve['id']}/history")
     assert r.status_code == 200
-    assert isinstance(r.json(), list)
     assert len(r.json()) >= 1
 
 
-# ----------------------------------------------------------------
-# ✅ DELETE ELEVE
-# ----------------------------------------------------------------
-def test_delete_eleve():
+def test_delete_eleve(create_test_user):
     eleve = client.post("/eleves/", json={"nom":"A","prenom":"B"}).json()
     r = client.delete(f"/eleves/{eleve['id']}")
-    assert r.status_code in (200, 204)
+    assert r.status_code in (200,204)
+
+
+# --- ERROR CASES ---
+
+def test_assign_note_eleve_not_found(client):
+    r = client.put("/eleves/999/assign_note/1")
+    assert r.status_code == 404
+
+def test_assign_note_not_found(client):
+    eleve = client.post("/eleves/", json={"nom": "A", "prenom": "B"}).json()
+    r = client.put(f"/eleves/{eleve['id']}/assign_note/999")
+    assert r.status_code == 404
+
+def test_unassign_note_none(client):
+    eleve = client.post("/eleves/", json={"nom":"A","prenom":"B"}).json()
+    r = client.put(f"/eleves/{eleve['id']}/unassign_note")
+    assert r.status_code == 400
+
+def test_get_eleve_not_found(client):
+    r = client.get("/eleves/999")
+    assert r.status_code == 404
+
+def test_update_eleve_not_found(client):
+    r = client.put("/eleves/999", json={"nom":"A","prenom":"B","adresse":"Rue","updated_by":1})
+    assert r.status_code == 404
+
+def test_delete_eleve_not_found(client):
+    r = client.delete("/eleves/999")
+    assert r.status_code == 404
+
+def test_get_eleve_history_not_found(client):
+    r = client.get("/eleves/999/history")
+    assert r.status_code == 404
+
+def test_create_eleve_missing_fields(client):
+    r = client.post("/eleves/", json={"prenom":"Claude"})
+    assert r.status_code == 422
+
+def test_update_eleve_missing_updated_by(client):
+    eleve = client.post("/eleves/", json={"nom":"A","prenom":"B"}).json()
+    r = client.put(f"/eleves/{eleve['id']}", json={"nom":"A","prenom":"B","adresse":"Rue X"})
+    assert r.status_code == 422
+
+def test_update_eleve_no_changes(client, create_test_user):
+    eleve = client.post("/eleves/", json={"nom":"A","prenom":"B"}).json()
+    r = client.put(
+        f"/eleves/{eleve['id']}",
+        json={"nom":"A","prenom":"B","updated_by":create_test_user["id"]}
+    )
+    assert r.status_code == 400    

@@ -20,7 +20,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
 # 🔹 Gestion des mots de passe
 # -----------------------------------------------------------
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/login")  # ✅ tokenUrl complet
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")  # ✅ tokenUrl complet
 
 def hash_password(password: str) -> str:
     """Hash le mot de passe utilisateur avec bcrypt."""

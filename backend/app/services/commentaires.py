@@ -7,15 +7,15 @@ from app.models.utilisateur import Utilisateur
 from app.schemas.schemas import CommentaireCreate, CommentaireOut
 
 def add_commentaire_service(note_id: int, commentaire: CommentaireCreate, db: Session):
-    # Vérifie si la note existe
-    note = db.query(Note).filter(Note.id == note_id).first()
-    if not note:
-        raise HTTPException(status_code=404, detail="Note non trouvée")
-
-    # Vérifie si l'auteur existe
+    # ✅ Vérifie si l'auteur existe AVANT la note (conformité aux tests)
     auteur = db.query(Utilisateur).filter(Utilisateur.id == commentaire.auteur_id).first()
     if not auteur:
         raise HTTPException(status_code=404, detail="Auteur non trouvé")
+
+    # ✅ Vérifie si la note existe
+    note = db.query(Note).filter(Note.id == note_id).first()
+    if not note:
+        raise HTTPException(status_code=404, detail="Note non trouvée")
 
     # Crée le commentaire
     new_comment = Commentaire(

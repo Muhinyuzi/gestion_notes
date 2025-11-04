@@ -1,50 +1,56 @@
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from app.db import Base, engine
-import uvicorn
+from app.db import Base, engine  # ✅ use session engine override-aware
 from app.config import settings
 
-# ------------------------- Routers -------------------------
+# Routers
 from app.routers import utilisateurs, notes, commentaires, login, eleves
 
-# ------------------------- Création des tables -------------------------
-Base.metadata.create_all(bind=engine)
-
-# ------------------------- FastAPI App -------------------------
 app = FastAPI(
     title=settings.PROJECT_NAME,
-    description="API pour gérer les employés, notes et commentaires",
-    version="1.0.0"
+    description="API Notes & Gestion Utilisateurs",
+    version="1.0.0",
 )
 
-# ------------------------- CORS -------------------------
-# ✅ Config CORS
+IS_TEST = os.getenv("TESTING") == "1"
+
+if IS_TEST:
+    print("🧪 Startup skipped (TEST mode)")
+else:
+    print("🚀 Application boot — Production mode")
+    Base.metadata.create_all(bind=engine)  # ✅ only in prod
+
+
+# ✅ CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-
 )
-print("✅ CORS LOADED WITH:", settings.CORS_ORIGINS)
 
-# 🔹 Pour servir les avatars stockés localement
+print("✅ CORS:", settings.CORS_ORIGINS)
+
+# ✅ Static upload dir
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
-# ------------------------- Root -------------------------
+
 @app.get("/")
-def read_root():
+def root():
     return {"message": "Bienvenue sur l’API Notes & Gestion Utilisateurs 🚀"}
 
-# ------------------------- Inclusion des routers -------------------------
+
+# ✅ Routers
 app.include_router(login.router)
 app.include_router(utilisateurs.router, prefix="/utilisateurs", tags=["Utilisateurs"])
 app.include_router(notes.router, prefix="/notes", tags=["Notes"])
-app.include_router(commentaires.router, prefix="", tags=["Commentaires"])  # endpoints commentaires intégrés aux notes
-app.include_router(eleves.router, prefix="/eleves", tags=["eleves"])
+app.include_router(commentaires.router, tags=["Commentaires"])
+app.include_router(eleves.router, prefix="/eleves", tags=["Élèves"])
 
-# ------------------------- Lancer l'app -------------------------
+
 if __name__ == "__main__":
+    import uvicorn
     uvicorn.run("app.main:app", host="127.0.0.1", port=8000, reload=True)

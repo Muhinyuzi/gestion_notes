@@ -55,7 +55,7 @@ class NoteBase(BaseModel):
     resume_ia: Optional[str] = None
 
 class NoteCreate(NoteBase):
-    auteur_id: int
+    auteur_id: Optional[int] = None
 
 class NoteOut(NoteBase):
     id: int
@@ -87,8 +87,8 @@ class CommentaireBase(BaseModel):
     contenu: str
 
 class CommentaireCreate(CommentaireBase):
-    auteur_id: int
-    note_id: int
+    auteur_id: int | None = None
+    note_id: int | None = None
 
 class CommentaireOut(CommentaireBase):
     id: int

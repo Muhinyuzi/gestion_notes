@@ -1,51 +1,7 @@
 # app/tests/test_router_utilisateurs.py
 import pytest
-from fastapi.testclient import TestClient
-from app.main import app
-from app.db import Base, get_db
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from app.auth import get_current_user
-from app.schemas.schemas import UtilisateurCreate
 
-# ✅ DB test
-engine = create_engine("sqlite:///./test_router.db", connect_args={"check_same_thread": False})
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-# ✅ Override DB
-def override_get_db():
-    db = TestingSessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-app.dependency_overrides[get_db] = override_get_db
-
-# ✅ Simulated Admin User
-class FakeAdmin:
-    id = 1
-    type = "admin"
-    equipe = "Dev"
-
-def override_get_current_user():
-    return FakeAdmin()
-
-app.dependency_overrides[get_current_user] = override_get_current_user
-
-@pytest.fixture(autouse=True)
-def reset_db():
-    Base.metadata.drop_all(bind=engine)
-    Base.metadata.create_all(bind=engine)
-    yield
-
-client = TestClient(app)
-
-# -------------------------------------------
-# ✅ TESTS
-# -------------------------------------------
-
-def test_create_user_router():
+def test_create_user_router(client):
     data = {
         "nom": "TestUser",
         "email": "router@test.com",
@@ -58,8 +14,8 @@ def test_create_user_router():
     res = r.json()
     assert res["email"] == "router@test.com"
 
-def test_list_users_router():
-    # create one user
+
+def test_list_users_router(client):
     client.post("/utilisateurs/", json={
         "nom": "UserA",
         "email": "usera@test.com",
@@ -73,9 +29,10 @@ def test_list_users_router():
 
     data = r.json()
     assert "users" in data
-    assert len(data["users"]) == 1  # should be one user created
+    assert len(data["users"]) == 1
 
-def test_get_user_detail_router():
+
+def test_get_user_detail_router(client):
     r = client.post("/utilisateurs/", json={
         "nom": "UserB",
         "email": "userb@test.com",
@@ -89,7 +46,8 @@ def test_get_user_detail_router():
     assert r.status_code == 200
     assert r.json()["email"] == "userb@test.com"
 
-def test_update_user_router():
+
+def test_update_user_router(client):
     r = client.post("/utilisateurs/", json={
         "nom": "UserC",
         "email": "userc@test.com",
@@ -110,7 +68,8 @@ def test_update_user_router():
     assert r.status_code == 200
     assert r.json()["nom"] == "UpdatedUser"
 
-def test_delete_user_router():
+
+def test_delete_user_router(client):
     r = client.post("/utilisateurs/", json={
         "nom": "UserD",
         "email": "userd@test.com",
@@ -124,4 +83,33 @@ def test_delete_user_router():
     assert r.status_code == 204
 
     r = client.get(f"/utilisateurs/{user_id}")
+    assert r.status_code == 404
+
+# Duplicate email
+def test_create_user_email_duplicate(client):
+    data1 = {
+        "nom": "User1",
+        "email": "dup@test.com",
+        "mot_de_passe": "1234",
+        "type": "admin",
+        "equipe": "Dev"
+    }
+
+    data2 = {
+        "nom": "User2",  # 🔥 Change name to avoid unique name violation
+        "email": "dup@test.com",
+        "mot_de_passe": "1234",
+        "type": "admin",
+        "equipe": "Dev"
+    }
+
+    client.post("/utilisateurs/", json=data1)
+    r = client.post("/utilisateurs/", json=data2)
+
+    assert r.status_code == 400
+    assert "Email déjà utilisé" in r.text
+
+# Get user not found
+def test_get_user_not_found(client):
+    r = client.get("/utilisateurs/9999")
     assert r.status_code == 404

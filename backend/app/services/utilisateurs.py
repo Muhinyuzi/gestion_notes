@@ -2,6 +2,7 @@
 import os
 import shutil
 from fastapi import HTTPException
+from sqlalchemy.exc import IntegrityError
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session, joinedload
 from passlib.context import CryptContext
@@ -19,7 +20,7 @@ def hash_password(password: str):
 def create_user_service(user: UtilisateurCreate, db: Session, current_user: Utilisateur):
     if current_user.type != "admin":
         raise HTTPException(status_code=403, detail="Action réservée aux administrateurs")
-    
+
     hashed = hash_password(user.mot_de_passe)
     new_user = Utilisateur(
         nom=user.nom,
@@ -32,10 +33,25 @@ def create_user_service(user: UtilisateurCreate, db: Session, current_user: Util
         adresse=user.adresse,
         date_embauche=user.date_embauche
     )
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-    return UtilisateurOut.from_orm(new_user)
+    
+    try:
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
+        return UtilisateurOut.from_orm(new_user)
+
+    except IntegrityError as e:
+        db.rollback()
+
+        # SQLite & PostgreSQL return error text with column name
+        if "email" in str(e.orig).lower():
+            raise HTTPException(status_code=400, detail="Email déjà utilisé")
+        
+        if "nom" in str(e.orig).lower():
+            raise HTTPException(status_code=400, detail="Nom déjà utilisé")
+
+        # fallback error
+        raise HTTPException(status_code=400, detail="Erreur lors de la création de l'utilisateur")
 
 # ---------------- LIST ----------------
 def list_users_service(nom, email, equipe, type_, sort, page, limit, db: Session, current_user: Utilisateur):

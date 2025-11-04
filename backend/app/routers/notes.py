@@ -1,10 +1,10 @@
 # app/api/v1/notes.py
-from fastapi import APIRouter, Depends, Form, File, UploadFile, Query
+from fastapi import APIRouter, Depends, Form, File, UploadFile, Query, Request, HTTPException
 from typing import List, Optional
 from sqlalchemy.orm import Session
 from app.db import get_db
 from app.models.utilisateur import Utilisateur
-from app.schemas.schemas import NoteOut, NoteDetailOut, NotesResponse, CommentaireOut, CommentaireCreate
+from app.schemas.schemas import NoteOut, NoteDetailOut, NotesResponse, CommentaireOut, CommentaireCreate, NoteCreate
 from app.services.notes import (
     create_note_service,
     list_notes_service,
@@ -22,10 +22,11 @@ router = APIRouter()
 
 # ---------------- CREATE ----------------
 @router.post("/", response_model=NoteOut)
-def create_note(
-    titre: str = Form(...),
-    contenu: str = Form(...),
-    auteur_id: int = Form(...),
+async def create_note(
+    request: Request,
+    titre: Optional[str] = Form(None),
+    contenu: Optional[str] = Form(None),
+    auteur_id: Optional[int] = Form(None),
     equipe: Optional[str] = Form(None),
     priorite: Optional[str] = Form("moyenne"),
     categorie: Optional[str] = Form(None),
@@ -33,9 +34,38 @@ def create_note(
     db: Session = Depends(get_db),
     current_user: Utilisateur = Depends(get_current_user),
 ):
+    # ✅ current_user peut être dict OU modèle SQLAlchemy
+    current_user_id = current_user.get("id") if isinstance(current_user, dict) else current_user.id
+    current_user_team = current_user.get("equipe") if isinstance(current_user, dict) else current_user.equipe
+
+    # ✅ JSON mode -> utilisé par les tests
+    if request.headers.get("content-type", "").startswith("application/json"):
+        data = await request.json()
+
+        titre = data.get("titre", titre)
+        contenu = data.get("contenu", contenu)
+
+        if not titre or not contenu:
+            raise HTTPException(status_code=422, detail="titre et contenu sont obligatoires")
+
+        auteur_id = data.get("auteur_id", current_user_id)
+        equipe = data.get("equipe", current_user_team)
+        priorite = data.get("priorite", priorite)
+        categorie = data.get("categorie", categorie)
+        fichiers = None  # JSON ne transporte pas de fichiers
+
+    else:
+        # ✅ Form-data mode -> utilisé par Angular & Postman
+        auteur_id = auteur_id or current_user_id
+        equipe = equipe or current_user_team
+
+        if not titre or not contenu:
+            raise HTTPException(status_code=422, detail="titre et contenu sont obligatoires")
+
     return create_note_service(
         titre, contenu, auteur_id, equipe, priorite, categorie, fichiers, db, current_user
     )
+
 
 # ---------------- LIST ----------------
 @router.get("/", response_model=NotesResponse)
@@ -48,7 +78,16 @@ def list_notes(
     db: Session = Depends(get_db),
     current_user: Utilisateur = Depends(get_current_user),
 ):
-    return list_notes_service(search, author, sort, page, limit, db, current_user)
+    # appel du service
+    result = list_notes_service(search, author, sort, page, limit, db, current_user)
+
+    # ✅ Retourne TOUJOURS un dict matching NotesResponse
+    return {
+        "total": result["total"],
+        "page": page,
+        "limit": limit,
+        "notes": result["notes"],
+    }
 
 # ---------------- DETAIL ----------------
 @router.get("/{note_id}", response_model=NoteDetailOut)

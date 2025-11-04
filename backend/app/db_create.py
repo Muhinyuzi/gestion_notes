@@ -1,6 +1,6 @@
 from sqlalchemy import text
 from sqlalchemy.orm import Session
-from db import engine, Base
+from app.db import engine, Base
 from app.models.utilisateur import Utilisateur 
 from app.models.note import Note
 from app.models.commentaire import Commentaire 
@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 import random
 import os
 
-from routers import notes
+from app.routers import notes
 
 # 🔐 Hasher les mots de passe
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -161,7 +161,7 @@ def seed():
         # ======================================================
     # 6️⃣ Historique des élèves (EleveHistory)
     # ======================================================
-    from schemas import EleveHistory  # 👈 à placer tout en haut du fichier si pas déjà importé
+    from app.models.eleve import EleveHistory  # 👈 à placer tout en haut du fichier si pas déjà importé
 
     histories = []
     for eleve in eleves:
@@ -188,4 +188,6 @@ def seed():
 
     print("🎉 Données initiales insérées avec succès !")
 
-seed()
+if __name__ == "__main__" and os.getenv("TESTING") != "1":
+    seed()
+    print("✅ Base de données initialisée hors mode test")

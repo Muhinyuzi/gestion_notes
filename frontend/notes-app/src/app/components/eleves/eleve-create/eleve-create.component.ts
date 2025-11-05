@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { EleveService, Eleve } from '../../../services/eleve.service';
+import { ToastService } from '../../../services/toast.service';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-eleve-create',
@@ -17,26 +19,32 @@ export class EleveCreateComponent {
   };
 
   isSubmitting = false;
-  errorMessage = '';
 
-  constructor(private eleveService: EleveService, private router: Router) {}
+  constructor(
+    private eleveService: EleveService,
+    private router: Router,
+    private toast: ToastService,
+    private location: Location,
+  ) {}
 
   onSubmit(): void {
+    //this.toast.show("🟢 Test Toast OK !", "success");
     if (!this.eleve.nom || !this.eleve.prenom) {
-      this.errorMessage = 'Veuillez remplir au moins le nom et le prénom.';
+      this.toast.show('Veuillez remplir nom et prénom ❗', 'error');
       return;
     }
 
     this.isSubmitting = true;
-    console.log(this.eleve);
+
     this.eleveService.createEleve(this.eleve).subscribe({
       next: () => {
         this.isSubmitting = false;
+        this.toast.show('✅ Élève créé avec succès', 'success');
         this.router.navigate(['/eleves']);
       },
       error: (err) => {
         console.error('Erreur création élève:', err);
-        this.errorMessage = 'Une erreur est survenue lors de la création.';
+        this.toast.show('❌ Erreur lors de la création', 'error');
         this.isSubmitting = false;
       }
     });
@@ -45,4 +53,9 @@ export class EleveCreateComponent {
   cancel(): void {
     this.router.navigate(['/eleves']);
   }
+
+  goBack(): void {
+    this.location.back();
+  }
+
 }

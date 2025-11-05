@@ -188,3 +188,40 @@
   margin-top: 10px;
   font-weight: 500;
 }
+
+
+/* 🔙 Bouton Retour */
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 1px solid #475569;
+  color: #475569;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 18px;
+  transition: all 0.25s ease-in-out;
+}
+
+.btn-back:hover {
+  background: #475569;
+  color: #ffffff;
+  transform: translateX(-3px);
+  box-shadow: 0 4px 10px rgba(55,65,81,0.2);
+}
+
+.btn-back:active {
+  transform: scale(0.97);
+}
+
+/* 📱 Responsive */
+@media (max-width: 600px) {
+  .btn-back {
+    width: 100%;
+    justify-content: center;
+  }
+}

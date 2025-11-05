@@ -1,6 +1,10 @@
-<h2 mat-dialog-title>Confirmation</h2>
-<mat-dialog-content>Voulez-vous vraiment supprimer cette note ?</mat-dialog-content>
+<h2 mat-dialog-title>{{ data.title }}</h2>
+
+<mat-dialog-content>
+  <p>{{ data.message }}</p>
+</mat-dialog-content>
+
 <mat-dialog-actions align="end">
   <button mat-button (click)="onCancel()">Annuler</button>
-  <button mat-button color="warn" (click)="onConfirm()">Supprimer</button>
+  <button mat-button color="warn" (click)="onConfirm()">Confirmer</button>
 </mat-dialog-actions>

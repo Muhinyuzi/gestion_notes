@@ -2,8 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { NoteService, NoteCreate, Note, Utilisateur } from '../../../services/note.service';
 import { AuthService } from '../../../services/auth.service';
-import { KENDO_EDITOR } from '@progress/kendo-angular-editor';
 import DOMPurify from 'dompurify';
+import { ToastService } from '../../../services/toast.service';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-note-create',
@@ -23,17 +24,29 @@ export class NoteCreateComponent implements OnInit {
 
   newFiles: File[] = [];
   currentUser?: Utilisateur;
+  isSubmitting = false;
 
-  constructor(private api: NoteService, private router: Router, private auth: AuthService) {}
+  constructor(
+    private api: NoteService, 
+    private router: Router,
+    private auth: AuthService,
+    private toast: ToastService, 
+    private location: Location
+  ) {}
 
   ngOnInit(): void {
     this.currentUser = this.auth.getUser();
-    // ⚡ Important : on initialise l’équipe seulement après avoir chargé currentUser
-    this.newNote.equipe = this.currentUser?.equipe ?? '';
-    this.newNote.auteur_id = this.currentUser?.id ?? 0;
+
+    if (!this.currentUser) {
+      this.toast.show("⚠️ Session expirée, veuillez vous reconnecter.", "error");
+      this.router.navigate(['/login']);
+      return;
+    }
+
+       this.newNote.equipe = this.currentUser?.equipe ?? ''; 
+       this.newNote.auteur_id = this.currentUser?.id ?? 0;
   }
 
-  /** Gestion des fichiers sélectionnés */
   handleFileInput(event: any) {
     const files: FileList = event.target.files;
     for (let i = 0; i < files.length; i++) {
@@ -41,25 +54,32 @@ export class NoteCreateComponent implements OnInit {
     }
   }
 
-  /** Supprimer un fichier sélectionné */
   removeFile(index: number) {
     this.newFiles.splice(index, 1);
   }
 
-  /** Ajouter la note via le service NoteService */
   addNote(): void {
     if (!this.newNote.titre || !this.newNote.contenu || !this.newNote.categorie || !this.newNote.priorite) {
-      alert('Veuillez remplir tous les champs obligatoires.');
+      this.toast.show("❗ Veuillez remplir tous les champs obligatoires.", "error");
       return;
     }
+
     this.newNote.contenu = DOMPurify.sanitize(this.newNote.contenu);
+    this.isSubmitting = true;
 
     this.api.createNoteWithFiles(this.newNote, this.newFiles).subscribe({
       next: (note: Note) => {
-        alert('Note créée avec succès !');
-        this.router.navigate(['/notes', note.id]); // Rediriger vers la page détail de la note
+        this.toast.show("✅ Note créée avec succès !", "success");
+        this.router.navigate(['/notes', note.id]);
       },
-      error: (err) => console.error('Erreur lors de l’ajout de la note', err)
+      error: () => {
+        this.toast.show("❌ Erreur lors de la création de la note", "error");
+        this.isSubmitting = false;
+      }
     });
   }
+
+  goBack(): void {
+    this.location.back();
+  } 
 }

@@ -1,10 +1,10 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { NoteService, Note, Utilisateur, NoteCreate } from '../../../services/note.service';
+import { NoteService, Note, Utilisateur } from '../../../services/note.service';
 import { AuthService } from '../../../services/auth.service';
-import { ToastComponent } from '../../shared/toast/toast.component';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from '../../shared/confirm-dialog/confirm-dialog.component';
+import { ToastService } from '../../../services/toast.service'; // ✅ Import du service
 
 @Component({
   selector: 'app-note-detail',
@@ -12,7 +12,6 @@ import { ConfirmDialogComponent } from '../../shared/confirm-dialog/confirm-dial
   styleUrls: ['./note-detail.component.css']
 })
 export class NoteDetailComponent implements OnInit {
-  @ViewChild('toast') toast!: ToastComponent;
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
   note?: Note;
@@ -22,9 +21,7 @@ export class NoteDetailComponent implements OnInit {
   isEditing = false;
   hasLiked = false;
 
-  // Pour gérer les fichiers à ajouter
   newFiles: File[] = [];
-
   currentUser?: Utilisateur;
 
   constructor(
@@ -32,7 +29,8 @@ export class NoteDetailComponent implements OnInit {
     private api: NoteService,
     private router: Router,
     private dialog: MatDialog,
-    private auth: AuthService
+    private auth: AuthService,
+    private toast: ToastService  // ✅ Injection du service
   ) {}
 
   ngOnInit(): void {
@@ -45,40 +43,34 @@ export class NoteDetailComponent implements OnInit {
         this.isLoading = false;
       },
       error: () => {
-        this.errorMessage = "Impossible de charger la note.";
+        this.errorMessage = "❌ Impossible de charger la note.";
         this.isLoading = false;
+        this.toast.show("❌ Impossible de charger la note.", "error");
       }
     });
   }
 
-  /** Gestion des fichiers sélectionnés */
   handleFileInput(event: any) {
-  const files: FileList = event.target.files;
-  for (let i = 0; i < files.length; i++) {
-    this.newFiles.push(files[i]);
+    const files: FileList = event.target.files;
+    for (let i = 0; i < files.length; i++) this.newFiles.push(files[i]);
+
+    if (this.note) {
+      this.note.fichiers = this.note.fichiers || [];
+      this.note.fichiers.push(...Array.from(files).map((file, i) => ({
+        id: Date.now() + i,
+        nom_fichier: file.name,
+        chemin: ''
+      })));
+    }
   }
 
-  // Ajouter les fichiers à note.fichiers pour les afficher immédiatement
-  if (this.note) {
-    this.note.fichiers = this.note.fichiers || [];
-    this.note.fichiers.push(...Array.from(files).map((file, i) => ({
-      id: Date.now() + i,       // id temporaire
-      nom_fichier: file.name,
-      chemin: ''                // chemin vide tant que non uploadé
-    })));
-  }
-}
-
-  /** Supprimer un fichier sélectionné dans le form */
   removeFile(index: number) {
     this.newFiles.splice(index, 1);
   }
 
-  /** Mettre à jour la note avec tous les champs et fichiers ajoutés */
   updateNote(): void {
     if (!this.note) return;
 
-    // Créer un FormData pour inclure fichiers si besoin
     const formData = new FormData();
     formData.append('titre', this.note.titre);
     formData.append('contenu', this.note.contenu);
@@ -86,7 +78,6 @@ export class NoteDetailComponent implements OnInit {
     if (this.note.priorite) formData.append('priorite', this.note.priorite);
     if (this.note.categorie) formData.append('categorie', this.note.categorie);
 
-    // Ajouter les fichiers nouveaux
     this.newFiles.forEach(file => formData.append('fichiers', file));
 
     this.api.updateNote(this.note.id, formData as any).subscribe({
@@ -112,8 +103,13 @@ export class NoteDetailComponent implements OnInit {
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.api.deleteNote(this.note!.id).subscribe({
-          next: () => this.router.navigate(['/notes']),
-          error: () => this.errorMessage = "Erreur lors de la suppression."
+          next: () => {
+            this.toast.show("✅ Note supprimée", "success");
+            this.router.navigate(['/notes']);
+          },
+          error: () => {
+            this.toast.show("❌ Erreur lors de la suppression", "error");
+          }
         });
       }
     });
@@ -132,7 +128,7 @@ export class NoteDetailComponent implements OnInit {
         this.hasLiked = true;
       },
       error: () => {
-        this.toast.show('Erreur lors du like', 'error');
+        this.toast.show("❌ Erreur lors du like", "error");
       }
     });
   }
@@ -153,30 +149,26 @@ export class NoteDetailComponent implements OnInit {
     return diff <= 7;
   }
 
+  removeExistingFile(fichierId: number) {
+    if (!this.note) return;
 
-/** Supprime un fichier existant avec confirmation */
-removeExistingFile(fichierId: number) {
-  if (!this.note) return;
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '350px',
+      data: { message: "Voulez-vous vraiment supprimer ce fichier ?" }
+    });
 
-  const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-    width: '350px',
-    data: { message: "Voulez-vous vraiment supprimer ce fichier ?" }
-  });
-
-  dialogRef.afterClosed().subscribe(result => {
-    if (result) { // si l'utilisateur a confirmé
-      this.api.deleteFile(fichierId).subscribe({
-        next: () => {
-          // Retirer le fichier de la liste locale
-          this.note!.fichiers = this.note!.fichiers?.filter(f => f.id !== fichierId);
-          this.toast.show('✅ Fichier supprimé avec succès', 'success');
-        },
-        error: () => {
-          this.toast.show('❌ Erreur lors de la suppression du fichier', 'error');
-        }
-      });
-    }
-  });
-}
-
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.api.deleteFile(fichierId).subscribe({
+          next: () => {
+            this.note!.fichiers = this.note!.fichiers?.filter(f => f.id !== fichierId);
+            this.toast.show("✅ Fichier supprimé", "success");
+          },
+          error: () => {
+            this.toast.show("❌ Erreur lors de la suppression du fichier", "error");
+          }
+        });
+      }
+    });
+  }
 }

@@ -1,39 +1,72 @@
 <div class="eleve-form-container">
-  <h2>➕ Ajouter un nouvel élève</h2>
+
+  <app-toast></app-toast>
+
+  <!-- 🔙 Bouton retour -->
+  <button class="btn-back" (click)="goBack()">← Retour</button>
+
+  <h2>➕ Ajouter un élève</h2>
 
   <form (ngSubmit)="onSubmit()">
+
+    <!-- Nom -->
     <div class="form-group">
-      <label>Nom</label>
-      <input type="text" [(ngModel)]="eleve.nom" name="nom" required placeholder="Ex: Dupont" />
+      <label>Nom <span>*</span></label>
+      <input
+        type="text"
+        [(ngModel)]="eleve.nom"
+        name="nom"
+        required
+        placeholder="Ex: Dupont"
+      />
     </div>
 
+    <!-- Prénom -->
     <div class="form-group">
-      <label>Prénom</label>
-      <input type="text" [(ngModel)]="eleve.prenom" name="prenom" required placeholder="Ex: Marie" />
+      <label>Prénom <span>*</span></label>
+      <input
+        type="text"
+        [(ngModel)]="eleve.prenom"
+        name="prenom"
+        required
+        placeholder="Ex: Marie"
+      />
     </div>
 
+    <!-- Adresse -->
     <div class="form-group">
       <label>Adresse</label>
-      <input type="text" [(ngModel)]="eleve.adresse" name="adresse" placeholder="Ex: 22 rue Saint-Denis, Montréal" />
+      <input
+        type="text"
+        [(ngModel)]="eleve.adresse"
+        name="adresse"
+        placeholder="Ex: 22 rue Saint-Denis, Montréal"
+      />
     </div>
 
+    <!-- Statuts -->
     <div class="form-check">
       <label>
         <input type="checkbox" [(ngModel)]="eleve.actif" name="actif" />
-        Actif
+        🟢 Actif
       </label>
+
       <label>
         <input type="checkbox" [(ngModel)]="eleve.en_attente" name="en_attente" />
-        En attente
+        ⏳ En attente
       </label>
     </div>
 
+    <!-- Boutons -->
     <div class="form-actions">
-      <button type="submit" class="btn btn-primary" [disabled]="isSubmitting">💾 Enregistrer</button>
-      <button type="button" class="btn btn-secondary" (click)="cancel()">↩️ Annuler</button>
+      <button type="submit" class="btn btn-primary" [disabled]="isSubmitting">
+        💾 Enregistrer
+      </button>
+
+      <button type="button" class="btn btn-secondary" (click)="cancel()">
+        ↩️ Annuler
+      </button>
     </div>
 
-    <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
   </form>
 </div>
-

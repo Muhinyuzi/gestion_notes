@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EleveService, Eleve } from '../../../services/eleve.service';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-eleve-edit',
@@ -16,7 +17,8 @@ export class EleveEditComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private eleveService: EleveService
+    private eleveService: EleveService,
+    private location: Location
   ) {}
 
   ngOnInit(): void {
@@ -67,4 +69,8 @@ export class EleveEditComponent implements OnInit {
   cancel(): void {
     this.router.navigate(['/eleves']);
   }
+
+  goBack(): void {
+    this.location.back();
+  }  
 }

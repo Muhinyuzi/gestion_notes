@@ -65,7 +65,8 @@ import { EleveEditComponent } from './components/eleves/eleve-edit/eleve-edit.co
     MatCardModule,
     EditorModule,
   ],
-  providers: [{ provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }, provideAnimationsAsync()],
+  providers: [{ provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }, 
+    provideAnimationsAsync()],
   bootstrap: [AppComponent]
 })
 export class AppModule {}

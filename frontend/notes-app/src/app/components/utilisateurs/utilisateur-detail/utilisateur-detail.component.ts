@@ -1,9 +1,10 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UtilisateurService, UtilisateurDetailOut } from '../../../services/utilisateur.service';
-import { ToastComponent } from '../../shared/toast/toast.component';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from '../../shared/confirm-dialog/confirm-dialog.component';
+import { ToastService } from '../../../services/toast.service'; // ✅ Service
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-utilisateur-detail',
@@ -11,7 +12,6 @@ import { ConfirmDialogComponent } from '../../shared/confirm-dialog/confirm-dial
   styleUrls: ['./utilisateur-detail.component.css']
 })
 export class UtilisateurDetailComponent implements OnInit {
-  @ViewChild('toast') toast!: ToastComponent;
 
   utilisateur?: UtilisateurDetailOut;
   isLoading = true;
@@ -23,7 +23,9 @@ export class UtilisateurDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private api: UtilisateurService,
     private router: Router,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private location: Location,
+    private toast: ToastService    // ✅ Inject service ici
   ) {}
 
   ngOnInit(): void {
@@ -74,7 +76,10 @@ export class UtilisateurDetailComponent implements OnInit {
     dialogRef.afterClosed().subscribe(result => {
       if (result && this.utilisateur) {
         this.api.deleteUtilisateur(this.utilisateur.id).subscribe({
-          next: () => this.router.navigate(['/utilisateurs']),
+          next: () => {
+            this.toast.show("✅ Utilisateur supprimé", "success");
+            this.router.navigate(['/utilisateurs']);
+          },
           error: () => this.toast.show("❌ Erreur lors de la suppression", "error")
         });
       }
@@ -85,7 +90,7 @@ export class UtilisateurDetailComponent implements OnInit {
     const file = event.target.files[0];
     if (file && file.type.startsWith('image/')) {
       this.selectedFile = file;
-      this.avatarUrl = URL.createObjectURL(file); // Preview instantané
+      this.avatarUrl = URL.createObjectURL(file);
     } else {
       this.toast.show("❌ Veuillez sélectionner une image valide", "error");
     }
@@ -105,15 +110,18 @@ export class UtilisateurDetailComponent implements OnInit {
           this.toast.show("✅ Avatar mis à jour avec succès !", "success");
         }
       },
-      error: (err) => {
-        console.error(err);
+      error: () => {
         this.toast.show("❌ Erreur lors de l'upload", "error");
       }
     });
   }
 
   openFilePicker(input: HTMLInputElement) {
-  input.click();
-}
+    input.click();
+  }
+
+  goBack(): void {
+    this.location.back();
+  }
 
 }

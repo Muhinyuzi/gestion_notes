@@ -1,4 +1,8 @@
 <div class="eleves-container">
+
+  <!-- 🔙 Bouton retour -->
+  <button class="btn-back" (click)="goBack()">← Retour</button>
+
   <h2>Liste des élèves</h2>
 
   <div *ngIf="isLoading" class="loading">Chargement en cours...</div>

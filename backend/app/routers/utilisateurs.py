@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File 
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, BackgroundTasks 
 from fastapi.responses import FileResponse 
 import os 
 import shutil 
 from sqlalchemy.orm import Session, joinedload 
 from typing import List 
 from app.db import get_db 
+from app.emails import send_registration_email
 from app.models.utilisateur import Utilisateur 
 from app.schemas.schemas import UtilisateurCreate, UtilisateurOut, UtilisateurDetailOut
 from passlib.context import CryptContext 
@@ -25,10 +26,20 @@ router = APIRouter()
 @router.post("/", response_model=UtilisateurOut)
 def create_user(
     user: UtilisateurCreate,
+    background_tasks: BackgroundTasks,  # ✅ ajout
     db: Session = Depends(get_db),
     current_user: Utilisateur = Depends(get_current_user)
 ):
-    return create_user_service(user, db, current_user)
+    new_user = create_user_service(user, db, current_user)
+
+    # ✅ Envoi email en tâche de fond
+    background_tasks.add_task(
+        send_registration_email,
+        new_user.email,
+        new_user.nom
+    )
+
+    return new_user
 
 # ---------------- LIST ----------------
 @router.get("/", response_model=dict)

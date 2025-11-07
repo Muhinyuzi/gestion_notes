@@ -232,6 +232,25 @@
   box-shadow: 0 0 6px rgba(0, 123, 255, 0.2);
 }
 
+/* ✅ Bouton Reset Password */
+.btn-reset {
+  background: linear-gradient(135deg, #f97316, #fb923c);
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  width: fit-content;
+  margin-top: 4px;
+  transition: all 0.3s ease;
+}
+
+.btn-reset:hover {
+  background: linear-gradient(135deg, #ea580c, #f97316);
+  transform: translateY(-2px);
+}
+
 /* Boutons formulaire */
 .form-actions {
   display: flex;
@@ -268,32 +287,6 @@
   background: #bbb;
 }
 
-/* --- Responsive --- */
-@media (max-width: 780px) {
-  .filters {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .filters input,
-  .filters .btn-filters,
-  .utilisateurs-header .btn-add,
-  .form-actions button {
-    width: 100%;
-  }
-
-  .utilisateur-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
-  }
-
-  .utilisateur-actions {
-    display: flex;
-    gap: 6px;
-  }
-}
-
 /* 🔙 Bouton Retour */
 .btn-back {
   display: inline-flex;
@@ -323,6 +316,31 @@
 }
 
 /* 📱 Responsive */
+@media (max-width: 780px) {
+  .filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filters input,
+  .filters .btn-filters,
+  .utilisateurs-header .btn-add,
+  .form-actions button {
+    width: 100%;
+  }
+
+  .utilisateur-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .utilisateur-actions {
+    display: flex;
+    gap: 6px;
+  }
+}
+
 @media (max-width: 600px) {
   .btn-back {
     width: 100%;

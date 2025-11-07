@@ -1,3 +1,5 @@
+# app/tests/conftest.py
+
 import os
 import uuid
 import atexit
@@ -7,22 +9,26 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, text, inspect
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime, timedelta, timezone
+from fastapi import Request
 from jose import jwt
 
 from app.main import app
 from app.db import Base, get_db
 from app import emails
 from app.models.utilisateur import Utilisateur
-from app.auth import get_current_user
+from app.auth import hash_password, get_current_user as auth_dep
 from app.config import settings
 
 
 # ==========================================================
-# ⚙️ CONFIGURATION GLOBALE
+# ✅ MODE TEST
 # ==========================================================
 os.environ["TESTING"] = "1"
 
-# Base SQLite en mémoire partagée
+
+# ==========================================================
+# ✅ BASE SQLITE EN MÉMOIRE
+# ==========================================================
 TEST_DATABASE_URL = f"sqlite:///file:test_db_{uuid.uuid4().hex}?mode=memory&cache=shared"
 
 engine = create_engine(
@@ -40,7 +46,7 @@ def cleanup_test_db():
 
 
 # ==========================================================
-# 🚫 Blocage des envois d’e-mails réels
+# ✅ MOCK EMAILS
 # ==========================================================
 @pytest.fixture(autouse=True)
 def disable_email_sending(monkeypatch):
@@ -50,7 +56,7 @@ def disable_email_sending(monkeypatch):
 
 
 # ==========================================================
-# 🔁 Override des dépendances FastAPI
+# ✅ OVERRIDE DB
 # ==========================================================
 def override_get_db():
     db = TestingSessionLocal()
@@ -59,24 +65,43 @@ def override_get_db():
     finally:
         db.close()
 
-
 app.dependency_overrides[get_db] = override_get_db
 
-# Mémoire utilisateur de test
+
+# ==========================================================
+# ✅ TEMP ADMIN (pour création utilisateurs)
+# ==========================================================
+def _temp_admin():
+    return Utilisateur(
+        id=999,
+        nom="Temp Admin",
+        email="tempadmin@test.com",
+        type="admin",
+        equipe="Dev",
+        mot_de_passe=hash_password("12345678"),
+        is_active=True,
+    )
+
+
+def override_as_temp_admin():
+    """✅ Version propre (sans lambda) pour éviter le bug Query('_')"""
+    return _temp_admin()
+
+
+# ==========================================================
+# ✅ MÉMOIRE POUR STOCKER L’UTILISATEUR COURANT
+# ==========================================================
 current_test_user = {}
 
 
-# ==========================================================
-# 🧩 Fonction de synchronisation DB
-# ==========================================================
 def ensure_user_in_db(session, user_dict):
-    """S'assure que l'utilisateur override existe réellement en base."""
-    db_user = session.query(Utilisateur).filter(Utilisateur.email == user_dict["email"]).first()
+    """S’assure que l’utilisateur existe en DB, sinon le crée."""
+    db_user = session.query(Utilisateur).filter_by(email=user_dict["email"]).first()
     if not db_user:
         db_user = Utilisateur(
             nom=user_dict.get("nom", "Test User"),
             email=user_dict["email"],
-            mot_de_passe="12345678",
+            mot_de_passe=hash_password(user_dict.get("mot_de_passe", "12345678")),
             type=user_dict.get("type", "user"),
             equipe=user_dict.get("equipe", "Dev"),
             is_active=True,
@@ -84,44 +109,77 @@ def ensure_user_in_db(session, user_dict):
         session.add(db_user)
         session.commit()
         session.refresh(db_user)
+
+    # ✅ important : si type admin demandé, on force
+    if user_dict.get("type") == "admin" and db_user.type != "admin":
+        db_user.type = "admin"
+        session.commit()
+
     return db_user
 
 
-def override_get_current_user():
-    """Retourne un utilisateur actif depuis current_test_user, toujours présent en DB."""
+# ==========================================================
+# ✅ OVERRIDE AUTH RÉEL (lit le JWT)
+# ==========================================================
+def override_get_current_user(request: Request):
     session = TestingSessionLocal()
 
+    # ✅ 1. lire Authorization: Bearer TOKEN
+    auth = request.headers.get("Authorization")
+    if auth and auth.startswith("Bearer "):
+        token = auth.split(" ")[1]
+
+        try:
+            payload = jwt.decode(token, settings.JWT_SECRET, algorithms=["HS256"])
+            user_id = payload.get("sub")  # ✅ CORRIGÉ : sub = ID et pas email !
+
+            if user_id:
+                db_user = session.query(Utilisateur).filter_by(id=user_id).first()
+                if db_user:
+                    return db_user
+
+        except Exception:
+            pass
+
+    # ✅ 2. sinon fallback test_user (créé par fixture)
     if current_test_user:
-        db_user = ensure_user_in_db(session, current_test_user)
-        return db_user
+        return ensure_user_in_db(session, current_test_user)
 
-    # Fallback : admin par défaut
-    fallback_admin = {
-        "nom": "Admin Test",
-        "email": "admin@test.com",
-        "type": "admin",
-        "equipe": "Dev",
-    }
-    db_admin = ensure_user_in_db(session, fallback_admin)
-    return db_admin
+    # ✅ 3. sinon fallback admin complet
+    return ensure_user_in_db(
+        session,
+        {
+            "nom": "Admin Test",
+            "email": "admin@test.com",
+            "type": "admin",
+            "equipe": "Dev",
+        },
+    )
+
+# ✅ override auth global
+app.dependency_overrides[auth_dep] = override_get_current_user
 
 
-app.dependency_overrides[get_current_user] = override_get_current_user
-
-# Cas où d'autres routeurs importent leur propre dépendance
-try:
-    from app.routers.login import get_current_user as login_dep
-    app.dependency_overrides[login_dep] = override_get_current_user
-except Exception:
-    pass
+# ✅ override des modules
+for module_path in [
+    "app.routers.login",
+    "app.routers.utilisateurs",
+    "app.routers.notes",
+    "app.routers.commentaires",
+    "app.routers.change_password",
+]:
+    try:
+        module = __import__(module_path, fromlist=["get_current_user"])
+        app.dependency_overrides[module.get_current_user] = override_get_current_user
+    except Exception:
+        pass
 
 
 # ==========================================================
-# 🧹 Réinitialisation complète de la base avant chaque test
+# ✅ RESET DB ENTRE CHAQUE TEST
 # ==========================================================
 @pytest.fixture(autouse=True)
 def reset_db():
-    """Réinitialise complètement la base avant chaque test (isolation complète)."""
     global engine, TestingSessionLocal
 
     engine.dispose()
@@ -137,11 +195,12 @@ def reset_db():
     Base.metadata.create_all(bind=engine)
 
     current_test_user.clear()
+
     yield
 
 
 # ==========================================================
-# 🧪 Client FastAPI
+# ✅ CLIENT FASTAPI
 # ==========================================================
 @pytest.fixture
 def client():
@@ -150,11 +209,15 @@ def client():
 
 
 # ==========================================================
-# 👤 Fixtures utilitaires : création d’utilisateurs
+# ✅ FIXTURES UTILISATEURS (avec admin temporaire propre)
 # ==========================================================
 @pytest.fixture
 def create_test_user(client):
-    """Crée un utilisateur admin pour tests"""
+    """Créer un admin"""
+
+    # ✅ permet de bypasser la restriction admin
+    app.dependency_overrides[auth_dep] = override_as_temp_admin
+
     data = {
         "nom": f"Admin_{uuid.uuid4().hex[:6]}",
         "email": f"a_{uuid.uuid4().hex}@test.com",
@@ -162,17 +225,24 @@ def create_test_user(client):
         "type": "admin",
         "equipe": "Dev",
     }
+
     r = client.post("/utilisateurs/", json=data)
-    assert r.status_code == 200, f"Erreur création admin: {r.text}"
+    assert r.status_code == 200, r.text
+
     user = r.json()
-    user["is_active"] = True
     current_test_user.update(user)
+
+    # ✅ restore vrai auth
+    app.dependency_overrides[auth_dep] = override_get_current_user
     return user
 
 
 @pytest.fixture
 def create_test_user_non_admin(client):
-    """Crée un utilisateur normal pour tests"""
+    """Créer un utilisateur simple"""
+
+    app.dependency_overrides[auth_dep] = override_as_temp_admin
+
     data = {
         "nom": f"User_{uuid.uuid4().hex[:6]}",
         "email": f"u_{uuid.uuid4().hex}@test.com",
@@ -180,34 +250,33 @@ def create_test_user_non_admin(client):
         "type": "user",
         "equipe": "Dev",
     }
+
     r = client.post("/utilisateurs/", json=data)
-    assert r.status_code == 200, f"Erreur création user: {r.text}"
+    assert r.status_code == 200, r.text
+
     user = r.json()
-    user["is_active"] = True
     current_test_user.update(user)
+
+    app.dependency_overrides[auth_dep] = override_get_current_user
     return user
 
 
 # ==========================================================
-# 👥 Clients déjà authentifiés
+# ✅ CLIENTS AUTH
 # ==========================================================
 @pytest.fixture
 def admin_client(client, create_test_user):
-    current_test_user.update(create_test_user)
     return client
-
 
 @pytest.fixture
 def user_client(client, create_test_user_non_admin):
-    current_test_user.update(create_test_user_non_admin)
     return client
 
 
 # ==========================================================
-# 🧩 Activation utilisateur simulée
+# ✅ ACTIVATION
 # ==========================================================
 def activate_user_via_token(client, email: str):
-    """Active un utilisateur via le vrai endpoint /auth/activate/{token}"""
     token = jwt.encode(
         {
             "sub": email,
@@ -218,14 +287,13 @@ def activate_user_via_token(client, email: str):
         algorithm="HS256",
     )
     r = client.get(f"/auth/activate/{token}")
-    assert r.status_code == 200, f"Échec activation via token: {r.text}"
+    assert r.status_code == 200, f"Activation échouée: {r.text}"
 
 
 # ==========================================================
-# 🔍 Outil debug
+# ✅ DEBUG DB
 # ==========================================================
 def debug_dump_db(session):
-    """Affiche toutes les tables et leur contenu"""
     inspector = inspect(session.bind)
     print("\n---- DB TABLES ----")
     for table in inspector.get_table_names():

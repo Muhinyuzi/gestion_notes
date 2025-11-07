@@ -4,6 +4,7 @@ import { ToastService } from '../../services/toast.service';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from '../shared/confirm-dialog/confirm-dialog.component';
 import { Location } from '@angular/common';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-utilisateurs',
@@ -34,7 +35,8 @@ export class UtilisateursComponent implements OnInit {
     private api: UtilisateurService,
     private dialog: MatDialog,
     private location: Location,
-    private toast: ToastService
+    private toast: ToastService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -191,4 +193,9 @@ export class UtilisateursComponent implements OnInit {
   goBack() {
     this.location.back();
   }
+
+  goToChangePassword() {
+    this.router.navigate(['/change-password']);
+  }
+
 }

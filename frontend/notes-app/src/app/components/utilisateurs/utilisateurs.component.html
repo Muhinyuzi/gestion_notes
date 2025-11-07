@@ -65,20 +65,52 @@
   <section *ngIf="isAdding || isEditing" class="form-section">
     <h3>{{ isEditing ? 'Modifier utilisateur' : 'Ajouter un utilisateur' }}</h3>
 
-    <form class="add-utilisateur-form" (ngSubmit)="isEditing ? updateUtilisateur() : addUtilisateur()">
-      <input type="text" [(ngModel)]="formUser.nom" name="nom" placeholder="Nom complet" required>
-      <input type="email" [(ngModel)]="formUser.email" name="email" placeholder="Adresse email" required>
-      <input type="password" [(ngModel)]="formUser.mot_de_passe" name="mot_de_passe" placeholder="Mot de passe" [required]="!isEditing">
-      <input type="text" [(ngModel)]="formUser.equipe" name="equipe" placeholder="Équipe">
-      <input type="text" [(ngModel)]="formUser.adresse" name="adresse" placeholder="Adresse">
-      <input type="text" [(ngModel)]="formUser.telephone" name="telephone" placeholder="Téléphone">
-      <input type="text" [(ngModel)]="formUser.type" name="role" placeholder="Rôle (ex : admin, dev)" [readonly]="isEditing">
+<form class="add-utilisateur-form" (ngSubmit)="isEditing ? updateUtilisateur() : addUtilisateur()">
 
-      <div class="form-actions">
-        <button type="submit" class="btn-submit">{{ isEditing ? 'Mettre à jour' : 'Ajouter' }}</button>
-        <button type="button" class="btn-cancel" (click)="cancelForm()">Annuler</button>
-      </div>
-    </form>
+  <input type="text" [(ngModel)]="formUser.nom" name="nom" placeholder="Nom complet" required>
+
+  <input type="email" [(ngModel)]="formUser.email" name="email" placeholder="Adresse email" required>
+
+  <!-- ✅ Mot de passe seulement EN CREATION -->
+  <input 
+    type="password" 
+    *ngIf="!isEditing"
+    [(ngModel)]="formUser.mot_de_passe" 
+    name="mot_de_passe" 
+    placeholder="Mot de passe" 
+    required
+  >
+
+  <input type="text" [(ngModel)]="formUser.equipe" name="equipe" placeholder="Équipe">
+  <input type="text" [(ngModel)]="formUser.adresse" name="adresse" placeholder="Adresse">
+  <input type="text" [(ngModel)]="formUser.telephone" name="telephone" placeholder="Téléphone">
+
+  <input 
+    type="text" 
+    [(ngModel)]="formUser.type" 
+    name="role" 
+    placeholder="Rôle (ex : admin, dev)" 
+    [readonly]="isEditing"
+  >
+
+  <!-- ✅ Bouton pour changer le mot de passe (en édition uniquement) -->
+  <button 
+    *ngIf="isEditing" 
+    type="button" 
+    class="btn-reset"
+    (click)="goToChangePassword()">
+    🔒 Changer le mot de passe
+  </button>
+
+  <div class="form-actions">
+    <button type="submit" class="btn-submit">
+      {{ isEditing ? 'Mettre à jour' : 'Ajouter' }}
+    </button>
+    <button type="button" class="btn-cancel" (click)="cancelForm()">Annuler</button>
+  </div>
+
+</form>
+
   </section>
 
 </div>

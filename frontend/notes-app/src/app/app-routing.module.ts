@@ -13,21 +13,35 @@ import { EleveEditComponent } from './components/eleves/eleve-edit/eleve-edit.co
 import { LoginComponent } from './components/login/login.component';
 import { AuthGuard } from './guards/auth.guard';
 import { AdminGuard } from './guards/admin.guard';
+import { EmailSentComponent } from './components/pages/email-sent/email-sent.component';
+import { ForgotPasswordComponent } from './components/auth/forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './components/auth/reset-password/reset-password.component';
+import { ActivateAccountComponent } from './components/auth/activate-account/activate-account.component';
+import { ChangePasswordComponent } from './components/utilisateurs/account/change-password/change-password.component';
 
 const routes: Routes = [
-  { path: '', component: HomeComponent , canActivate: [AuthGuard]},  // 👈 Home as default
-  { path: 'utilisateurs', component: UtilisateursComponent, canActivate: [AuthGuard, AdminGuard] },
-  { path: 'utilisateurs/:id', component: UtilisateurDetailComponent },
-  { path: 'notes', component: NotesComponent, canActivate: [AuthGuard] },
-  { path: 'notes/create', component: NoteCreateComponent },
-  { path: 'notes/:id', component: NoteDetailComponent, canActivate: [AuthGuard] },
-  { path: 'notes', component: NotesComponent, canActivate: [AuthGuard] },
-  { path: 'eleves', component: ElevesComponent, canActivate: [AuthGuard] },
-    { path: 'eleves/create', component: EleveCreateComponent , canActivate: [AuthGuard]},
-  { path: 'eleves/:id', component: EleveDetailComponent , canActivate: [AuthGuard]},
-  { path: 'eleves/edit/:id', component: EleveEditComponent, canActivate: [AuthGuard] },
+  // 🔓 Routes publiques (non protégées)
   { path: 'login', component: LoginComponent },
-  { path: '**', redirectTo: 'login' }, // fallback to home
+  { path: 'activate', component: ActivateAccountComponent },
+  { path: 'forgot-password', component: ForgotPasswordComponent },
+  { path: 'reset-password', component: ResetPasswordComponent },
+  { path: 'email-sent', component: EmailSentComponent },
+
+  // 🔒 Routes protégées (auth requise)
+  { path: '', component: HomeComponent, canActivate: [AuthGuard] },
+  { path: 'utilisateurs', component: UtilisateursComponent, canActivate: [AuthGuard, AdminGuard] },
+  { path: 'utilisateurs/:id', component: UtilisateurDetailComponent, canActivate: [AuthGuard] },
+  { path: 'change-password', component: ChangePasswordComponent, canActivate: [AuthGuard] },
+  { path: 'notes', component: NotesComponent, canActivate: [AuthGuard] },
+  { path: 'notes/create', component: NoteCreateComponent, canActivate: [AuthGuard] },
+  { path: 'notes/:id', component: NoteDetailComponent, canActivate: [AuthGuard] },
+  { path: 'eleves', component: ElevesComponent, canActivate: [AuthGuard] },
+  { path: 'eleves/create', component: EleveCreateComponent, canActivate: [AuthGuard] },
+  { path: 'eleves/:id', component: EleveDetailComponent, canActivate: [AuthGuard] },
+  { path: 'eleves/edit/:id', component: EleveEditComponent, canActivate: [AuthGuard] },
+
+  // 🚨 Redirection par défaut
+  { path: '**', redirectTo: 'login' },
 ];
 
 @NgModule({

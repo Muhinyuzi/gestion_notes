@@ -1,21 +1,68 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bienvenue sur Gestion Notes</title>
   <style>
-    body { font-family: Arial; background: #f4f4f7; padding: 20px; }
-    .card { background: #fff; padding: 24px; border-radius: 10px; }
-    h2 { color: #2d89ef; }
-    p { font-size: 15px; color: #444; }
-    .footer { font-size: 12px; color: #888; margin-top: 20px; }
+    body {
+      font-family: 'Inter', Arial, sans-serif;
+      background-color: #f8fafc;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+      padding: 32px;
+    }
+    h2 {
+      color: #1e3a8a;
+      margin-bottom: 10px;
+    }
+    p {
+      color: #334155;
+      line-height: 1.5;
+    }
+    .password-box {
+      background: #f1f5f9;
+      padding: 12px;
+      border-radius: 8px;
+      margin: 12px 0;
+      font-weight: bold;
+      color: #1e293b;
+      border: 1px dashed #93c5fd;
+    }
+    .footer {
+      margin-top: 40px;
+      font-size: 13px;
+      color: #64748b;
+      text-align: center;
+    }
   </style>
 </head>
+
 <body>
-  <div class="card">
-    <h2>Bienvenue {{name}} 🎉</h2>
-    <p>Votre compte sur <strong>Gestion Notes</strong> a bien été créé.</p>
-    <p>Vous pouvez maintenant vous connecter à la plateforme.</p>
+  <div class="container">
+    <h2>🎉 Bienvenue sur Gestion Notes</h2>
+    <p>Bonjour <strong>{{ name }}</strong>,</p>
+
+    <p>Votre compte a été créé avec succès ! Voici vos identifiants de connexion :</p>
+
+    <div class="password-box">
+      Mot de passe : <strong>{{ password }}</strong>
+    </div>
+
+    <p>Veuillez <strong>activer votre compte</strong> via le lien d’activation reçu par email, puis connectez-vous à votre espace utilisateur.</p>
+
+    <p>Nous vous recommandons de modifier ce mot de passe après votre première connexion.</p>
+
+    <div class="footer">
+      © {{ year }} Gestion Notes — Tous droits réservés.
+    </div>
   </div>
-  <p class="footer">Ceci est un message automatique, merci de ne pas répondre.</p>
 </body>
 </html>

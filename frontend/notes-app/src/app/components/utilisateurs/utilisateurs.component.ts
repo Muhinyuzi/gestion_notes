@@ -97,22 +97,26 @@ export class UtilisateursComponent implements OnInit {
   }
 
   addUtilisateur() {
-    if (!this.newUser.nom || !this.newUser.email || !this.newUser.mot_de_passe) {
-      this.toast.show("❗ Nom, email et mot de passe requis", "error");
-      return;
-    }
-
-    this.api.createUtilisateur(this.newUser).subscribe({
-      next: (user) => {
-        this.utilisateurs.unshift(user);
-        this.total++;
-        this.toast.show("✅ Utilisateur ajouté !");
-        this.resetForm();
-        this.isAdding = false;
-      },
-      error: () => this.toast.show("❌ Erreur de création", "error")
-    });
+  if (!this.newUser.nom || !this.newUser.email || !this.newUser.mot_de_passe) {
+    this.toast.show("❗ Nom, email et mot de passe requis", "error");
+    return;
   }
+
+  this.api.createUtilisateur(this.newUser).subscribe({
+    next: (user) => {
+
+      // ✅ Redirection vers page "Email envoyé"
+      this.resetForm();
+      this.isAdding = false;
+
+      this.toast.show("📧 Email d'activation envoyé !");
+
+      // Redirection avec email en query param
+      window.location.href = `/email-sent?email=${user.email}`;
+    },
+    error: () => this.toast.show("❌ Erreur de création", "error")
+  });
+}
 
   editUtilisateur(user: Utilisateur) {
     this.selectedUser = { ...user, mot_de_passe: "" };

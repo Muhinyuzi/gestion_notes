@@ -27,4 +27,16 @@ def add_commentaire_service(note_id: int, commentaire: CommentaireCreate, db: Se
     db.add(new_comment)
     db.commit()
     db.refresh(new_comment)
-    return CommentaireOut.from_orm(new_comment)
+    return CommentaireOut.model_validate(new_comment)
+
+def get_commentaires_service(note_id: int, db: Session):
+    """
+    Retourne la liste des commentaires liés à une note.
+    """
+    commentaires = (
+        db.query(Commentaire)
+        .filter(Commentaire.note_id == note_id)
+        .order_by(Commentaire.id.asc())
+        .all()
+    )
+    return [CommentaireOut.model_validate(c) for c in commentaires]

@@ -57,10 +57,6 @@
   margin-top: 8px;
 }
 
-.avatar-actions input[type="file"] {
-  display: none;
-}
-
 .avatar-actions button {
   font-size: 13px;
   border-radius: 50px;
@@ -122,34 +118,50 @@
 /* ✏️ Boutons d’action */
 .actions {
   display: flex;
-  justify-content: space-between;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
   margin-top: 25px;
 }
 
 .actions button {
-  flex: 1;
-  margin: 0 5px;
+  flex: 1 1 45%;
+  min-width: 140px;
   border-radius: 8px;
   font-weight: 500;
   text-transform: none;
+  transition: all 0.2s ease-in-out;
 }
 
-.actions button:first-child {
+.actions button[color="primary"] {
   background-color: #1976d2;
   color: white;
 }
 
-.actions button:first-child:hover {
+.actions button[color="primary"]:hover {
   background-color: #1565c0;
 }
 
-.actions button:last-child {
+.actions button[color="warn"] {
   background-color: #f44336;
   color: white;
 }
 
-.actions button:last-child:hover {
+.actions button[color="warn"]:hover {
   background-color: #d32f2f;
+}
+
+/* 🔑 Bouton changer mot de passe */
+.actions button[color="accent"] {
+  border: 1px solid #2563eb;
+  color: #2563eb;
+  background: white;
+  font-weight: 500;
+}
+
+.actions button[color="accent"]:hover {
+  background: #2563eb;
+  color: white;
 }
 
 /* ✍️ Formulaire édition */
@@ -189,7 +201,6 @@
   font-weight: 500;
 }
 
-
 /* 🔙 Bouton Retour */
 .btn-back {
   display: inline-flex;
@@ -211,7 +222,7 @@
   background: #475569;
   color: #ffffff;
   transform: translateX(-3px);
-  box-shadow: 0 4px 10px rgba(55,65,81,0.2);
+  box-shadow: 0 4px 10px rgba(55, 65, 81, 0.2);
 }
 
 .btn-back:active {
@@ -219,7 +230,28 @@
 }
 
 /* 📱 Responsive */
-@media (max-width: 600px) {
+@media (max-width: 768px) {
+  .profile-container {
+    padding: 20px;
+  }
+
+  .user-card {
+    max-width: 100%;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .actions button {
+    width: 100%;
+  }
+
+  .avatar {
+    width: 100px;
+    height: 100px;
+  }
+
   .btn-back {
     width: 100%;
     justify-content: center;

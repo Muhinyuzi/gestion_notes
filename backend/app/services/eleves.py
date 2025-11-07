@@ -14,14 +14,14 @@ def create_eleve_service(eleve_in: EleveCreate, current_user: Utilisateur, db: S
     db.add(eleve)
     db.commit()
     db.refresh(eleve)
-    return EleveOut.from_orm(eleve)
+    return EleveOut.model_validate(eleve)
 
 # ---------------- READ ----------------
 def get_eleve_service(eleve_id: int, db: Session):
     eleve = db.query(Eleve).filter(Eleve.id == eleve_id).first()
     if not eleve:
         raise HTTPException(status_code=404, detail="Élève non trouvé")
-    return EleveOut.from_orm(eleve)
+    return EleveOut.model_validate(eleve)
 
 def list_eleves_service(skip: int, limit: int, db: Session):
     return db.query(Eleve).offset(skip).limit(limit).all()
@@ -66,7 +66,7 @@ def update_eleve_service(eleve_id: int, eleve_data: EleveUpdate, db: Session):
 
     db.commit()
     db.refresh(eleve)
-    return EleveOut.from_orm(eleve)
+    return EleveOut.model_validate(eleve)
 
 # ---------------- ASSIGN NOTE ----------------
 def assign_note_service(eleve_id: int, note_id: int, current_user: Utilisateur, db: Session):
@@ -96,7 +96,7 @@ def assign_note_service(eleve_id: int, note_id: int, current_user: Utilisateur, 
     db.add(history)
     db.commit()
     db.refresh(eleve)
-    return EleveOut.from_orm(eleve)
+    return EleveOut.model_validate(eleve)
 
 # ---------------- UNASSIGN NOTE ----------------
 def unassign_note_service(eleve_id: int, current_user: Utilisateur, db: Session):
@@ -126,7 +126,7 @@ def unassign_note_service(eleve_id: int, current_user: Utilisateur, db: Session)
     db.add(history)
     db.commit()
     db.refresh(eleve)
-    return EleveOut.from_orm(eleve)
+    return EleveOut.model_validate(eleve)
 
 # ---------------- DELETE ----------------
 def delete_eleve_service(eleve_id: int, current_user: Utilisateur, db: Session):

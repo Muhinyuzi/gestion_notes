@@ -2,7 +2,7 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { tap } from 'rxjs/operators';
 
 @Injectable({ providedIn: 'root' })
@@ -26,40 +26,45 @@ export class AuthService {
   }
 
   setUser(user: any): void {
-  localStorage.setItem('auth_user', JSON.stringify(user));
-}
+    localStorage.setItem('auth_user', JSON.stringify(user));
+  }
 
-getUser(): any | null {
-  const user = localStorage.getItem('auth_user');
-  return user ? JSON.parse(user) : null;
-}
+  getUser(): any | null {
+    const user = localStorage.getItem('auth_user');
+    return user ? JSON.parse(user) : null;
+  }
 
-getUserId(): number | null {
-  return this.getUser()?.id ?? null;
-}
+  getUserId(): number | null {
+    return this.getUser()?.id ?? null;
+  }
 
-getUserName(): number | null {
-  return this.getUser()?.name ?? null;
-}
+  getUserName(): number | null {
+    return this.getUser()?.name ?? null;
+  }
 
-login(email: string, password: string): Observable<any> {
-  const body = new URLSearchParams();
-  body.set('username', email);
-  body.set('password', password);
+  login(email: string, password: string): Observable<any> {
+    const body = new URLSearchParams();
+    body.set('username', email);
+    body.set('password', password);
 
-  return this.http.post<any>(`${this.API_URL}/login`, body.toString(), {
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-  }).pipe(
-    tap(res => {
-      if (res && res.access_token) {
-        this.setToken(res.access_token);
-        if (res.user) {
-          this.setUser(res.user); // ⚡ stocker l'utilisateur
+    return this.http.post<any>(`${this.API_URL}/login`, body.toString(), {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    }).pipe(
+      tap(res => {
+        if (res && res.access_token) {
+          this.setToken(res.access_token);
+          if (res.user) {
+            this.setUser(res.user);
+          }
         }
-      }
-    })
-  );
-}
+      })
+    );
+  }
+
+  // ✅ Renvoi de l'email d’activation
+  resendActivation(email: string) {
+    return this.http.post(`${this.API_URL}/auth/resend-activation`, { email });
+  }
 
   isLoggedIn(): boolean {
     return this._isLoggedIn$.value;
@@ -72,5 +77,36 @@ login(email: string, password: string): Observable<any> {
     this._isLoggedIn$.next(false);
     this.router.navigate(['/login']);
   }
+  forgotPassword(email: string) {
+    return this.http.post(`${this.API_URL}/auth/forgot-password`, { email });
+  }
+
+  resetPassword(token: string, newPassword: string) {
+    return this.http.post(`${this.API_URL}/auth/reset-password`, {
+    token,
+    new_password: newPassword
+  });
+  }
+
+  activateAccount(token: string) {
+  return this.http.get(`${this.API_URL}/auth/activate?token=${token}`);
+}
+
+/**
+ * 🔐 Change le mot de passe de l'utilisateur connecté
+ */
+changePassword(oldPassword: string, newPassword: string): Observable<any> {
+  const token = this.getToken(); // ✅ cohérent avec setToken/getToken
+
+  const headers = new HttpHeaders({
+    Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  });
+
+  return this.http.patch(`${this.API_URL}/auth/change-password`, {
+    old_password: oldPassword,
+    new_password: newPassword
+  }, { headers });
+}
 
 }

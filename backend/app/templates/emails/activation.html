@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Activation de votre compte</title>
+  <style>
+    body {
+      font-family: 'Inter', Arial, sans-serif;
+      background-color: #f8fafc;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+      padding: 32px;
+    }
+    h2 {
+      color: #1e3a8a;
+      margin-bottom: 10px;
+    }
+    p {
+      color: #334155;
+      line-height: 1.5;
+    }
+    a.button {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 12px 24px;
+      background-color: #2563eb;
+      color: #ffffff;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 600;
+    }
+    .footer {
+      margin-top: 40px;
+      font-size: 13px;
+      color: #64748b;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h2>🔓 Activez votre compte</h2>
+    <p>Bonjour <strong>{{ name }}</strong>,</p>
+
+    <p>Merci de rejoindre <strong>Gestion Notes</strong> !  
+      Pour accéder à votre espace, cliquez sur le bouton ci-dessous pour activer votre compte.</p>
+
+    <a href="{{ activation_link }}" class="button">Activer mon compte</a>
+
+    <p>Ce lien est valide pendant <strong>24 heures</strong>.  
+      Si vous n’avez pas fait cette demande, ignorez cet email.</p>
+
+    <div class="footer">
+      © {{ year }} Gestion Notes — Tous droits réservés.
+    </div>
+  </div>
+</body>
+</html>

@@ -5,10 +5,10 @@ import shutil
 from sqlalchemy.orm import Session, joinedload 
 from typing import List 
 from app.db import get_db 
-from app.emails import send_registration_email
 from app.models.utilisateur import Utilisateur 
 from app.schemas.schemas import UtilisateurCreate, UtilisateurOut, UtilisateurDetailOut
 from passlib.context import CryptContext 
+from app.emails import send_activation_email
 from app.auth import get_current_user
 from app.services.utilisateurs import (
     create_user_service,
@@ -26,19 +26,12 @@ router = APIRouter()
 @router.post("/", response_model=UtilisateurOut)
 def create_user(
     user: UtilisateurCreate,
-    background_tasks: BackgroundTasks,  # ✅ ajout
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: Utilisateur = Depends(get_current_user)
 ):
-    new_user = create_user_service(user, db, current_user)
-
-    # ✅ Envoi email en tâche de fond
-    background_tasks.add_task(
-        send_registration_email,
-        new_user.email,
-        new_user.nom
-    )
-
+    # ✅ Le service gère déjà l'email d'activation
+    new_user = create_user_service(user, db, current_user, background_tasks)
     return new_user
 
 # ---------------- LIST ----------------

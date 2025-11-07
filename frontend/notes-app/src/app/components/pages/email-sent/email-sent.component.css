@@ -1,0 +1,43 @@
+.email-sent-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 80vh;
+  font-family: "Inter", sans-serif;
+}
+
+.card {
+  background: #fff;
+  padding: 32px;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+  text-align: center;
+  max-width: 400px;
+  width: 100%;
+}
+
+h2 {
+  margin-bottom: 15px;
+  color: #1f8b4c;
+}
+
+.note {
+  margin: 10px 0 20px;
+  color: #555;
+  font-size: 0.9rem;
+}
+
+.btn-back {
+  background: #2563eb;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: 0.2s;
+}
+
+.btn-back:hover {
+  background: #1d4ed8;
+}

@@ -1,4 +1,4 @@
-/* Conteneur principal */
+/* 🌐 Conteneur principal */
 .login-container {
   max-width: 400px;
   margin: 80px auto;
@@ -7,10 +7,11 @@
   border-radius: 12px;
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
   text-align: center;
+  font-family: 'Inter', sans-serif;
   animation: fadeIn 0.6s ease-in-out;
 }
 
-/* Animation d'apparition */
+/* 🎞️ Animation d'apparition */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -22,15 +23,15 @@
   }
 }
 
-/* Titre */
+/* 🧭 Titre */
 .login-container h2 {
   margin-bottom: 20px;
-  color: #2c3e50;
+  color: #1e3a8a;
   font-size: 1.8rem;
   font-weight: 600;
 }
 
-/* Champs de saisie */
+/* ✏️ Champs de saisie */
 .login-container input {
   width: 100%;
   padding: 12px 15px;
@@ -47,7 +48,7 @@
   box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
 }
 
-/* Bouton */
+/* 🔘 Bouton principal */
 .login-container button {
   width: 100%;
   padding: 12px;
@@ -67,7 +68,7 @@
   transform: translateY(-2px);
 }
 
-/* Message d'erreur */
+/* ⚠️ Message d’erreur */
 .error {
   margin-top: 15px;
   color: #e74c3c;
@@ -75,48 +76,45 @@
   font-size: 0.95rem;
 }
 
-
-/* Inputs */
-.login-container input {
-  width: 100%;
-  padding: 12px 15px;
-  margin: 10px 0;
-  border: 1px solid #dcdde1;
-  border-radius: 8px;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-}
-
-.login-container input:focus {
-  border-color: #007bff;
-  outline: none;
-  box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
-}
-
-/* Bouton */
-.login-container button {
-  width: 100%;
-  padding: 12px;
+/* ✅ Message de succès */
+.success {
   margin-top: 15px;
-  background: linear-gradient(90deg, #007bff, #0056b3);
+  color: #16a34a;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+/* 🔗 Lien “Mot de passe oublié ?” */
+.forgot {
+  margin-top: 15px;
+}
+
+.forgot a {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.forgot a:hover {
+  text-decoration: underline;
+  color: #1d4ed8;
+}
+
+/* 🔁 Bouton de renvoi d’activation */
+.resend-btn {
+  margin-top: 12px;
+  background: linear-gradient(90deg, #f59e0b, #d97706);
+  color: white;
   border: none;
   border-radius: 8px;
-  color: #fff;
-  font-size: 1.1rem;
+  padding: 10px 14px;
   font-weight: 500;
   cursor: pointer;
   transition: background 0.3s ease, transform 0.2s ease;
 }
 
-.login-container button:hover {
-  background: linear-gradient(90deg, #0056b3, #003f7f);
+.resend-btn:hover {
+  background: linear-gradient(90deg, #d97706, #b45309);
   transform: translateY(-2px);
-}
-
-/* Message d'erreur */
-.error {
-  margin-top: 15px;
-  color: #e74c3c;
-  font-weight: 500;
-  font-size: 0.95rem;
 }

@@ -1,29 +1,36 @@
 import { Injectable } from '@angular/core';
-import { CanActivate, Router } from '@angular/router';
+import {
+  CanActivate,
+  Router,
+  UrlTree
+} from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { ToastService } from '../services/toast.service'; // ⚡ pour message clair
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class AdminGuard implements CanActivate {
+  constructor(
+    private auth: AuthService,
+    private router: Router,
+    private toast: ToastService
+  ) {}
 
-  constructor(private auth: AuthService, private router: Router) {}
-
-  canActivate(): boolean {
+  canActivate(): boolean | UrlTree {
     const user = this.auth.getUser();
 
-    if (user && user.type === 'admin') {
-      // ✅ L'utilisateur est admin, accès autorisé
+    // 🔒 Vérifie si l'utilisateur est connecté
+    if (!user) {
+      this.toast.show("🔐 Veuillez d'abord vous connecter", "error");
+      return this.router.createUrlTree(['/login']);
+    }
+
+    // ✅ Vérifie s’il est admin
+    if (user.type === 'admin') {
       return true;
     }
 
-    // 🚫 Accès refusé → redirection selon le cas
-    if (this.auth.isLoggedIn()) {
-      this.router.navigate(['/']); // utilisateur connecté mais non admin
-    } else {
-      this.router.navigate(['/login']); // utilisateur non connecté
-    }
-
-    return false;
+    // 🚫 Sinon → refus d’accès avec message
+    this.toast.show("⛔ Accès réservé aux administrateurs", "error");
+    return this.router.createUrlTree(['/']);
   }
 }

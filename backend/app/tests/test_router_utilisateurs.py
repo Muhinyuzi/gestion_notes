@@ -5,7 +5,7 @@ def test_create_user_router(client):
     data = {
         "nom": "TestUser",
         "email": "router@test.com",
-        "mot_de_passe": "1234",
+        "mot_de_passe": "12345678",
         "type": "admin",
         "equipe": "Dev"
     }
@@ -14,12 +14,15 @@ def test_create_user_router(client):
     res = r.json()
     assert res["email"] == "router@test.com"
 
+    # ✅ add this
+    assert res["is_active"] is False
+
 
 def test_list_users_router(client):
     client.post("/utilisateurs/", json={
         "nom": "UserA",
         "email": "usera@test.com",
-        "mot_de_passe": "1234",
+        "mot_de_passe": "12345678",
         "type": "admin",
         "equipe": "Dev"
     })
@@ -29,14 +32,14 @@ def test_list_users_router(client):
 
     data = r.json()
     assert "users" in data
-    assert len(data["users"]) == 1
+    assert any(u["email"] == "usera@test.com" for u in data["users"])
 
 
 def test_get_user_detail_router(client):
     r = client.post("/utilisateurs/", json={
         "nom": "UserB",
         "email": "userb@test.com",
-        "mot_de_passe": "1234",
+        "mot_de_passe": "12345678",
         "type": "admin",
         "equipe": "Dev"
     })
@@ -51,7 +54,7 @@ def test_update_user_router(client):
     r = client.post("/utilisateurs/", json={
         "nom": "UserC",
         "email": "userc@test.com",
-        "mot_de_passe": "1234",
+        "mot_de_passe": "12345678",
         "type": "admin",
         "equipe": "Dev"
     })
@@ -60,7 +63,7 @@ def test_update_user_router(client):
     r = client.put(f"/utilisateurs/{user_id}", json={
         "nom": "UpdatedUser",
         "email": "userc@test.com",
-        "mot_de_passe": "1234",
+        "mot_de_passe": "12345678",
         "type": "admin",
         "equipe": "Dev"
     })
@@ -73,7 +76,7 @@ def test_delete_user_router(client):
     r = client.post("/utilisateurs/", json={
         "nom": "UserD",
         "email": "userd@test.com",
-        "mot_de_passe": "1234",
+        "mot_de_passe": "12345678",
         "type": "admin",
         "equipe": "Dev"
     })
@@ -90,7 +93,7 @@ def test_create_user_email_duplicate(client):
     data1 = {
         "nom": "User1",
         "email": "dup@test.com",
-        "mot_de_passe": "1234",
+        "mot_de_passe": "12345678",
         "type": "admin",
         "equipe": "Dev"
     }
@@ -98,7 +101,7 @@ def test_create_user_email_duplicate(client):
     data2 = {
         "nom": "User2",  # 🔥 Change name to avoid unique name violation
         "email": "dup@test.com",
-        "mot_de_passe": "1234",
+        "mot_de_passe": "12345678",
         "type": "admin",
         "equipe": "Dev"
     }
@@ -107,7 +110,7 @@ def test_create_user_email_duplicate(client):
     r = client.post("/utilisateurs/", json=data2)
 
     assert r.status_code == 400
-    assert "Email déjà utilisé" in r.text
+    assert "Un utilisateur avec cet email existe déjà." in r.text
 
 # Get user not found
 def test_get_user_not_found(client):

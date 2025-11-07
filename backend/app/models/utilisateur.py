@@ -19,6 +19,7 @@ class Utilisateur(Base):
     adresse = Column(String(255), nullable=True)
     date_embauche = Column(DateTime(timezone=True), nullable=True)
     date = Column(DateTime(timezone=True), server_default=func.now(), index=True)
+    is_active = Column(Boolean, default=False)
     # 🆕 Champ pour la photo de profil
     avatar_url = Column(String(255), nullable=True)
 

@@ -32,6 +32,13 @@ async def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
+    # ✅ Vérifier activation
+    if not user.is_active:
+        raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Votre compte n’est pas encore activé. Vérifiez vos emails."
+    )
+
     token = app.auth.create_access_token({"sub": str(user.id)})
 
     return {

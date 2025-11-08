@@ -25,6 +25,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
 import { UtilisateurDetailComponent } from './components/utilisateurs/utilisateur-detail/utilisateur-detail.component';
 import { NoteCreateComponent } from './components/notes/note-create/note-create.component';
 import { EditorModule } from '@progress/kendo-angular-editor';
@@ -32,6 +33,11 @@ import { ElevesComponent } from './components/eleves/eleves.component';
 import { EleveDetailComponent } from './components/eleves/eleve-detail/eleve-detail.component';
 import { EleveCreateComponent } from './components/eleves/eleve-create/eleve-create.component';
 import { EleveEditComponent } from './components/eleves/eleve-edit/eleve-edit.component';
+import { EmailSentComponent } from './components/pages/email-sent/email-sent.component';
+import { ForgotPasswordComponent } from './components/auth/forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './components/auth/reset-password/reset-password.component';
+import { ActivateAccountComponent } from './components/auth/activate-account/activate-account.component';
+import { ChangePasswordComponent } from './components/utilisateurs/account/change-password/change-password.component';
 
 @NgModule({
   declarations: [
@@ -49,7 +55,12 @@ import { EleveEditComponent } from './components/eleves/eleve-edit/eleve-edit.co
     ElevesComponent,
     EleveDetailComponent,
     EleveCreateComponent,
-    EleveEditComponent
+    EleveEditComponent,
+    EmailSentComponent,
+    ForgotPasswordComponent,
+    ResetPasswordComponent,
+    ActivateAccountComponent,
+    ChangePasswordComponent
   ],
   imports: [
     BrowserModule,
@@ -64,8 +75,10 @@ import { EleveEditComponent } from './components/eleves/eleve-edit/eleve-edit.co
     MatDividerModule,
     MatCardModule,
     EditorModule,
+    MatIconModule
   ],
-  providers: [{ provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }, provideAnimationsAsync()],
+  providers: [{ provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }, 
+    provideAnimationsAsync()],
   bootstrap: [AppComponent]
 })
 export class AppModule {}

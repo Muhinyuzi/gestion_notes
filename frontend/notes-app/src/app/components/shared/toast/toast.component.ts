@@ -1,20 +1,24 @@
-import { Component, Input } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'app-toast',
   templateUrl: './toast.component.html',
   styleUrls: ['./toast.component.css']
 })
-export class ToastComponent {
-  @Input() message = '';
-  @Input() type: 'success' | 'error' = 'success';
+export class ToastComponent implements OnInit {
+  message = '';
+  type: 'success' | 'error' | 'info' = 'success';
   isVisible = false;
 
-  show(message: string, type: 'success' | 'error' = 'success') {
-    this.message = message;
-    this.type = type;
-    this.isVisible = true;
-    setTimeout(() => this.isVisible = false, 3000); // disparaît après 3s
+  constructor(private toastService: ToastService) {}
+
+  ngOnInit(): void {
+    this.toastService.toastState$.subscribe(({ message, type }) => {
+      this.message = message;
+      this.type = type;
+      this.isVisible = true;
+      setTimeout(() => this.isVisible = false, 3000);
+    });
   }
 }
-

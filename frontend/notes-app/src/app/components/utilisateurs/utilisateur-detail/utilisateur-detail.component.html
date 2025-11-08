@@ -1,3 +1,7 @@
+<!-- 🔙 Bouton retour -->
+<button class="btn-back" (click)="goBack()">← Retour</button>
+
+<!-- ⏳ Loader -->
 <div *ngIf="isLoading" class="loading-container">
   <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
   <p>Chargement en cours...</p>
@@ -5,22 +9,25 @@
 
 <app-toast #toast></app-toast>
 
+<!-- ✅ Profil utilisateur -->
 <div *ngIf="!isLoading && utilisateur" class="profile-container">
   <mat-card class="user-card">
+    <!-- 🧍 Avatar -->
     <div class="avatar-section">
       <img [src]="avatarUrl" alt="Avatar" class="avatar" />
 
       <div class="avatar-actions">
         <input #fileInput type="file" (change)="onAvatarSelected($event)" accept="image/*" hidden>
-         <button mat-stroked-button color="primary" (click)="openFilePicker(fileInput)">
-           📤 Choisir une image
-         </button>
-         <button mat-raised-button color="accent" (click)="uploadAvatar()">💾 Upload</button>
+        <button mat-stroked-button color="primary" (click)="openFilePicker(fileInput)">
+          📤 Choisir une image
+        </button>
+        <button mat-raised-button color="accent" (click)="uploadAvatar()">💾 Upload</button>
       </div>
     </div>
 
     <mat-divider></mat-divider>
 
+    <!-- 🧾 Informations utilisateur -->
     <div class="user-info">
       <h2>{{ utilisateur.nom }}</h2>
       <p class="email">{{ utilisateur.email }}</p>
@@ -30,6 +37,7 @@
 
       <mat-divider></mat-divider>
 
+      <!-- 📄 Mode lecture -->
       <div *ngIf="!isEditing" class="info-section">
         <p><strong>Équipe :</strong> {{ utilisateur.equipe || 'Non spécifiée' }}</p>
         <p><strong>Adresse :</strong> {{ utilisateur.adresse || 'Non spécifiée' }}</p>
@@ -38,9 +46,19 @@
         <div class="actions">
           <button mat-raised-button color="primary" (click)="isEditing = true">✏️ Modifier</button>
           <button mat-raised-button color="warn" (click)="deleteUtilisateur()">🗑 Supprimer</button>
+
+          <!-- 🔑 Lien vers changement de mot de passe -->
+          <button
+            *ngIf="isCurrentUser()"
+            mat-stroked-button
+            color="accent"
+            (click)="goToChangePassword()">
+            🔑 Changer le mot de passe
+          </button>
         </div>
       </div>
 
+      <!-- 🧾 Formulaire édition -->
       <form *ngIf="isEditing" class="edit-form">
         <mat-form-field appearance="outline">
           <mat-label>Nom</mat-label>
@@ -76,6 +94,7 @@
   </mat-card>
 </div>
 
+<!-- 🧭 Aucun utilisateur -->
 <div *ngIf="!isLoading && !utilisateur">
   <p>Aucun utilisateur trouvé.</p>
 </div>

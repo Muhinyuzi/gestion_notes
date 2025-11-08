@@ -4,9 +4,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.db import Base, engine  # ✅ use session engine override-aware
 from app.config import settings
+from app.routers import activation
+from app.routers import reset_password
+
+
+
+# 🔧 Force le mode production
+os.environ["TESTING"] = "0"
+
 
 # Routers
-from app.routers import utilisateurs, notes, commentaires, login, eleves
+from app.routers import utilisateurs, notes, commentaires, login, eleves, router_password_change
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -44,6 +52,9 @@ def root():
 
 
 # ✅ Routers
+app.include_router(router_password_change.router)
+app.include_router(activation.router)
+app.include_router(reset_password.router)
 app.include_router(login.router)
 app.include_router(utilisateurs.router, prefix="/utilisateurs", tags=["Utilisateurs"])
 app.include_router(notes.router, prefix="/notes", tags=["Notes"])

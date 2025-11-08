@@ -3,15 +3,27 @@ import pytest
 from app.tests.conftest import TestingSessionLocal
 from fastapi.testclient import TestClient
 from app.main import app
+from jose import jwt
+from app.config import settings
 
 client = TestClient(app)
 
-def test_login_success(create_test_user):
-    # L'utilisateur est déjà créé via create_test_user fixture
-    email = create_test_user["email"]
-    password = "1234"
 
-    # FastAPI OAuth2 utilise form-data, pas JSON
+
+def test_login_success(client, create_test_user):
+    email = create_test_user["email"]
+    password = "12345678"
+
+    # ✅ Activer l'utilisateur d'abord
+    token = jwt.encode(
+        {"sub": email, "type": "activation"},
+        settings.JWT_SECRET,
+        algorithm="HS256"
+    )
+    r = client.get(f"/auth/activate?token={token}")
+    assert r.status_code == 200
+
+    # ✅ Login après activation
     response = client.post(
         "/login",
         data={"username": email, "password": password}
@@ -25,7 +37,7 @@ def test_login_success(create_test_user):
     assert body["user"]["email"] == email
 
 
-def test_login_wrong_password(create_test_user):
+def test_login_wrong_password(client, create_test_user):
     email = create_test_user["email"]
 
     response = client.post(
@@ -37,7 +49,7 @@ def test_login_wrong_password(create_test_user):
     assert "incorrect" in response.text.lower()
 
 
-def test_login_user_not_found():
+def test_login_user_not_found(client):
     response = client.post(
         "/login",
         data={"username": "notexist@test.com", "password": "test"}

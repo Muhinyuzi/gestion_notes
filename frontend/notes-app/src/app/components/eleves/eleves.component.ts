@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { EleveService, Eleve } from '../../services/eleve.service';
 import { NoteService, Note } from '../../services/note.service';
+import { DialogService } from '../../services/dialog.service';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-eleves',
@@ -25,6 +27,8 @@ export class ElevesComponent implements OnInit {
   constructor(
     private api: EleveService,
     private noteService: NoteService,
+    private dialogService: DialogService,
+    private location: Location,
     private router: Router
   ) {}
 
@@ -67,16 +71,29 @@ export class ElevesComponent implements OnInit {
     this.router.navigate(['/eleves/edit', eleve.id]);
   }
 
-  deleteEleve(eleve: Eleve) {
-    if (!confirm(`Supprimer l'élève ${eleve.nom} ${eleve.prenom} ?`)) return;
-    this.api.deleteEleve(eleve.id!).subscribe({
-      next: () => this.eleves = this.eleves.filter(e => e.id !== eleve.id),
-      error: err => {
-        alert('Erreur lors de la suppression');
-        console.error(err);
+deleteEleve(eleve: Eleve) {
+  this.dialogService
+    .confirm(
+      "Confirmation de suppression",
+      `Voulez-vous vraiment supprimer l'élève ${eleve.nom} ${eleve.prenom} ?`
+    )
+    .subscribe(result => {
+      if (result) {
+        this.api.deleteEleve(eleve.id!).subscribe({
+          next: () => {
+            this.eleves = this.eleves.filter(e => e.id !== eleve.id);
+          },
+          error: err => {
+            this.dialogService.confirm(
+              "Erreur",
+              "Une erreur est survenue lors de la suppression."
+            );
+            console.error(err);
+          }
+        });
       }
     });
-  }
+}
 
   // 🔹 Modale assignation
   openAssignModal(eleve: Eleve) {
@@ -127,4 +144,9 @@ export class ElevesComponent implements OnInit {
     this.selectedNoteId = null;
     this.selectedNoteTitle = null;
   }
+
+  goBack(): void {
+    this.location.back();
+  }
+
 }

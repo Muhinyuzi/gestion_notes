@@ -1,0 +1,28 @@
+<div class="activate-wrapper">
+  <mat-card class="activate-card" appearance="outlined">
+    <div *ngIf="loading" class="loading-box">
+      <mat-spinner diameter="50" color="primary"></mat-spinner>
+      <p>Activation du compte en cours...</p>
+    </div>
+
+    <div *ngIf="!loading && success" class="success-box">
+      <mat-icon color="primary" class="icon">check_circle</mat-icon>
+      <h2>Compte activé ✅</h2>
+      <p>Votre compte a été activé avec succès. Vous pouvez maintenant vous connecter.</p>
+
+      <button mat-raised-button color="primary" routerLink="/login">
+        Se connecter
+      </button>
+    </div>
+
+    <div *ngIf="!loading && errorMessage" class="error-box">
+      <mat-icon color="warn" class="icon">error_outline</mat-icon>
+      <h2>Échec d’activation ❌</h2>
+      <p>{{ errorMessage }}</p>
+
+      <button mat-stroked-button color="primary" routerLink="/login">
+        Retour à la connexion
+      </button>
+    </div>
+  </mat-card>
+</div>

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File 
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, BackgroundTasks 
 from fastapi.responses import FileResponse 
 import os 
 import shutil 
@@ -8,6 +8,7 @@ from app.db import get_db
 from app.models.utilisateur import Utilisateur 
 from app.schemas.schemas import UtilisateurCreate, UtilisateurOut, UtilisateurDetailOut
 from passlib.context import CryptContext 
+from app.emails import send_activation_email
 from app.auth import get_current_user
 from app.services.utilisateurs import (
     create_user_service,
@@ -25,10 +26,13 @@ router = APIRouter()
 @router.post("/", response_model=UtilisateurOut)
 def create_user(
     user: UtilisateurCreate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: Utilisateur = Depends(get_current_user)
 ):
-    return create_user_service(user, db, current_user)
+    # ✅ Le service gère déjà l'email d'activation
+    new_user = create_user_service(user, db, current_user, background_tasks)
+    return new_user
 
 # ---------------- LIST ----------------
 @router.get("/", response_model=dict)

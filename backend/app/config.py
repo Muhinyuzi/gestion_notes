@@ -21,6 +21,18 @@ class Settings(BaseSettings):
     # Debug
     DEBUG: bool = False
 
+    # Email settings
+    MAIL_USERNAME: str
+    MAIL_PASSWORD: str
+    MAIL_FROM: str
+    MAIL_FROM_NAME: str = "Gestion Notes"
+
+    MAIL_SERVER: str = "smtp.gmail.com"
+    MAIL_PORT: int = 465
+
+    MAIL_STARTTLS: bool = False
+    MAIL_SSL_TLS: bool = True
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

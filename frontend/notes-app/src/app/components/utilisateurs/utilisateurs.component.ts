@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { UtilisateurService, Utilisateur, UtilisateursResponse } from '../../services/utilisateur.service';
-import { ToastComponent } from '../../components/shared/toast/toast.component';
+import { ToastService } from '../../services/toast.service';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from '../shared/confirm-dialog/confirm-dialog.component';
+import { Location } from '@angular/common';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-utilisateurs',
@@ -10,34 +12,38 @@ import { ConfirmDialogComponent } from '../shared/confirm-dialog/confirm-dialog.
   styleUrls: ['./utilisateurs.component.css']
 })
 export class UtilisateursComponent implements OnInit {
+
   utilisateurs: Utilisateur[] = [];
 
-  // Pour ajout et édition
   newUser: Utilisateur = { nom: '', email: '', mot_de_passe: '', equipe: '', adresse: '', telephone: '', type: '' };
   selectedUser: Utilisateur = { nom: '', email: '', mot_de_passe: '', equipe: '', adresse: '', telephone: '', type: '' };
-  isEditing = false;
-  isAdding = false; 
 
+  isEditing = false;
+  isAdding = false;
   isLoading = false;
   errorMessage = '';
 
-  // Filtres
   filterNom = '';
   filterEmail = '';
   filterEquipe = '';
 
-  // Pagination
   page = 1;
   limit = 10;
   total = 0;
 
-  constructor(private api: UtilisateurService, private dialog: MatDialog) {}
+  constructor(
+    private api: UtilisateurService,
+    private dialog: MatDialog,
+    private location: Location,
+    private toast: ToastService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.loadUsers();
   }
 
-  // Getter pour formulaire
+  // ✅ Form bind (important car ton HTML l'utilise)
   get formUser(): Utilisateur {
     return this.isEditing ? this.selectedUser : this.newUser;
   }
@@ -46,22 +52,19 @@ export class UtilisateursComponent implements OnInit {
     return Math.ceil(this.total / this.limit);
   }
 
-  // Retourne la liste filtrée pour affichage
   get filteredUsers(): Utilisateur[] {
     return this.utilisateurs.filter(u =>
-      u.nom.toLowerCase().includes(this.filterNom.toLowerCase()) &&
-      u.email.toLowerCase().includes(this.filterEmail.toLowerCase()) &&
-      (!this.filterEquipe || (u.equipe && u.equipe.toLowerCase().includes(this.filterEquipe.toLowerCase())))
+      u.nom?.toLowerCase().includes(this.filterNom.toLowerCase()) &&
+      u.email?.toLowerCase().includes(this.filterEmail.toLowerCase()) &&
+      (!this.filterEquipe || u.equipe?.toLowerCase().includes(this.filterEquipe.toLowerCase()))
     );
   }
 
-  // Appliquer les filtres (Angular met automatiquement à jour filteredUsers)
+  // Appliquer les filtres (Angular met automatiquement à jour filteredUsers) 
   applyFilters(): void {}
 
-  // Charger les utilisateurs depuis backend avec pagination
   loadUsers(): void {
     this.isLoading = true;
-    this.errorMessage = '';
 
     this.api.getUtilisateurs(this.page, this.limit).subscribe({
       next: (res: UtilisateursResponse) => {
@@ -69,110 +72,130 @@ export class UtilisateursComponent implements OnInit {
         this.total = res.total;
         this.isLoading = false;
       },
-      error: (err) => {
-        console.error(err);
-        this.errorMessage = "Impossible de charger les utilisateurs.";
+      error: () => {
+        this.errorMessage = "❌ Impossible de charger les utilisateurs.";
         this.isLoading = false;
       }
     });
   }
 
-  // Pagination
-  goToPage(page: number): void {
+  goToPage(page: number) {
     if (page < 1 || page > this.totalPages) return;
     this.page = page;
     this.loadUsers();
   }
 
-  // Ajouter un utilisateur
-  addUtilisateur(): void {
-    if (!this.newUser.nom || !this.newUser.email || !this.newUser.mot_de_passe) {
-      alert("Nom, email et mot de passe sont requis !");
+  startAdding() {
+    this.resetForm();
+    this.isAdding = true;
+    this.isEditing = false;
+    this.toast.show("➕ Mode ajout activé");
+  }
+
+  cancelForm() {
+    this.resetForm();
+    this.isAdding = false;
+    this.isEditing = false;
+  }
+
+  addUtilisateur() {
+  if (!this.newUser.nom || !this.newUser.email || !this.newUser.mot_de_passe) {
+    this.toast.show("❗ Nom, email et mot de passe requis", "error");
+    return;
+  }
+
+  this.api.createUtilisateur(this.newUser).subscribe({
+    next: (user) => {
+
+      // ✅ Redirection vers page "Email envoyé"
+      this.resetForm();
+      this.isAdding = false;
+
+      this.toast.show("📧 Email d'activation envoyé !");
+
+      // Redirection avec email en query param
+      window.location.href = `/email-sent?email=${user.email}`;
+    },
+    error: () => this.toast.show("❌ Erreur de création", "error")
+  });
+}
+
+  editUtilisateur(user: Utilisateur) {
+    this.selectedUser = { ...user, mot_de_passe: "" };
+    this.isEditing = true;
+    this.isAdding = false;
+    this.toast.show("✏️ Mode édition activé");
+  }
+
+  updateUtilisateur() {
+    if (!this.selectedUser.id) return;
+
+    const original = this.utilisateurs.find(u => u.id === this.selectedUser.id);
+    if (!original) return;
+
+    const fields: (keyof Utilisateur)[] = ["nom", "email", "equipe", "adresse", "telephone", "type"];
+    const noChange = fields.every(field =>
+      (original[field] ?? "") === (this.selectedUser[field] ?? "")
+    ) && !this.selectedUser.mot_de_passe;
+
+    if (noChange) {
+      this.toast.show("ℹ️ Aucun changement détecté.", "info");
       return;
     }
 
-    this.api.createUtilisateur(this.newUser).subscribe({
-      next: (user) => {
-        this.utilisateurs.unshift(user);
-        this.total += 1;
-        this.resetForm();
-      },
-      error: (err) => {
-        console.error(err);
-        this.errorMessage = "Erreur lors de la création de l'utilisateur.";
-      }
-    });
-  }
-
-  // Préparer la modification
-  editUtilisateur(user: Utilisateur): void {
-    this.selectedUser = { ...user, mot_de_passe: '' }; // mot de passe vide
-    this.isEditing = true;
-  }
-
-  // Sauvegarder les modifications
-  updateUtilisateur(): void {
-    if (!this.selectedUser.id) return;
-
     const updatedData: Partial<Utilisateur> = { ...this.selectedUser };
     if (!updatedData.mot_de_passe) delete updatedData.mot_de_passe;
+
+    this.isLoading = true;
 
     this.api.updateUtilisateur(this.selectedUser.id, updatedData).subscribe({
       next: (updated) => {
         const index = this.utilisateurs.findIndex(u => u.id === updated.id);
         if (index !== -1) this.utilisateurs[index] = updated;
+
+        this.toast.show("✅ Modifications enregistrées !");
         this.resetForm();
+        this.isEditing = false;
+        this.isLoading = false;
       },
-      error: (err) => {
-        console.error(err);
-        this.errorMessage = "Erreur lors de la mise à jour.";
+      error: () => {
+        this.toast.show("❌ Erreur lors de la mise à jour", "error");
+        this.isLoading = false;
       }
     });
   }
 
-  // Supprimer un utilisateur
-  deleteUtilisateur(user: Utilisateur): void {
-  if (!user.id) return;
+  deleteUtilisateur(user: Utilisateur) {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: "350px",
+      data: { message: `Supprimer ${user.nom} ?` }
+    });
 
-  // Ouvrir le dialogue de confirmation
-  const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-    width: '350px',
-    data: { message: `Voulez-vous vraiment supprimer ${user.nom} ?` }
-  });
+    dialogRef.afterClosed().subscribe(result => {
+      if (!result) return;
 
-  dialogRef.afterClosed().subscribe(result => {
-    if (result) { // si l'utilisateur a confirmé
       this.api.deleteUtilisateur(user.id!).subscribe({
         next: () => {
           this.utilisateurs = this.utilisateurs.filter(u => u.id !== user.id);
-          this.total -= 1;
+          this.total--;
+          this.toast.show("🗑️ Utilisateur supprimé !");
         },
-        error: (err) => {
-          console.error(err);
-          this.errorMessage = "Erreur lors de la suppression.";
-        }
+        error: () => this.toast.show("❌ Erreur de suppression", "error")
       });
-    }
     });
-   }
+  }
 
-
-  // Réinitialiser le formulaire
-  resetForm(): void {
-    this.isEditing = false;
+  resetForm() {
     this.selectedUser = { nom: '', email: '', mot_de_passe: '', equipe: '', adresse: '', telephone: '', type: '' };
     this.newUser = { nom: '', email: '', mot_de_passe: '', equipe: '', adresse: '', telephone: '', type: '' };
   }
 
-  startAdding() {
-  this.isAdding = true;
-  this.isEditing = false;
-  this.resetForm(); // vide le formulaire pour un nouvel utilisateur
- }
+  goBack() {
+    this.location.back();
+  }
 
- cancelForm() {
-  this.isAdding = false;
-  this.isEditing = false;
-  this.resetForm();
-}
+  goToChangePassword() {
+    this.router.navigate(['/change-password']);
+  }
+
 }

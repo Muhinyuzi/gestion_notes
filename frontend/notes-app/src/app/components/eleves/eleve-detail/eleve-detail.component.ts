@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { EleveService, Eleve } from '../../../services/eleve.service';
 import { NoteService, Note } from '../../../services/note.service';
 import { UtilisateurService } from '../../../services/utilisateur.service';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-eleve-detail',
@@ -35,7 +36,8 @@ export class EleveDetailComponent implements OnInit {
     private router: Router,
     private eleveService: EleveService,
     private noteService: NoteService,
-    private utilisateurService: UtilisateurService
+    private utilisateurService: UtilisateurService,
+    private location: Location,
   ) {}
 
   ngOnInit(): void {
@@ -209,5 +211,9 @@ openAssignModal(eleve: Eleve) {
     this.modalEleve = null;
     this.selectedNoteId = null;
     this.selectedNoteTitle = null;
+  }
+
+  goBack(): void {
+    this.location.back();
   }
 }

@@ -179,7 +179,7 @@ def add_commentaire_service(note_id: int, commentaire: CommentaireCreate, db: Se
     db.add(new_comment)
     db.commit()
     db.refresh(new_comment)
-    return CommentaireOut.from_orm(new_comment)
+    return CommentaireOut.model_validate(new_comment)
 
 # ---------------- SUPPRESSION DE FICHIER ----------------
 def delete_file_service(file_id: int, db: Session):

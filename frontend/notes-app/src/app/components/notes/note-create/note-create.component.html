@@ -1,4 +1,10 @@
 <div class="notes-container">
+
+   <app-toast></app-toast>
+
+  <!-- 🔙 Bouton retour -->
+  <button class="btn-back" (click)="goBack()">← Retour</button>
+
   <h3>➕ Créer une nouvelle note</h3>
 
   <form class="add-note-form" (ngSubmit)="addNote()">

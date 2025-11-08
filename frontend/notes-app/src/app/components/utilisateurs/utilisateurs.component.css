@@ -232,30 +232,34 @@
   box-shadow: 0 0 6px rgba(0, 123, 255, 0.2);
 }
 
-/* ✅ Bouton Reset Password */
+/* ✅ Bouton changer mot de passe */
 .btn-reset {
+  align-self: flex-start;
   background: linear-gradient(135deg, #f97316, #fb923c);
   color: #fff;
   border: none;
-  padding: 10px 20px;
+  padding: 10px 22px;
   border-radius: 12px;
   font-weight: 600;
+  font-size: 14px;
   cursor: pointer;
-  width: fit-content;
-  margin-top: 4px;
+  margin-top: 6px;
   transition: all 0.3s ease;
+  box-shadow: 0 3px 10px rgba(249, 115, 22, 0.2);
 }
 
 .btn-reset:hover {
   background: linear-gradient(135deg, #ea580c, #f97316);
   transform: translateY(-2px);
+  box-shadow: 0 5px 14px rgba(249, 115, 22, 0.35);
 }
 
-/* Boutons formulaire */
+/* --- Boutons formulaire --- */
 .form-actions {
   display: flex;
   gap: 10px;
   margin-top: 10px;
+  flex-wrap: wrap;
 }
 
 .btn-submit {
@@ -281,6 +285,8 @@
   padding: 10px 20px;
   border-radius: 12px;
   cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
 }
 
 .btn-cancel:hover {
@@ -308,7 +314,7 @@
   background: #475569;
   color: #ffffff;
   transform: translateX(-3px);
-  box-shadow: 0 4px 10px rgba(55,65,81,0.2);
+  box-shadow: 0 4px 10px rgba(55, 65, 81, 0.2);
 }
 
 .btn-back:active {
@@ -338,6 +344,11 @@
   .utilisateur-actions {
     display: flex;
     gap: 6px;
+  }
+
+  .btn-reset {
+    width: 100%;
+    text-align: center;
   }
 }
 

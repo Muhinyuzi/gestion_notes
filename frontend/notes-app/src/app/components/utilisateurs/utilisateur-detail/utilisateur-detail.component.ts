@@ -6,6 +6,7 @@ import { ConfirmDialogComponent } from '../../shared/confirm-dialog/confirm-dial
 import { ToastService } from '../../../services/toast.service';
 import { AuthService } from '../../../services/auth.service';
 import { Location } from '@angular/common';
+import { ChangePasswordComponent } from '../account/change-password/change-password.component';
 
 @Component({
   selector: 'app-utilisateur-detail',
@@ -27,7 +28,7 @@ export class UtilisateurDetailComponent implements OnInit {
     private dialog: MatDialog,
     private location: Location,
     private toast: ToastService,
-    private auth: AuthService   // ✅ pour identifier l’utilisateur connecté
+    private auth: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -44,7 +45,7 @@ export class UtilisateurDetailComponent implements OnInit {
   }
 
   /** 🔁 Charger les informations de l’utilisateur */
-  loadUtilisateur(id: number) {
+  loadUtilisateur(id: number): void {
     this.api.getUtilisateurDetail(id).subscribe({
       next: (data) => {
         this.utilisateur = data;
@@ -59,7 +60,7 @@ export class UtilisateurDetailComponent implements OnInit {
   }
 
   /** ✏️ Sauvegarde du profil */
-  updateUtilisateur() {
+  updateUtilisateur(): void {
     if (!this.utilisateur) return;
     this.api.updateUtilisateur(this.utilisateur.id, this.utilisateur).subscribe({
       next: (updated) => {
@@ -94,7 +95,7 @@ export class UtilisateurDetailComponent implements OnInit {
   }
 
   /** 📷 Gestion de l’avatar */
-  onAvatarSelected(event: any) {
+  onAvatarSelected(event: any): void {
     const file = event.target.files[0];
     if (file && file.type.startsWith('image/')) {
       this.selectedFile = file;
@@ -104,7 +105,7 @@ export class UtilisateurDetailComponent implements OnInit {
     }
   }
 
-  uploadAvatar() {
+  uploadAvatar(): void {
     if (!this.selectedFile || !this.utilisateur?.id) return;
 
     const formData = new FormData();
@@ -124,7 +125,7 @@ export class UtilisateurDetailComponent implements OnInit {
     });
   }
 
-  openFilePicker(input: HTMLInputElement) {
+  openFilePicker(input: HTMLInputElement): void {
     input.click();
   }
 
@@ -139,9 +140,39 @@ export class UtilisateurDetailComponent implements OnInit {
     return !!(current && this.utilisateur && current.id === this.utilisateur.id);
   }
 
-  /** 🔑 Redirige vers le composant de changement de mot de passe */
-  goToChangePassword(): void {
-    this.router.navigate(['/change-password']);
+  /** 🔐 Ouvre la modale de changement de mot de passe (admin uniquement) */
+  openChangePasswordDialog(): void {
+    if (!this.utilisateur) return;
+
+    const dialogRef = this.dialog.open(ChangePasswordComponent, {
+      width: '420px',
+      data: { adminMode: true, userId: this.utilisateur.id },
+      panelClass: 'custom-dialog-container'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result === 'success') {
+        this.toast.show("✅ Mot de passe mis à jour avec succès pour cet utilisateur.", "success");
+      }
+    });
   }
 
+/** 🔑 Ouvre la même modale pour changer son propre mot de passe */
+goToChangePassword(): void {
+  const dialogRef = this.dialog.open(ChangePasswordComponent, {
+    width: '420px',
+    data: { adminMode: false }, // 👤 mode utilisateur
+    panelClass: 'custom-dialog-container'
+  });
+
+  dialogRef.afterClosed().subscribe(result => {
+    if (result === 'success') {
+      this.toast.show("✅ Votre mot de passe a été changé avec succès.", "success");
+    }
+  });
+}
+
+    isAdmin(): boolean {
+    return this.auth.isAdmin();;
+  }
 }

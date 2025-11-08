@@ -12,6 +12,7 @@
 <!-- ✅ Profil utilisateur -->
 <div *ngIf="!isLoading && utilisateur" class="profile-container">
   <mat-card class="user-card">
+    
     <!-- 🧍 Avatar -->
     <div class="avatar-section">
       <img [src]="avatarUrl" alt="Avatar" class="avatar" />
@@ -21,7 +22,13 @@
         <button mat-stroked-button color="primary" (click)="openFilePicker(fileInput)">
           📤 Choisir une image
         </button>
-        <button mat-raised-button color="accent" (click)="uploadAvatar()">💾 Upload</button>
+        <button
+          mat-raised-button
+          color="accent"
+          (click)="uploadAvatar()"
+          [disabled]="!selectedFile">
+          💾 Upload
+        </button>
       </div>
     </div>
 
@@ -43,17 +50,27 @@
         <p><strong>Adresse :</strong> {{ utilisateur.adresse || 'Non spécifiée' }}</p>
         <p><strong>Téléphone :</strong> {{ utilisateur.telephone || 'Non spécifié' }}</p>
 
+        <!-- 🧩 Boutons d’action -->
         <div class="actions">
           <button mat-raised-button color="primary" (click)="isEditing = true">✏️ Modifier</button>
           <button mat-raised-button color="warn" (click)="deleteUtilisateur()">🗑 Supprimer</button>
 
-          <!-- 🔑 Lien vers changement de mot de passe -->
+          <!-- 🔑 Cas 1 : l’utilisateur connecté est sur son propre profil -->
           <button
             *ngIf="isCurrentUser()"
             mat-stroked-button
             color="accent"
             (click)="goToChangePassword()">
-            🔑 Changer le mot de passe
+            🧍 Changer mon mot de passe
+          </button>
+
+          <!-- 👑 Cas 2 : admin sur un autre utilisateur -->
+          <button
+            *ngIf="isAdmin() && !isCurrentUser()"
+            mat-stroked-button
+            color="primary"
+            (click)="openChangePasswordDialog()">
+            🔑 Changer le mot de passe de cet utilisateur
           </button>
         </div>
       </div>

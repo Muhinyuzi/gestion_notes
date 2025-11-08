@@ -151,16 +151,31 @@
   background-color: #d32f2f;
 }
 
-/* 🔑 Bouton changer mot de passe */
-.actions button[color="accent"] {
+/* 🔑 Boutons de changement de mot de passe */
+.actions button[color="accent"],
+.actions .btn-change-self,
+.actions .btn-change-admin {
   border: 1px solid #2563eb;
-  color: #2563eb;
-  background: white;
   font-weight: 500;
+  background: white;
+  color: #2563eb;
+  transition: all 0.2s ease;
 }
 
-.actions button[color="accent"]:hover {
+.actions button[color="accent"]:hover,
+.actions .btn-change-self:hover,
+.actions .btn-change-admin:hover {
   background: #2563eb;
+  color: white;
+}
+
+/* 👑 Cas admin : changement pour un autre utilisateur */
+.actions .btn-change-admin {
+  border: 1px solid #1e40af;
+  color: #1e40af;
+}
+.actions .btn-change-admin:hover {
+  background: #1e40af;
   color: white;
 }
 

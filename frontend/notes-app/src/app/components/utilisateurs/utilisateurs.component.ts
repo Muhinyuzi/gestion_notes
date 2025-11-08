@@ -3,6 +3,8 @@ import { UtilisateurService, Utilisateur, UtilisateursResponse } from '../../ser
 import { ToastService } from '../../services/toast.service';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from '../shared/confirm-dialog/confirm-dialog.component';
+import { ChangePasswordComponent } from '../utilisateurs/account/change-password/change-password.component';
+import { AuthService } from '../../services/auth.service';
 import { Location } from '@angular/common';
 import { Router } from '@angular/router';
 
@@ -36,7 +38,8 @@ export class UtilisateursComponent implements OnInit {
     private dialog: MatDialog,
     private location: Location,
     private toast: ToastService,
-    private router: Router
+    private router: Router,
+    private auth: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -60,7 +63,6 @@ export class UtilisateursComponent implements OnInit {
     );
   }
 
-  // Appliquer les filtres (Angular met automatiquement à jour filteredUsers) 
   applyFilters(): void {}
 
   loadUsers(): void {
@@ -99,26 +101,21 @@ export class UtilisateursComponent implements OnInit {
   }
 
   addUtilisateur() {
-  if (!this.newUser.nom || !this.newUser.email || !this.newUser.mot_de_passe) {
-    this.toast.show("❗ Nom, email et mot de passe requis", "error");
-    return;
+    if (!this.newUser.nom || !this.newUser.email || !this.newUser.mot_de_passe) {
+      this.toast.show("❗ Nom, email et mot de passe requis", "error");
+      return;
+    }
+
+    this.api.createUtilisateur(this.newUser).subscribe({
+      next: (user) => {
+        this.resetForm();
+        this.isAdding = false;
+        this.toast.show("📧 Email d'activation envoyé !");
+        window.location.href = `/email-sent?email=${user.email}`;
+      },
+      error: () => this.toast.show("❌ Erreur de création", "error")
+    });
   }
-
-  this.api.createUtilisateur(this.newUser).subscribe({
-    next: (user) => {
-
-      // ✅ Redirection vers page "Email envoyé"
-      this.resetForm();
-      this.isAdding = false;
-
-      this.toast.show("📧 Email d'activation envoyé !");
-
-      // Redirection avec email en query param
-      window.location.href = `/email-sent?email=${user.email}`;
-    },
-    error: () => this.toast.show("❌ Erreur de création", "error")
-  });
-}
 
   editUtilisateur(user: Utilisateur) {
     this.selectedUser = { ...user, mot_de_passe: "" };
@@ -185,6 +182,51 @@ export class UtilisateursComponent implements OnInit {
     });
   }
 
+  /** 👤 Vérifie si l’utilisateur affiché = utilisateur connecté */
+  isCurrentUser(user: Utilisateur): boolean {
+    const current = this.auth.getUser();
+    return !!(current && user && current.id === user.id);
+  }
+
+  /** 🔐 Ouvre la modale pour changer le mot de passe */
+  openChangePasswordDialog(user: Utilisateur): void {
+    if (!user.id) return;
+
+    const isSelf = this.isCurrentUser(user);
+
+    const dialogRef = this.dialog.open(ChangePasswordComponent, {
+      width: '420px',
+      data: { adminMode: !isSelf, userId: user.id },
+      panelClass: 'custom-dialog-container'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result === 'success') {
+        this.toast.show(
+          isSelf
+            ? "✅ Votre mot de passe a été changé avec succès."
+            : `✅ Mot de passe de ${user.nom} mis à jour.`,
+          'success'
+        );
+      }
+    });
+  }
+
+  /** 🔑 Ouvre la modale pour changer son propre mot de passe */
+  goToChangePassword(): void {
+    const dialogRef = this.dialog.open(ChangePasswordComponent, {
+      width: '420px',
+      data: { adminMode: false },
+      panelClass: 'custom-dialog-container'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result === 'success') {
+        this.toast.show('✅ Votre mot de passe a été changé avec succès.', 'success');
+      }
+    });
+  }
+
   resetForm() {
     this.selectedUser = { nom: '', email: '', mot_de_passe: '', equipe: '', adresse: '', telephone: '', type: '' };
     this.newUser = { nom: '', email: '', mot_de_passe: '', equipe: '', adresse: '', telephone: '', type: '' };
@@ -193,9 +235,4 @@ export class UtilisateursComponent implements OnInit {
   goBack() {
     this.location.back();
   }
-
-  goToChangePassword() {
-    this.router.navigate(['/change-password']);
-  }
-
 }

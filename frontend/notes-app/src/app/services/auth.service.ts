@@ -15,10 +15,10 @@ export class AuthService {
 
   constructor(private router: Router, private http: HttpClient) {}
 
+  /* 🔑 Gestion du token et utilisateur */
   setToken(token: string): void {
     localStorage.setItem(this.TOKEN_KEY, token);
     this._isLoggedIn$.next(true);
-    console.log('[AuthService] setToken');
   }
 
   getToken(): string | null {
@@ -38,10 +38,11 @@ export class AuthService {
     return this.getUser()?.id ?? null;
   }
 
-  getUserName(): number | null {
-    return this.getUser()?.name ?? null;
+  getUserName(): string | null {
+    return this.getUser()?.nom ?? null;
   }
 
+  /* 🚪 Login */
   login(email: string, password: string): Observable<any> {
     const body = new URLSearchParams();
     body.set('username', email);
@@ -53,60 +54,75 @@ export class AuthService {
       tap(res => {
         if (res && res.access_token) {
           this.setToken(res.access_token);
-          if (res.user) {
-            this.setUser(res.user);
-          }
+          if (res.user) this.setUser(res.user);
         }
       })
     );
   }
 
-  // ✅ Renvoi de l'email d’activation
+  /* 🔁 Renvoi de l'email d’activation */
   resendActivation(email: string) {
     return this.http.post(`${this.API_URL}/auth/resend-activation`, { email });
   }
 
+  /* 🧠 État de connexion */
   isLoggedIn(): boolean {
     return this._isLoggedIn$.value;
   }
 
+  /* 🚪 Déconnexion */
   logout(): void {
-    console.log('[AuthService] logout() called');
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem('auth_user');
     this._isLoggedIn$.next(false);
     this.router.navigate(['/login']);
   }
+
+  /* 🔐 Mot de passe oublié / réinitialisation */
   forgotPassword(email: string) {
     return this.http.post(`${this.API_URL}/auth/forgot-password`, { email });
   }
 
   resetPassword(token: string, newPassword: string) {
     return this.http.post(`${this.API_URL}/auth/reset-password`, {
-    token,
-    new_password: newPassword
-  });
+      token,
+      new_password: newPassword
+    });
   }
 
+  /* ✅ Activation de compte */
   activateAccount(token: string) {
-  return this.http.get(`${this.API_URL}/auth/activate?token=${token}`);
-}
+    return this.http.get(`${this.API_URL}/auth/activate?token=${token}`);
+  }
 
-/**
- * 🔐 Change le mot de passe de l'utilisateur connecté
- */
-changePassword(oldPassword: string, newPassword: string): Observable<any> {
-  const token = this.getToken(); // ✅ cohérent avec setToken/getToken
+  /* 👤 Changement de mot de passe (utilisateur connecté) */
+  changePassword(oldPassword: string, newPassword: string): Observable<any> {
+    const token = this.getToken();
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
 
-  const headers = new HttpHeaders({
-    Authorization: `Bearer ${token}`,
-    'Content-Type': 'application/json'
-  });
+    return this.http.patch(`${this.API_URL}/auth/change-password`, {
+      old_password: oldPassword,
+      new_password: newPassword
+    }, { headers });
+  }
 
-  return this.http.patch(`${this.API_URL}/auth/change-password`, {
-    old_password: oldPassword,
-    new_password: newPassword
-  }, { headers });
-}
+  /* 👑 Changement de mot de passe par admin */
+  adminChangePassword(userId: number, newPassword: string): Observable<any> {
+    const token = this.getToken();
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
 
+    return this.http.patch(`${this.API_URL}/auth/admin/change-password/${userId}`, {
+      new_password: newPassword
+    }, { headers });
+  }
+  isAdmin(): boolean {
+    const user = this.getUser();
+    return user && user.type?.toLowerCase() === 'admin';
+  }
 }

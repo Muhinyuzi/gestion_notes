@@ -9,6 +9,10 @@ from app.routers import reset_password
 
 
 
+# 🔧 Force le mode production
+os.environ["TESTING"] = "0"
+
+
 # Routers
 from app.routers import utilisateurs, notes, commentaires, login, eleves, router_password_change
 

@@ -1,9 +1,9 @@
 from sqlalchemy.orm import Session, joinedload
-from fastapi import HTTPException, UploadFile, BackgroundTasks
+from fastapi import HTTPException, UploadFile, BackgroundTasks, status
 from fastapi.responses import FileResponse
 from app.models.utilisateur import Utilisateur
 from app.schemas.schemas import UtilisateurOut, UtilisateurDetailOut
-from app.emails import send_activation_email
+from app.emails import send_activation_email, send_registration_email
 from app.config import settings
 from passlib.context import CryptContext
 from jose import jwt
@@ -37,14 +37,24 @@ def _user_id(user):
 # 🔸 CRÉATION UTILISATEUR
 # ======================================================
 def create_user_service(user_data, db: Session, current_user, background_tasks: BackgroundTasks):
+    # 🧩 Vérifie que seul un admin peut créer un utilisateur
     if not _is_admin(current_user):
-        raise HTTPException(status_code=403, detail="Seuls les administrateurs peuvent créer des utilisateurs.")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Seuls les administrateurs peuvent créer des utilisateurs."
+        )
 
-    # Vérifie si l'email existe déjà
+    # 📧 Vérifie si l'email existe déjà
     if db.query(Utilisateur).filter(Utilisateur.email == user_data.email).first():
-        raise HTTPException(status_code=400, detail="Un utilisateur avec cet email existe déjà.")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Un utilisateur avec cet email existe déjà."
+        )
 
+    # 🔐 Hash du mot de passe
     hashed_password = pwd_context.hash(user_data.mot_de_passe or "changeme123")
+
+    # 🆕 Création de l’utilisateur
     new_user = Utilisateur(
         nom=user_data.nom,
         email=user_data.email,
@@ -57,11 +67,12 @@ def create_user_service(user_data, db: Session, current_user, background_tasks: 
         date_embauche=user_data.date_embauche,
         is_active=False,
     )
+
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
 
-    # ✅ Génère un token d’activation pour les tests
+    # 🎟️ Génère un token d’activation unique
     token = jwt.encode(
         {
             "sub": new_user.email,
@@ -72,9 +83,29 @@ def create_user_service(user_data, db: Session, current_user, background_tasks: 
         algorithm="HS256",
     )
 
-    # ✅ Envoi email d’activation avec token
-    background_tasks.add_task(send_activation_email, new_user.email, new_user.nom, token)
+    # 📬 Envoi des e-mails en arrière-plan
+    try:
+        # 👋 Email de bienvenue (avec mot de passe initial)
+        background_tasks.add_task(
+            send_registration_email,
+            new_user.email,
+            new_user.nom,
+            user_data.mot_de_passe or "changeme123"
+        )
 
+        # 🔓 Email d’activation
+        background_tasks.add_task(
+            send_activation_email,
+            new_user.email,
+            new_user.nom,
+            token
+        )
+        print(f"📧 Emails planifiés pour {new_user.email} (bienvenue + activation)")
+
+    except Exception as e:
+        print(f"⚠️ Erreur lors de la planification des emails : {e}")
+
+    # ✅ Retourne l'utilisateur créé
     return UtilisateurOut.model_validate(new_user)
 
 

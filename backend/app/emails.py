@@ -38,6 +38,7 @@ conf = ConnectionConfig(
 # 🧩 Helper : Envoi sécurisé (désactivé pendant les tests)
 # -------------------------------------------------------
 async def _safe_send_email(message: MessageSchema, template_name: str):
+    print(f"📨 _safe_send_email appelé → {message.subject} ({message.recipients})")
     """Empêche tout envoi SMTP réel en mode test ou CI/CD."""
     if IS_TESTING:
         log_line = f"[TEST MODE] Email simulé → {message.recipients[0]} | Sujet: {message.subject}"
@@ -50,7 +51,7 @@ async def _safe_send_email(message: MessageSchema, template_name: str):
             f.write(log_line + "\n")
 
         return
-
+    print(f"🚀 Envoi réel d’un email à {message.recipients} via {conf.MAIL_SERVER}:{conf.MAIL_PORT}")
     fm = FastMail(conf)
     await fm.send_message(message, template_name=template_name)
 

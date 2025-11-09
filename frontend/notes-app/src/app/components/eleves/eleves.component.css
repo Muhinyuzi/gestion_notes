@@ -9,7 +9,7 @@
   border-radius: 16px;
   box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
   font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
-  color: #2c3e50;
+  color: #1e293b;
 }
 
 /******************************************
@@ -132,6 +132,7 @@
 .actions-buttons {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 button {
@@ -170,50 +171,156 @@ button.btn-danger:hover { background: #dc2626; }
 }
 
 /******************************************
- ✅ MODALE
+ ✅ MODALE (Assignation / Désassignation)
 ******************************************/
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(30, 41, 59, 0.6);
+  background: rgba(30, 41, 59, 0.55);
+  backdrop-filter: blur(3px);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 999;
+  z-index: 9999;
+  animation: fadeIn 0.25s ease-out;
 }
 
 .modal {
   background: #ffffff;
-  border-radius: 12px;
-  padding: 25px 30px;
-  max-width: 400px;
+  border-radius: 14px;
+  padding: 25px 28px 20px;
+  max-width: 420px;
   width: 90%;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.2);
-  text-align: center;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  animation: scaleIn 0.25s ease-out;
+  text-align: left;
+  border: 1px solid #e5e7eb;
 }
 
+/* 🧩 Titre */
 .modal h3 {
-  margin-bottom: 20px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modal h3::before {
+  content: "📘";
   font-size: 1.2rem;
-  color: #1e293b;
+  line-height: 1;
+}
+
+/* 🧩 Contenu */
+.modal p {
+  margin: 0 0 16px;
+  font-size: 0.975rem;
+  line-height: 1.5;
+  color: #334155;
 }
 
 .modal select {
   width: 100%;
-  padding: 8px 12px;
+  padding: 10px 12px;
   margin-bottom: 20px;
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid #cbd5e1;
   background: #f8fafc;
+  color: #0f172a;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
+.modal select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+}
+
+/* 🧩 Boutons */
 .modal-actions {
   display: flex;
+  justify-content: flex-end;
   gap: 12px;
 }
 
+.modal .btn {
+  border: none;
+  border-radius: 8px;
+  padding: 9px 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modal .btn-primary {
+  background: #16a34a;
+  color: #fff;
+}
+
+.modal .btn-primary:hover {
+  background: #15803d;
+}
+
+.modal .btn-secondary {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.modal .btn-secondary:hover {
+  background: #cbd5e1;
+}
+
 /******************************************
- 📱 RESPONSIVE TABLE
+ ❌ MODE DANGER (Désassignation)
+******************************************/
+.modal.danger {
+  border: 1px solid #fecaca;
+  background: #fff7ed;
+  box-shadow: 0 20px 50px rgba(239, 68, 68, 0.25);
+}
+
+.modal.danger h3 {
+  color: #991b1b;
+}
+
+.modal.danger h3::before {
+  content: "⚠️";
+}
+
+.modal.danger p {
+  color: #7c2d12;
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.modal.danger .btn-primary {
+  background: #ef4444;
+  color: #fff;
+}
+
+.modal.danger .btn-primary:hover {
+  background: #dc2626;
+}
+
+/******************************************
+ 🎬 Animations
+******************************************/
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95) translateY(10px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/******************************************
+ 📱 Responsive
 ******************************************/
 @media (max-width: 768px) {
   .btn-back {
@@ -248,5 +355,14 @@ button.btn-danger:hover { background: #dc2626; }
 
   .actions-buttons {
     flex-direction: column;
+  }
+
+  .modal-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .modal .btn {
+    width: 100%;
   }
 }

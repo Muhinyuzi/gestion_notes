@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Location } from '@angular/common';
 import { EleveService, Eleve } from '../../../services/eleve.service';
 import { NoteService, Note } from '../../../services/note.service';
 import { UtilisateurService } from '../../../services/utilisateur.service';
-import { Location } from '@angular/common';
+import { DialogService } from '../../../services/dialog.service';
 
 @Component({
   selector: 'app-eleve-detail',
@@ -37,42 +38,44 @@ export class EleveDetailComponent implements OnInit {
     private eleveService: EleveService,
     private noteService: NoteService,
     private utilisateurService: UtilisateurService,
-    private location: Location,
+    private dialogService: DialogService,
+    private location: Location
   ) {}
 
+  // ===========================================================
+  // 🔹 Initialisation
+  // ===========================================================
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
     if (id) {
       this.loadEleve(id);
-      this.loadHistory(id);
+      this.loadNotes();
       this.loadUsers();
-      this.loadNotes(); // ✅ même logique que la liste
+      this.loadHistory(id);
     } else {
       this.errorMessage = 'ID élève non valide.';
     }
   }
 
-  // ===============================
-  // 🔹 Chargements
-  // ===============================
-
+  // ===========================================================
+  // 🔹 Chargements de données
+  // ===========================================================
   loadEleve(id: number): void {
     this.isLoading = true;
     this.eleveService.getEleveById(id).subscribe({
-      next: (data) => {
+      next: data => {
         this.eleve = data;
         this.isLoading = false;
 
-        // Charger la note associée si présente
         if (data.note_id) {
           this.noteService.getNoteById(data.note_id).subscribe({
-            next: (n) => this.note = n,
-            error: (err) => console.error('Erreur chargement note', err)
+            next: n => this.note = n,
+            error: err => console.error('Erreur chargement note', err)
           });
         }
       },
-      error: (err) => {
-        this.errorMessage = 'Erreur lors du chargement de l’élève.';
+      error: err => {
+        this.errorMessage = "Erreur lors du chargement de l'élève.";
         this.isLoading = false;
         console.error(err);
       }
@@ -81,14 +84,14 @@ export class EleveDetailComponent implements OnInit {
 
   loadNotes(): void {
     this.noteService.getNotes().subscribe({
-      next: data => this.notes = data.notes,
+      next: data => this.notes = data.notes || data,
       error: err => console.error('Erreur chargement notes', err)
     });
   }
 
   loadUsers(): void {
     this.utilisateurService.getUtilisateurs().subscribe({
-      next: data => this.users = data.users,
+      next: data => this.users = data.users || data,
       error: err => console.error('Erreur chargement utilisateurs', err)
     });
   }
@@ -103,28 +106,28 @@ export class EleveDetailComponent implements OnInit {
       error: err => {
         this.errorHistory = "Erreur lors du chargement de l’historique.";
         this.loadingHistory = false;
+        console.error(err);
       }
     });
   }
 
-  // ===============================
+  // ===========================================================
   // 🔹 Helpers
-  // ===============================
-
+  // ===========================================================
   getUserName(userId: number): string {
+    if (!this.users?.length) return 'Utilisateur inconnu';
     const user = this.users.find(u => u.id === userId);
-    return user ? `${user.nom} (${user.type})` : `Utilisateur #${userId}`;
+    return user ? `${user.nom} (${user.type})` : `#${userId}`;
   }
 
   getChangeKeys(changes: any): string[] {
-  if (!changes || typeof changes !== 'object') return [];
-  return Object.keys(changes);
-}
+    if (!changes || typeof changes !== 'object') return [];
+    return Object.keys(changes);
+  }
 
-  // ===============================
-  // 🔹 Actions élève
-  // ===============================
-
+  // ===========================================================
+  // 🔹 Actions principales
+  // ===========================================================
   editEleve(): void {
     if (this.eleve?.id)
       this.router.navigate(['/eleves/edit', this.eleve.id]);
@@ -132,39 +135,35 @@ export class EleveDetailComponent implements OnInit {
 
   deleteEleve(): void {
     if (!this.eleve?.id) return;
-    if (!confirm(`Supprimer ${this.eleve.prenom} ${this.eleve.nom} ?`)) return;
 
-    this.eleveService.deleteEleve(this.eleve.id).subscribe({
-      next: () => this.router.navigate(['/eleves']),
-      error: err => {
-        alert('Erreur lors de la suppression');
-        console.error(err);
+    this.dialogService.confirm(
+      "Confirmation de suppression",
+      `Voulez-vous vraiment supprimer ${this.eleve.prenom} ${this.eleve.nom} ?`
+    ).subscribe(result => {
+      if (result) {
+        this.eleveService.deleteEleve(this.eleve?.id!).subscribe({
+          next: () => this.router.navigate(['/eleves']),
+          error: err => {
+            this.dialogService.confirm(
+              "Erreur",
+              "Une erreur est survenue lors de la suppression."
+            );
+            console.error(err);
+          }
+        });
       }
     });
   }
 
-  // ===============================
-  // 🔹 Modale assignation / désassignation (même logique que la liste)
-  // ===============================
-
-openAssignModal(eleve: Eleve) {
-  this.modalEleve = eleve;
-  this.modalMode = 'assign';
-  this.selectedNoteId = null;
-
-  // ⚙️ Charger les notes si elles ne sont pas encore prêtes
-  if (this.notes.length === 0) {
-    this.noteService.getNotes().subscribe({
-      next: data => {
-        this.notes = data.notes;  // ou data si ton backend renvoie un tableau simple
-        this.showNoteModal = true;
-      },
-      error: err => console.error('Erreur chargement notes', err)
-    });
-  } else {
+  // ===========================================================
+  // 🔹 Gestion des modales
+  // ===========================================================
+  openAssignModal(eleve: Eleve) {
+    this.modalEleve = eleve;
+    this.modalMode = 'assign';
+    this.selectedNoteId = null;
     this.showNoteModal = true;
   }
-}
 
   openDeassignModal(eleve: Eleve) {
     this.modalEleve = eleve;
@@ -182,18 +181,11 @@ openAssignModal(eleve: Eleve) {
       this.eleveService.assignNoteToEleve(this.modalEleve.id!, this.selectedNoteId).subscribe({
         next: updated => {
           this.eleve = updated;
-
-          // Rafraîchir la note affichée
-          if (updated.note_id) {
-            const n = this.notes.find(n => n.id === updated.note_id);
-            this.note = n ?? undefined;
-          }
-
+          this.note = this.notes.find(n => n.id === updated.note_id);
           this.closeNoteModal();
         },
         error: err => console.error('Erreur assignation note', err)
       });
-
     } else if (this.modalMode === 'deassign') {
       this.eleveService.unassignNoteFromEleve(this.modalEleve.id!).subscribe({
         next: updated => {

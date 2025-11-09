@@ -46,7 +46,7 @@ export class UtilisateursComponent implements OnInit {
     this.loadUsers();
   }
 
-  // ✅ Form bind (important car ton HTML l'utilise)
+  // ✅ Pour liaison formulaire
   get formUser(): Utilisateur {
     return this.isEditing ? this.selectedUser : this.newUser;
   }
@@ -55,7 +55,10 @@ export class UtilisateursComponent implements OnInit {
     return Math.ceil(this.total / this.limit);
   }
 
+  // ✅ Sécurisé contre undefined + filtres dynamiques
   get filteredUsers(): Utilisateur[] {
+    if (!this.utilisateurs || this.utilisateurs.length === 0) return [];
+
     return this.utilisateurs.filter(u =>
       u.nom?.toLowerCase().includes(this.filterNom.toLowerCase()) &&
       u.email?.toLowerCase().includes(this.filterEmail.toLowerCase()) &&
@@ -63,15 +66,18 @@ export class UtilisateursComponent implements OnInit {
     );
   }
 
-  applyFilters(): void {}
+  // 🔍 Réapplique les filtres
+  applyFilters(): void {
+    this.page = 1;
+  }
 
+  // 📦 Charge la liste des utilisateurs
   loadUsers(): void {
     this.isLoading = true;
-
     this.api.getUtilisateurs(this.page, this.limit).subscribe({
       next: (res: UtilisateursResponse) => {
-        this.utilisateurs = res.users;
-        this.total = res.total;
+        this.utilisateurs = res.users ?? [];
+        this.total = res.total ?? 0;
         this.isLoading = false;
       },
       error: () => {
@@ -81,26 +87,28 @@ export class UtilisateursComponent implements OnInit {
     });
   }
 
-  goToPage(page: number) {
+  // 🔄 Pagination
+  goToPage(page: number): void {
     if (page < 1 || page > this.totalPages) return;
     this.page = page;
     this.loadUsers();
   }
 
-  startAdding() {
+  // ➕ Ajout utilisateur
+  startAdding(): void {
     this.resetForm();
     this.isAdding = true;
     this.isEditing = false;
     this.toast.show("➕ Mode ajout activé");
   }
 
-  cancelForm() {
+  cancelForm(): void {
     this.resetForm();
     this.isAdding = false;
     this.isEditing = false;
   }
 
-  addUtilisateur() {
+  addUtilisateur(): void {
     if (!this.newUser.nom || !this.newUser.email || !this.newUser.mot_de_passe) {
       this.toast.show("❗ Nom, email et mot de passe requis", "error");
       return;
@@ -117,14 +125,16 @@ export class UtilisateursComponent implements OnInit {
     });
   }
 
-  editUtilisateur(user: Utilisateur) {
+  // ✏️ Edition utilisateur
+  editUtilisateur(user: Utilisateur): void {
     this.selectedUser = { ...user, mot_de_passe: "" };
     this.isEditing = true;
     this.isAdding = false;
     this.toast.show("✏️ Mode édition activé");
   }
 
-  updateUtilisateur() {
+  // 💾 Sauvegarde des modifications
+  updateUtilisateur(): void {
     if (!this.selectedUser.id) return;
 
     const original = this.utilisateurs.find(u => u.id === this.selectedUser.id);
@@ -144,7 +154,6 @@ export class UtilisateursComponent implements OnInit {
     if (!updatedData.mot_de_passe) delete updatedData.mot_de_passe;
 
     this.isLoading = true;
-
     this.api.updateUtilisateur(this.selectedUser.id, updatedData).subscribe({
       next: (updated) => {
         const index = this.utilisateurs.findIndex(u => u.id === updated.id);
@@ -162,7 +171,8 @@ export class UtilisateursComponent implements OnInit {
     });
   }
 
-  deleteUtilisateur(user: Utilisateur) {
+  // 🗑️ Suppression utilisateur
+  deleteUtilisateur(user: Utilisateur): void {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: "350px",
       data: { message: `Supprimer ${user.nom} ?` }
@@ -227,12 +237,13 @@ export class UtilisateursComponent implements OnInit {
     });
   }
 
-  resetForm() {
+  // ♻️ Réinitialise les formulaires
+  resetForm(): void {
     this.selectedUser = { nom: '', email: '', mot_de_passe: '', equipe: '', adresse: '', telephone: '', type: '' };
     this.newUser = { nom: '', email: '', mot_de_passe: '', equipe: '', adresse: '', telephone: '', type: '' };
   }
 
-  goBack() {
+  goBack(): void {
     this.location.back();
   }
 }

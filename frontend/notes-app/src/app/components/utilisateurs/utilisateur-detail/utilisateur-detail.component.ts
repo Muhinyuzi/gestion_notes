@@ -62,7 +62,7 @@ export class UtilisateurDetailComponent implements OnInit {
   /** ✏️ Sauvegarde du profil */
   updateUtilisateur(): void {
     if (!this.utilisateur) return;
-    this.api.updateUtilisateur(this.utilisateur.id, this.utilisateur).subscribe({
+    this.api.updateUtilisateur(this.utilisateur.id!, this.utilisateur).subscribe({
       next: (updated) => {
         this.utilisateur = updated as UtilisateurDetailOut;
         this.isEditing = false;
@@ -83,7 +83,7 @@ export class UtilisateurDetailComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result && this.utilisateur) {
-        this.api.deleteUtilisateur(this.utilisateur.id).subscribe({
+        this.api.deleteUtilisateur(this.utilisateur.id!).subscribe({
           next: () => {
             this.toast.show("✅ Utilisateur supprimé", "success");
             this.router.navigate(['/utilisateurs']);

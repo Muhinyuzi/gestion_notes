@@ -89,7 +89,11 @@
 
         <mat-form-field appearance="outline">
           <mat-label>Équipe</mat-label>
-          <input matInput [(ngModel)]="utilisateur.equipe" name="equipe">
+            <input matInput [(ngModel)]="utilisateur.equipe" 
+             name="equipe" 
+                 readonly
+                 disabled
+            >
         </mat-form-field>
 
         <mat-form-field appearance="outline">

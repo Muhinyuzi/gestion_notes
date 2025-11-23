@@ -13,6 +13,7 @@ def test_login(client):
     })
     assert res.status_code == 200
     user = res.json()
+    user = user.get("data", user)
     assert user["is_active"] is False
 
     # Tentative de login → doit échouer (compte non activé)

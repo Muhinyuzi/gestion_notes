@@ -1,8 +1,7 @@
-
-
+// src/app/services/utilisateur.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 
 // ---------------- TYPES ----------------
 
@@ -17,17 +16,17 @@ export interface Utilisateur {
   telephone?: string;
   adresse?: string;
   date_embauche?: string;
+  is_active?: boolean;
+  avatar_url?: string;
 }
 
 export interface UtilisateurDetailOut extends Utilisateur {
-  id: number;
   date?: string;
-  avatar_url: string;
-  notes: Note[];
-  commentaires: Commentaire[];
+  notes?: Note[];
+  commentaires?: Commentaire[];
 }
 
-export interface UtilisateursResponse {
+export interface PaginatedUsers {
   total: number;
   page: number;
   limit: number;
@@ -83,44 +82,50 @@ export class UtilisateurService {
   constructor(private http: HttpClient) {}
 
   // ---------------- UTILISATEURS ----------------
-  getUtilisateurs(page: number = 1, limit: number = 10): Observable<UtilisateursResponse> {
-    let params = new HttpParams()
+
+  getUtilisateurs(page: number = 1, limit: number = 10): Observable<PaginatedUsers> {
+    const params = new HttpParams()
       .set('page', page.toString())
       .set('limit', limit.toString());
-    return this.http.get<UtilisateursResponse>(`${this.baseUrl}utilisateurs/`, { params });
+
+    // ✅ Le backend renvoie {"status": "success", "data": {...}}
+    return this.http.get<{ status: string; data: PaginatedUsers }>(`${this.baseUrl}utilisateurs/`, { params })
+      .pipe(map(res => res.data));
   }
 
   createUtilisateur(user: Utilisateur): Observable<Utilisateur> {
-    return this.http.post<Utilisateur>(`${this.baseUrl}utilisateurs/`, user);
+    return this.http.post<{ status: string; data: Utilisateur }>(`${this.baseUrl}utilisateurs/`, user)
+      .pipe(map(res => res.data));
   }
 
   getUtilisateurDetail(id: number): Observable<UtilisateurDetailOut> {
-    if (id == null) throw new Error('ID utilisateur manquant');
-    return this.http.get<UtilisateurDetailOut>(`${this.baseUrl}utilisateurs/${id}/`);
+    return this.http.get<{ status: string; data: UtilisateurDetailOut }>(`${this.baseUrl}utilisateurs/${id}`)
+      .pipe(map(res => res.data));
   }
 
   updateUtilisateur(userId: number, userData: Partial<Utilisateur>): Observable<Utilisateur> {
-    if (userId == null) throw new Error('ID utilisateur manquant');
-    return this.http.put<Utilisateur>(`${this.baseUrl}utilisateurs/${userId}/`, userData);
+    return this.http.put<{ status: string; data: Utilisateur }>(`${this.baseUrl}utilisateurs/${userId}`, userData)
+      .pipe(map(res => res.data));
   }
 
-  deleteUtilisateur(userId: number): Observable<void> {
-    if (userId == null) throw new Error('ID utilisateur manquant');
-    return this.http.delete<void>(`${this.baseUrl}utilisateurs/${userId}/`);
+  deleteUtilisateur(userId: number): Observable<string> {
+    return this.http.delete<{ status: string; data: { message: string } }>(`${this.baseUrl}utilisateurs/${userId}`)
+      .pipe(map(res => res.data.message));
   }
+
+  // ---------------- AVATARS ----------------
 
   uploadAvatar(userId: number, formData: FormData) {
-  return this.http.post(`${this.baseUrl}utilisateurs/${userId}/avatar`, formData);
-}
-getAvatar(userId: number): Observable<Blob> {
-  if (userId == null) throw new Error('ID utilisateur manquant');
-  return this.http.get(`${this.baseUrl}utilisateurs/${userId}/avatar`, { responseType: 'blob' });
-}
+    return this.http.post<{ status: string; data: any }>(`${this.baseUrl}utilisateurs/${userId}/avatar`, formData)
+      .pipe(map(res => res.data));
+  }
 
-// URL de fallback par défaut côté backend
-getDefaultAvatarUrl() {
-  return `${this.baseUrl}avatars/default`;
-}
+  getAvatar(userId: number): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}utilisateurs/${userId}/avatar`, { responseType: 'blob' });
+  }
 
-
+  // URL de fallback par défaut
+  getDefaultAvatarUrl() {
+    return `${this.baseUrl}avatars/default`;
+  }
 }

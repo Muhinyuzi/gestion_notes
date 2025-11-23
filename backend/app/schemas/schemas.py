@@ -1,13 +1,13 @@
 from __future__ import annotations
-from pydantic import BaseModel, EmailStr
-from typing import Optional, List, Dict
+from pydantic import BaseModel, EmailStr, Field
+from typing import Optional, List, Dict, Generic, TypeVar
 from datetime import datetime
+from pydantic.generics import GenericModel
 
 # ======================================================
 # CONFIG GLOBALE — Compatible Pydantic v2+
 # ======================================================
 BaseModel.model_config = {"from_attributes": True}
-
 
 # ======================================================
 # UTILISATEUR (Employé)
@@ -15,8 +15,11 @@ BaseModel.model_config = {"from_attributes": True}
 class UtilisateurBase(BaseModel):
     nom: str
     email: EmailStr
-    equipe: Optional[str] = None
-    type: Optional[str] = None
+
+    # 🧩 Valeurs par défaut cohérentes avec le modèle SQLAlchemy
+    equipe: Optional[str] = Field(default="Aucune", description="Équipe ou département de l'utilisateur")
+    type: Optional[str] = Field(default="user", description="Rôle de l'utilisateur (admin, manager, user...)")
+
     poste: Optional[str] = None
     telephone: Optional[str] = None
     adresse: Optional[str] = None
@@ -24,7 +27,7 @@ class UtilisateurBase(BaseModel):
 
 
 class UtilisateurCreate(UtilisateurBase):
-    mot_de_passe: Optional[str] = None
+    mot_de_passe: Optional[str] = Field(default=None, description="Mot de passe (sera hashé)")
 
 
 class UtilisateurOut(UtilisateurBase):
@@ -171,13 +174,51 @@ class EmailRequest(BaseModel):
 
 
 # ======================================================
-# RÉSOLUTION DES RÉFÉRENCES CIRCULAIRES
+# 🔁 RÉSOLUTION DES RÉFÉRENCES CIRCULAIRES — Version propre et complète
 # ======================================================
-NoteDetailOut.model_rebuild()
-UtilisateurDetailOut.model_rebuild()
-CommentaireOut.model_rebuild()
-NoteOut.model_rebuild()
-EleveOut.model_rebuild()
-EleveHistoryOut.model_rebuild()
-EleveUpdate.model_rebuild()
 
+# Les modèles Pydantic s’utilisent souvent entre eux (ex: NoteOut → UtilisateurOut → NoteOut)
+# Ces appels garantissent que toutes les références croisées sont bien reconstruites après définition.
+
+FichierNoteBase.model_rebuild()
+FichierNoteOut.model_rebuild()
+
+UtilisateurBase.model_rebuild()
+UtilisateurCreate.model_rebuild()
+UtilisateurOut.model_rebuild()
+UtilisateurDetailOut.model_rebuild()
+
+NoteBase.model_rebuild()
+NoteCreate.model_rebuild()
+NoteOut.model_rebuild()
+NoteDetailOut.model_rebuild()
+
+CommentaireBase.model_rebuild()
+CommentaireCreate.model_rebuild()
+CommentaireOut.model_rebuild()
+
+EleveBase.model_rebuild()
+EleveCreate.model_rebuild()
+EleveUpdate.model_rebuild()
+EleveOut.model_rebuild()
+EleveHistoryBase.model_rebuild()
+EleveHistoryOut.model_rebuild()
+
+EmailRequest.model_rebuild()
+
+# ======================================================
+# ✅ ENVELOPPE DE RÉPONSE GÉNÉRIQUE
+# ======================================================
+T = TypeVar("T")
+
+class ResponseModel(GenericModel, Generic[T]):
+    """Format de réponse uniforme pour toutes les routes API."""
+    status: str = Field(..., example="success")
+    data: Optional[T] = None
+
+
+class PaginatedUsers(BaseModel):
+    total: int
+    page: int
+    limit: int
+    users: List[UtilisateurOut]    

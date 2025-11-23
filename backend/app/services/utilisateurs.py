@@ -185,7 +185,13 @@ def update_user_service(user_id: int, updated_data, db: Session, current_user):
     for field, value in data.items():
         setattr(user, field, value)
 
-    db.commit()
+    try:
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        if "UNIQUE constraint failed" in str(e):
+            raise HTTPException(status_code=400, detail="Un utilisateur avec cet email existe déjà.")
+        raise
     db.refresh(user)
     return UtilisateurOut.model_validate(user)
 
@@ -214,11 +220,29 @@ async def upload_avatar_service(user_id: int, file: UploadFile, db: Session):
     if not user:
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé.")
 
-    filename = f"user_{user_id}_{file.filename}"
-    file_path = os.path.join(AVATAR_DIR, filename)
+    # 🔒 Vérifie l'extension
+    ext = file.filename.split(".")[-1].lower()
+    allowed_extensions = {"png", "jpg", "jpeg", "gif"}
+    if ext not in allowed_extensions:
+        raise HTTPException(
+            status_code=400,
+            detail="Format de fichier non autorisé (jpg, jpeg, png, gif uniquement)."
+        )
 
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+    # 🔒 Vérifie la taille
+    contents = await file.read()
+    max_size_mb = 2
+    if len(contents) > max_size_mb * 1024 * 1024:
+        raise HTTPException(
+            status_code=400,
+            detail="Fichier trop volumineux (max 2 Mo)."
+        )
+
+    # 📁 Sauvegarde
+    filename = f"user_{user_id}.{ext}"
+    file_path = os.path.join(AVATAR_DIR, filename)
+    with open(file_path, "wb") as f:
+        f.write(contents)
 
     user.avatar_url = f"http://127.0.0.1:8000/uploads/avatars/{filename}"
     db.commit()

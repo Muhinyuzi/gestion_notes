@@ -17,13 +17,14 @@ def test_user_activation(client):
     }
     r = client.post("/utilisateurs/", json=data)
     assert r.status_code == 200
-    user = r.json()
-    assert not user["is_active"]
+    #user = r.json()
+    data = r.json().get("data", r.json())
+    assert not data["is_active"]
 
     # 2️⃣ Générer un token valide
     token = jwt.encode(
         {
-            "sub": user["email"],
+            "sub": data["email"],
             "type": "activation",
             "exp": datetime.utcnow() + timedelta(hours=24)
         },
@@ -37,12 +38,15 @@ def test_user_activation(client):
     assert "activé" in r.json()["message"]
 
     # 4️⃣ Vérifier que le user est actif
-    r = client.get(f"/utilisateurs/{user['id']}")
+    r = client.get(f"/utilisateurs/{data['id']}")
     assert r.status_code == 200
-    assert r.json()["is_active"] is True
+
+    res = r.json()
+    user_data = res.get("data", res)
+    assert user_data["is_active"] is True
 
     # 5️⃣ Connexion après activation
-    login_data = {"username": user["email"], "password": "12345678"}
+    login_data = {"username": data["email"], "password": "12345678"}
     r = client.post("/login", data=login_data)
     assert r.status_code == 200
     assert "access_token" in r.json()

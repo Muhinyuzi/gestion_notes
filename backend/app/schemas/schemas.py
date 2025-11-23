@@ -215,3 +215,10 @@ class ResponseModel(GenericModel, Generic[T]):
     """Format de réponse uniforme pour toutes les routes API."""
     status: str = Field(..., example="success")
     data: Optional[T] = None
+
+
+class PaginatedUsers(BaseModel):
+    total: int
+    page: int
+    limit: int
+    users: List[UtilisateurOut]    

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { UtilisateurService, Utilisateur, UtilisateursResponse } from '../../services/utilisateur.service';
+import { UtilisateurService, Utilisateur, PaginatedUsers } from '../../services/utilisateur.service';
 import { ToastService } from '../../services/toast.service';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from '../shared/confirm-dialog/confirm-dialog.component';
@@ -32,6 +32,9 @@ export class UtilisateursComponent implements OnInit {
   page = 1;
   limit = 10;
   total = 0;
+
+  typesUtilisateurs: string[] = ['admin', 'user', 'dev', 'manager', 'support'];
+  equipes: string[] = ['Dev', 'QA', 'Support', 'Design', 'RH', 'Ops'];
 
   constructor(
     private api: UtilisateurService,
@@ -75,7 +78,7 @@ export class UtilisateursComponent implements OnInit {
   loadUsers(): void {
     this.isLoading = true;
     this.api.getUtilisateurs(this.page, this.limit).subscribe({
-      next: (res: UtilisateursResponse) => {
+      next: (res: PaginatedUsers) => {
         this.utilisateurs = res.users ?? [];
         this.total = res.total ?? 0;
         this.isLoading = false;
@@ -100,6 +103,10 @@ export class UtilisateursComponent implements OnInit {
     this.isAdding = true;
     this.isEditing = false;
     this.toast.show("➕ Mode ajout activé");
+    // 🧩 Générer automatiquement un mot de passe aléatoire
+    this.generatePassword();
+
+    this.toast.show("➕ Mode ajout activé (mot de passe généré automatiquement)");
   }
 
   cancelForm(): void {
@@ -245,5 +252,14 @@ export class UtilisateursComponent implements OnInit {
 
   goBack(): void {
     this.location.back();
+  }
+
+  generatePassword() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let pwd = '';
+    for (let i = 0; i < 8; i++) {
+      pwd += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    this.formUser.mot_de_passe = pwd;
   }
 }

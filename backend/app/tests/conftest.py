@@ -229,7 +229,9 @@ def create_test_user(client):
     r = client.post("/utilisateurs/", json=data)
     assert r.status_code == 200, r.text
 
-    user = r.json()
+    #user = r.json()
+    data = r.json()
+    user = data.get("data", data)
     current_test_user.update(user)
 
     # ✅ restore vrai auth
@@ -254,7 +256,9 @@ def create_test_user_non_admin(client):
     r = client.post("/utilisateurs/", json=data)
     assert r.status_code == 200, r.text
 
-    user = r.json()
+    #user = r.json()
+    data = r.json()
+    user = data.get("data", data)
     current_test_user.update(user)
 
     app.dependency_overrides[auth_dep] = override_get_current_user

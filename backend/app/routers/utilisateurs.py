@@ -1,11 +1,13 @@
-from fastapi import (
-    APIRouter, Depends, HTTPException, Query, UploadFile, File, BackgroundTasks
-)
+# app/routers/utilisateurs.py
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, BackgroundTasks
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from typing import List
+import os
+
 from app.db import get_db
 from app.models.utilisateur import Utilisateur
-from app.schemas.schemas import UtilisateurCreate, UtilisateurOut, UtilisateurDetailOut
+from app.schemas.schemas import UtilisateurCreate, UtilisateurOut, UtilisateurDetailOut, PaginatedUsers
 from app.auth import get_current_user
 from app.services.utilisateurs import (
     create_user_service,
@@ -19,24 +21,22 @@ from app.services.utilisateurs import (
 
 router = APIRouter()
 
+
 # ---------------- CREATE ----------------
-@router.post("/", response_model=UtilisateurOut)
+@router.post("/", response_model=dict)
 def create_user(
     user: UtilisateurCreate,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: Utilisateur = Depends(get_current_user)
 ):
-    """
-    ✅ Crée un nouvel utilisateur et renvoie directement l'objet créé
-    (compatible avec les anciens tests et le frontend).
-    """
+    """Créer un utilisateur (admin uniquement)."""
     new_user = create_user_service(user, db, current_user, background_tasks)
-    return new_user
+    return {"status": "success", "data": new_user}
 
 
 # ---------------- LIST ----------------
-@router.get("/", response_model=List[UtilisateurOut])
+@router.get("/", response_model=dict)
 def list_users(
     nom: str = Query("", description="Filtrer par nom"),
     email: str = Query("", description="Filtrer par email"),
@@ -48,80 +48,58 @@ def list_users(
     db: Session = Depends(get_db),
     current_user: Utilisateur = Depends(get_current_user)
 ):
-    """
-    ✅ Renvoie directement une liste d'utilisateurs.
-    (plus de structure {'status':..., 'data':...})
-    """
-    return list_users_service(nom, email, equipe, type_, sort, page, limit, db, current_user)
+    """Lister les utilisateurs avec pagination."""
+    data = list_users_service(nom, email, equipe, type_, sort, page, limit, db, current_user)
+    return {"status": "success", "data": data}
 
 
 # ---------------- DETAIL ----------------
-@router.get("/{user_id}", response_model=UtilisateurDetailOut)
+@router.get("/{user_id}", response_model=dict)
 def get_user_detail(
     user_id: int,
     db: Session = Depends(get_db),
     current_user: Utilisateur = Depends(get_current_user)
 ):
-    """
-    ✅ Détails d'un utilisateur spécifique.
-    """
-    return get_user_detail_service(user_id, db, current_user)
+    """Afficher le détail d’un utilisateur."""
+    user = get_user_detail_service(user_id, db, current_user)
+    return {"status": "success", "data": user}
 
 
 # ---------------- UPDATE ----------------
-@router.put("/{user_id}", response_model=UtilisateurOut)
+@router.put("/{user_id}", response_model=dict)
 def update_user(
     user_id: int,
     updated: UtilisateurCreate,
     db: Session = Depends(get_db),
     current_user: Utilisateur = Depends(get_current_user)
 ):
-    """
-    ✅ Met à jour un utilisateur et renvoie l'objet mis à jour.
-    """
-    return update_user_service(user_id, updated, db, current_user)
+    """Mettre à jour un utilisateur."""
+    updated_user = update_user_service(user_id, updated, db, current_user)
+    return {"status": "success", "data": updated_user}
 
 
 # ---------------- DELETE ----------------
-@router.delete("/{user_id}", status_code=204)
+@router.delete("/{user_id}", response_model=dict)
 def delete_user(
     user_id: int,
     db: Session = Depends(get_db),
     current_user: Utilisateur = Depends(get_current_user)
 ):
-    """
-    ✅ Supprime un utilisateur.
-    """
+    """Supprimer un utilisateur."""
     delete_user_service(user_id, db, current_user)
-    return None  # 204 = pas de contenu à retourner
+    return {"status": "success", "data": {"message": "Utilisateur supprimé avec succès"}}
 
 
 # ---------------- UPLOAD AVATAR ----------------
-@router.post("/{user_id}/avatar", response_model=UtilisateurOut)
+@router.post("/{user_id}/avatar", response_model=dict)
 async def upload_avatar(
     user_id: int,
     file: UploadFile = File(...),
     db: Session = Depends(get_db)
 ):
-    """
-    ✅ Upload de l'avatar avec vérification de taille et type.
-    """
-    # Limite de taille : 2 Mo
-    MAX_SIZE = 2 * 1024 * 1024
-    content = await file.read()
-    if len(content) > MAX_SIZE:
-        raise HTTPException(status_code=400, detail="Fichier trop volumineux (max 2 Mo)")
-
-    # Type MIME accepté
-    if not file.content_type.startswith(("image/jpeg", "image/png", "image/jpg")):
-        raise HTTPException(status_code=400, detail="Format de fichier non supporté (jpg, jpeg, png uniquement)")
-
-    # On réécrit le flux pour la sauvegarde après lecture
-    from io import BytesIO
-    file.file = BytesIO(content)
-
-    updated_user = await upload_avatar_service(user_id, file, db)
-    return updated_user
+    """Uploader un avatar pour un utilisateur."""
+    data = await upload_avatar_service(user_id, file, db)
+    return {"status": "success", "data": data}
 
 
 # ---------------- GET AVATAR ----------------
@@ -130,8 +108,5 @@ async def get_avatar(
     user_id: int,
     db: Session = Depends(get_db)
 ):
-    """
-    ✅ Récupère le fichier avatar d'un utilisateur.
-    """
+    """Récupérer un avatar."""
     return await get_avatar_service(user_id, db)
-
